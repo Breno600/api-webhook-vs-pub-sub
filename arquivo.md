@@ -1,311 +1,322 @@
 #!/usr/bin/env bash
-# gitlab_fulltree_audit_json.sh — percorre a árvore inteira a partir do GROUP_ID, robusto e sem "Argument list too long"
-set -euo pipefail
+# gitlab_group_audit_json.sh 05
+# Varre grupo raiz (GROUP_ID), subgrupos e projetos diretos, coleta último pipeline
+# e monta JSON. Saída no STDOUT e em $OUT_JSON.
+set -Eeuo pipefail
 
 : "${GITLAB_URL:?Defina GITLAB_URL (ex: https://gitlab.seudominio.com)}"
 : "${GITLAB_TOKEN:?Defina GITLAB_TOKEN (PAT com read_api)}"
-: "${GROUP_ID:?Defina GROUP_ID (id numérico ou path do grupo raiz, ex.: 13223)}"
+: "${GROUP_ID:?Defina GROUP_ID (id numérico ou full_path do grupo raiz)}"
 
-VERBOSE="${VERBOSE:-1}"
-CURL_FLAGS="${CURL_FLAGS:---retry 3 --connect-timeout 10 --max-time 60 --location}"
-API_BASE="${API_BASE:-$GITLAB_URL/api/v4}"   # ajuste se seu GitLab estiver em subpath
+VERBOSE="${VERBOSE:-1}"             # 1 = logs; 0 = silencioso
+CURL_FLAGS="${CURL_FLAGS:---retry 3 --connect-timeout 10 --max-time 60 --compressed}"
+OUT_JSON="${OUT_JSON:-gitlab_group_audit.json}"
+
+API="$GITLAB_URL/api/v4"
 HDR_AUTH=("PRIVATE-TOKEN: $GITLAB_TOKEN")
 
-OUT_JSON="${OUT_JSON:-gitlab_group_audit.json}"
 TMP_DIR="$(mktemp -d)"
-GROUPS_ND="$TMP_DIR/groups.ndjson"
 PROJECTS_ND="$TMP_DIR/projects.ndjson"
-GROUPS_JSON="$TMP_DIR/groups.json"
-PROJECTS_JSON="$TMP_DIR/projects.json"
+GROUPS_ND="$TMP_DIR/groups.ndjson"
+
+[[ "${TRACE:-0}" == "1" ]] && set -x
 
 log(){ [[ "$VERBOSE" == "1" ]] && printf "[%(%F %T)T] %s\n" -1 "$*" >&2 || true; }
-warn(){ printf "[%(%F %T)T] WARN: %s\n" -1 "$*" >&2; }
-err (){ printf "[%(%F %T)T] ERRO: %s\n" -1 "$*" >&2; }
-SUCCESS=0
-cleanup(){ [[ $SUCCESS -eq 1 ]] && rm -rf "$TMP_DIR" 2>/dev/null || warn "Mantendo tmp: $TMP_DIR"; }
-trap 'err "Linha $LINENO falhou ($?)"' ERR
+cleanup(){ rm -rf "$TMP_DIR"; }
+trap 'rc=$?; echo "[ERRO] rc=$rc | linha ${BASH_LINENO[0]} | cmd: ${BASH_COMMAND}" >&2' ERR
 trap 'cleanup' EXIT
 
-need(){ command -v "$1" >/dev/null 2>&1 || { err "'$1' não encontrado"; exit 1; }; }
+need(){ command -v "$1" >/dev/null 2>&1 || { echo "ERRO: '$1' não encontrado." >&2; exit 1; }; }
 need curl
 need jq
 
 urlenc(){ jq -rn --arg x "$1" '$x|@uri'; }
 
-# ---------------- HTTP helpers (seguros) ----------------
-_http_raw(){
-  local url="$1"; log "GET $url"
-  curl -sS $CURL_FLAGS -H "${HDR_AUTH[@]}" -w "\n---HTTP_CODE:%{http_code}---" "$url"
+api_get(){
+  local path="$1"; local query="${2:-}"
+  local url="$API$path"; [[ -n "$query" ]] && url="$url?$query"
+  log "GET $url"
+  curl -sS $CURL_FLAGS -H "${HDR_AUTH[@]}" "$url"
 }
-_http_split(){
-  awk 'BEGIN{body="";code=""}
-       /---HTTP_CODE:/ {code=$0; sub(/.*---HTTP_CODE:/,"",code); sub(/---.*/,"",code); print body > "/dev/stderr"; print code; next}
-       {body=body $0 ORS}'
-}
-api_get_or_empty(){
-  local path="$1"; local query="${2:-}"; local empty="${3:-[]}"
-  local url="$API_BASE$path"; [[ -n "$query" ]] && url="$url?$query"
-  local raw; raw="$(_http_raw "$url")"
-  local code body
-  body="$(printf "%s" "$raw" | _http_split 2> >(cat))"
-  code="$(printf "%s" "$raw" | tail -n1)"
-  log "HTTP $code $path"
-  if [[ ! "$code" =~ ^[0-9]{3}$ ]]; then warn "HTTP inválido p/ $url"; echo "$empty"; return; fi
-  if (( code < 200 || code >= 300 )); then warn "HTTP $code em $url — usando vazio"; echo "$empty"; return; fi
-  if ! echo "$body" | jq -e . >/dev/null 2>&1; then warn "Resposta não-JSON em $url — usando vazio"; echo "$empty"; return; fi
-  echo "$body"
-}
-api_get_obj(){ local q="${2-}"; api_get_or_empty "$1" "$q" "{}"; }
-api_get_arr(){ local q="${2-}"; api_get_or_empty "$1" "$q" "[]"; }
 
-api_get_paginated_arr(){
-  local path="$1"; local query="${2:-}"; local page=1; local acc="[]"
+api_get_paginated(){
+  local path="$1"; local query="${2:-}"; local page=1; local all="[]"
   while :; do
-    local url="$API_BASE$path?per_page=100&page=$page"; [[ -n "$query" ]] && url="$url&$query"
-    local raw; raw="$(_http_raw "$url")"
-    local code body
-    body="$(printf "%s" "$raw" | _http_split 2> >(cat))"
-    code="$(printf "%s" "$raw" | tail -n1)"
-    log "HTTP $code $path?page=$page"
-    if [[ ! "$code" =~ ^[0-9]{3}$ || $code -lt 200 || $code -ge 300 ]]; then
-      warn "Página $page HTTP $code — fim da paginação"; break
-    fi
-    if ! echo "$body" | jq -e . >/dev/null 2>&1; then warn "Página $page não-JSON — fim"; break; fi
-    acc="$(jq -cs 'add' <(echo "$acc") <(echo "$body"))"
-    local len; len="$(echo "$body" | jq 'length')"
-    (( len < 100 )) && break
-    ((page++))
+    local url="$API$path?per_page=100&page=$page"
+    [[ -n "$query" ]] && url="$url&$query"
+    log "GET $url"
+    local hdr body
+    hdr="$(mktemp)"
+    body="$(curl -sS $CURL_FLAGS -D "$hdr" -H "${HDR_AUTH[@]}" "$url")" || body='[]'
+    # Normaliza para array e agrega sem passar JSON gigante por argv
+    all="$(jq -cs 'add' \
+          <(printf '%s' "$all") \
+          <(printf '%s' "$body" | jq -c 'if type=="array" then . else [] end' 2>/dev/null || printf '[]'))"
+    local next
+    next="$(awk -F': ' 'tolower($1)=="x-next-page"{gsub("\r","",$2);print $2}' "$hdr" || true)"
+    rm -f "$hdr"
+    [[ -z "${next:-}" ]] && { printf '%s' "$all"; return; }
+    page="$next"
   done
-  echo "$acc"
 }
 
-extract_apm_id(){ local n="$1"; [[ "$n" =~ ^[[:space:]]*([0-9]+)[[:space:]]*-[[:space:]]*.+$ ]] && echo "${BASH_REMATCH[1]}" || echo ""; }
+extract_apm_id(){
+  local name="$1"
+  if [[ "$name" =~ ^[[:space:]]*([0-9]+)[[:space:]]*-[[:space:]]*.+$ ]]; then
+    echo "${BASH_REMATCH[1]}"
+  else
+    echo ""
+  fi
+}
 
-# ---------------- 1) Grupo raiz ----------------
-log "Carregando grupo raiz: $GROUP_ID"
-root="$(api_get_obj "/groups/$(urlenc "$GROUP_ID")")"
-root_id="$(echo "$root" | jq -r '.id')"
-[[ -z "$root_id" || "$root_id" == "null" ]] && { err "Não achei o grupo raiz ($GROUP_ID). Verifique API_BASE=$API_BASE e o PAT (read_api)."; exit 1; }
-
-root_full_path="$(echo "$root" | jq -r '.full_path')"
-root_web_url="$(echo "$root" | jq -r '.web_url')"
-
-# ---------------- 2) Subgrupos (só para listar e extrair APM) ----------------
+# mapas
 declare -A G_NAME G_PATH G_URL G_PARENT G_APM
+
+# grupo raiz
+log "Carregando grupo raiz: $GROUP_ID"
+root="$(api_get "/groups/$(urlenc "$GROUP_ID")")"
+root_id="$(printf '%s' "$root" | jq -r '.id')"
+G_NAME["$root_id"]="$(printf '%s' "$root" | jq -r '.name')"
+G_PATH["$root_id"]="$(printf '%s' "$root" | jq -r '.full_path')"
+G_URL["$root_id"]="$(printf '%s' "$root" | jq -r '.web_url')"
+G_PARENT["$root_id"]=""
+
+# BFS subgrupos (robusto a respostas não-array)
 declare -A VISITED
 queue=("$root_id")
 all_groups=()
-
-G_NAME["$root_id"]="$(echo "$root" | jq -r '.name')"
-G_PATH["$root_id"]="$root_full_path"
-G_URL["$root_id"]="$root_web_url"
-G_PARENT["$root_id"]=""
-
 while ((${#queue[@]})); do
   gid="${queue[0]}"; queue=("${queue[@]:1}")
   [[ -n "${VISITED[$gid]:-}" ]] && continue
-  VISITED["$gid"]=1; all_groups+=("$gid")
+  VISITED["$gid"]=1
+  all_groups+=("$gid")
 
-  subs="$(api_get_paginated_arr "/groups/$gid/subgroups")"
-  mapfile -t ids < <(echo "$subs" | jq -r '.[].id')
-  for sgid in "${ids[@]}"; do
-    G_NAME["$sgid"]="$(echo "$subs" | jq -r ".[]|select(.id==$sgid)|.name")"
-    G_PATH["$sgid"]="$(echo "$subs" | jq -r ".[]|select(.id==$sgid)|.full_path")"
-    G_URL["$sgid"]="$(echo "$subs" | jq -r ".[]|select(.id==$sgid)|.web_url")"
-    G_PARENT["$sgid"]="$gid"
-    queue+=("$sgid")
-    log "  subgroup: ${G_PATH[$sgid]} (id=$sgid)"
-  done
+  log "Subgrupos de ${G_PATH[$gid]} (id=$gid)…"
+  subs="$(api_get_paginated "/groups/$gid/subgroups")"
+  # Carrega metadados dos subgrupos desta página só uma vez
+  mapfile -t ids < <(printf '%s' "$subs" | jq -r 'if type=="array" then .[].id else empty end')
+  if ((${#ids[@]})); then
+    # Indexa por id para não re-jq em loop
+    for sgid in "${ids[@]}"; do
+      sg="$(printf '%s' "$subs" | jq -c --argjson i "$sgid" '.[] | select(.id==$i)')"
+      G_NAME["$sgid"]="$(printf '%s' "$sg" | jq -r '.name')"
+      G_PATH["$sgid"]="$(printf '%s' "$sg" | jq -r '.full_path')"
+      G_URL["$sgid"]="$(printf '%s' "$sg" | jq -r '.web_url')"
+      G_PARENT["$sgid"]="$(printf '%s' "$sg" | jq -r '.parent_id // ""')"
+      queue+=("$sgid")
+      log "  + ${G_PATH[$sgid]} (id=$sgid)"
+    done
+  fi
 done
 log "Total de grupos (inclui raiz): ${#all_groups[@]}"
 
-# salva groups em NDJSON + depois em JSON (arquivo)
+# salvar grupos + APM herdado
 for gid in "${all_groups[@]}"; do
   cur="$gid"; found=""
   while [[ -n "$cur" ]]; do
-    try="$(extract_apm_id "${G_NAME[$cur]}")"; [[ -n "$try" ]] && { found="$try"; break; }
+    try="$(extract_apm_id "${G_NAME[$cur]}")"
+    if [[ -n "$try" ]]; then found="$try"; break; fi
     cur="${G_PARENT[$cur]:-}"
   done
   G_APM["$gid"]="$found"
+
   jq -n \
     --arg id_str "$gid" \
     --arg name "${G_NAME[$gid]}" \
     --arg full_path "${G_PATH[$gid]}" \
     --arg web_url "${G_URL[$gid]}" \
     --arg parent_id_str "${G_PARENT[$gid]:-}" \
-    --arg apm_id_str "$found" \
-    'def n: if .=="" then null else . end;
-     {id:$id_str, name:$name, full_path:$full_path, web_url:$web_url,
-      parent_id:($parent_id_str|n), apm_id:($apm_id_str|n)}' >> "$GROUPS_ND"
+    --arg apm_id_str "$found" '
+    def null_if_empty: if . == "" then null else . end;
+    { id:$id_str, name:$name, full_path:$full_path, web_url:$web_url,
+      parent_id: ($parent_id_str | null_if_empty),
+      apm_id:    ($apm_id_str    | null_if_empty) }' >> "$GROUPS_ND"
 done
-if [ -s "$GROUPS_ND" ]; then jq -s '.' "$GROUPS_ND" > "$GROUPS_JSON"; else echo '[]' > "$GROUPS_JSON"; fi
 
-# ---------------- 3) TODOS os projetos da árvore (include_subgroups=true) ----------------
-log "Listando TODOS os projetos debaixo do grupo $root_id…"
-all_projects="$(api_get_paginated_arr "/groups/$root_id/projects" "with_shared=false&include_subgroups=true")"
-total_p="$(echo "$all_projects" | jq 'length')"
-log "Projetos total sob $root_id: $total_p"
+# coletores (mantidos para logs; agregação final será em jq)
+declare -A APM_TOTAL APM_WITH_PIPE APM_WITH_APPVARS
+declare -A APM_STATUS
+if (( BASH_VERSINFO[0] > 4 || ( BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 3 ) )); then
+  inc(){ local -n ref="$1"; local key="$2"; local cur="${ref[$key]:-0}"; cur=$((cur+1)); ref["$key"]="$cur"; }
+else
+  inc(){ local arr="$1" key="$2" cur; eval 'cur=${'"$arr"'[$key]:-0}'; cur=$((cur+1)); eval "$arr[\"\$key\"]=\$cur"; }
+fi
 
-# ---------------- 4) Enriquecer projetos (pipeline + APP_*), gravando NDJSON ----------------
-for ((i=0;i<total_p;i++)); do
-  p="$(echo "$all_projects" | jq ".[$i]")"
-  pid="$(echo "$p" | jq -r '.id')"
-  p_pwn="$(echo "$p" | jq -r '.path_with_namespace')"
-  p_web="$(echo "$p" | jq -r '.web_url')"
-  p_def="$(echo "$p" | jq -r '.default_branch // empty')"
-  ns_full="$(echo "$p" | jq -r '.namespace.full_path // empty')"
-  ns_web="$(echo "$p" | jq -r '.namespace.web_url // empty')"
-  if [[ -z "$ns_web" && -n "$ns_full" ]]; then ns_web="$GITLAB_URL/$ns_full"; fi
+# projetos diretos
+for gid in "${all_groups[@]}"; do
+  gpath="${G_PATH[$gid]}"; gurl="${G_URL[$gid]}"; gapm="${G_APM[$gid]}"; [[ -z "$gapm" ]] && gapm="(sem_apm)"
+  projs="$(api_get_paginated "/groups/$gid/projects" "with_shared=false&include_subgroups=false")"
+  # Garante array
+  pcount="$(printf '%s' "$projs" | jq 'if type=="array" then length else 0 end')"
+  log "Grupo ${gpath} (APM=$gapm): $pcount projeto(s) diretos"
+  (( pcount == 0 )) && continue
 
-  apm_id=""
-  for gid in "${all_groups[@]}"; do
-    if [[ "${G_PATH[$gid]}" == "$ns_full" ]]; then apm_id="${G_APM[$gid]}"; break; fi
+  for ((i=0;i<pcount;i++)); do
+    p="$(printf '%s' "$projs" | jq ".[$i]")"
+    pid="$(printf '%s' "$p" | jq -r '.id')"
+    ppath="$(printf '%s' "$p" | jq -r '.path_with_namespace')"
+    pweb="$(printf '%s' "$p" | jq -r '.web_url')"
+    dbranch="$(printf '%s' "$p" | jq -r '.default_branch // empty')"
+
+    # ===== pipelines (normalização) =====
+    pls_raw="$(api_get "/projects/$pid/pipelines" "per_page=1&order_by=updated_at&sort=desc" || true)"
+    pls="$(printf '%s' "${pls_raw:-[]}" | jq -c 'if type=="array" then . else [] end' 2>/dev/null || printf '[]')"
+    plen="$(printf '%s' "$pls" | jq 'length')"
+
+    has_general="false"
+    pl_id=""; pl_status="none"; pl_ref=""; pl_user=""; pl_created=""; pl_updated=""; pl_url=""
+    appflag="false"; app_name_val=""; app_version_val=""
+
+    if (( plen > 0 )); then
+      has_general="true"
+      pl_id="$(printf '%s' "$pls" | jq -r '.[0].id')"
+      pl_status="$(printf '%s' "$pls" | jq -r '.[0].status')"
+      pl_ref="$(printf '%s' "$pls" | jq -r '.[0].ref')"
+      pl_created="$(printf '%s' "$pls" | jq -r '.[0].created_at')"
+      pl_updated="$(printf '%s' "$pls" | jq -r '.[0].updated_at')"
+      pl_user="$(printf '%s' "$pls" | jq -r '.[0].user.username // .[0].user.name // ""')"
+      pl_url="$pweb/-/pipelines/$pl_id"
+
+      vars="$(api_get "/projects/$pid/pipelines/$pl_id/variables" || true)"
+      vars="$(printf '%s' "${vars:-[]}" | jq -c 'if type=="array" then . else [] end' 2>/dev/null || printf '[]')"
+      app_name_val="$(printf '%s' "$vars" | jq -r '.[]|select(.key=="APP_NAME")|.value' | head -n1 || true)"
+      app_version_val="$(printf '%s' "$vars" | jq -r '.[]|select(.key=="APP_VERSION")|.value' | head -n1 || true)"
+      [[ -n "$app_name_val" || -n "$app_version_val" ]] && appflag="true"
+    fi
+
+    # NDJSON projeto
+    has_general_bool=$([[ "$has_general" == "true" ]] && echo true || echo false)
+    has_appvars_bool=$([[ "$appflag" == "true" ]] && echo true || echo false)
+
+    jq -n \
+      --arg apm_id "$gapm" \
+      --arg group_id_str "$gid" \
+      --arg group_full_path "$gpath" \
+      --arg group_web_url "$gurl" \
+      --arg project_id_str "$pid" \
+      --arg project_pwn "$ppath" \
+      --arg project_web_url "$pweb" \
+      --arg default_branch "$dbranch" \
+      --arg has_general_pipeline_str "$has_general_bool" \
+      --arg latest_pipeline_id_str "$pl_id" \
+      --arg latest_pipeline_status "$pl_status" \
+      --arg latest_pipeline_ref "$pl_ref" \
+      --arg latest_pipeline_user "$pl_user" \
+      --arg latest_pipeline_created_at "$pl_created" \
+      --arg latest_pipeline_updated_at "$pl_updated" \
+      --arg latest_pipeline_web_url "$pl_url" \
+      --arg has_app_vars_str "$has_appvars_bool" \
+      --arg app_name_value "$app_name_val" \
+      --arg app_version_value "$app_version_val" '
+      def null_if_empty: if . == "" then null else . end;
+      def to_bool: if . == "true" then true elif . == "false" then false else false end;
+      {
+        apm_id: $apm_id,
+        group: { id:$group_id_str, full_path:$group_full_path, web_url:$group_web_url },
+        project: {
+          id:$project_id_str, path_with_namespace:$project_pwn, web_url:$project_web_url,
+          default_branch: ($default_branch | null_if_empty)
+        },
+        pipelines: {
+          has_general_pipeline: ($has_general_pipeline_str | to_bool),
+          latest: (
+            ($latest_pipeline_id_str | null_if_empty) as $pid
+            | if $pid == null or $latest_pipeline_status == "none" then null else {
+                id:$latest_pipeline_id_str, status:$latest_pipeline_status,
+                ref:($latest_pipeline_ref|null_if_empty),
+                user:($latest_pipeline_user|null_if_empty),
+                created_at:($latest_pipeline_created_at|null_if_empty),
+                updated_at:($latest_pipeline_updated_at|null_if_empty),
+                web_url:($latest_pipeline_web_url|null_if_empty),
+                variables:{ APP_NAME:($app_name_value|null_if_empty),
+                            APP_VERSION:($app_version_value|null_if_empty) }
+              } end
+          ),
+          has_APP_NAME_or_APP_VERSION: ($has_app_vars_str | to_bool)
+        }
+      }' >> "$PROJECTS_ND"
+
+    inc APM_TOTAL "$gapm"
+    [[ "$has_general" == "true" ]] && inc APM_WITH_PIPE "$gapm"
+    [[ "$appflag" == "true" ]] && inc APM_WITH_APPVARS "$gapm"
+    inc APM_STATUS "$gapm|$pl_status" || true
+
+    log "  - $ppath | general_pipeline=$has_general status=$pl_status APP_NAME=${app_name_val:-} APP_VERSION=${app_version_val:-}"
   done
-  [[ -z "$apm_id" ]] && apm_id="$(extract_apm_id "$ns_full")"
-  [[ -z "$apm_id" ]] && apm_id="(sem_apm)"
+done
 
-  pls="$(api_get_arr "/projects/$pid/pipelines" "per_page=1&order_by=updated_at&sort=desc")"
-  plen="$(echo "$pls" | jq 'length')"
+# =========================
+# montar final (SEM blobs)
+# =========================
+log "Montando JSON final: $OUT_JSON"
 
-  has_general="false"
-  pl_id=""; pl_status="none"; pl_ref=""; pl_user=""; pl_created=""; pl_updated=""; pl_url=""
-  appflag="false"; app_name_val=""; app_version_val=""
+# Converte NDJSON -> JSON (array) em arquivos
+GROUPS_JSON="$TMP_DIR/groups.json"
+PROJECTS_JSON="$TMP_DIR/projects.json"
 
-  if (( plen > 0 )); then
-    has_general="true"
-    pl_id="$(echo "$pls" | jq -r '.[0].id')"
-    pl_status="$(echo "$pls" | jq -r '.[0].status')"
-    pl_ref="$(echo "$pls" | jq -r '.[0].ref')"
-    pl_created="$(echo "$pls" | jq -r '.[0].created_at')"
-    pl_updated="$(echo "$pls" | jq -r '.[0].updated_at')"
-    pl_user="$(echo "$pls" | jq -r '.[0].user.username // .[0].user.name // ""')"
-    pl_url="$p_web/-/pipelines/$pl_id"
+[ -s "$GROUPS_ND" ]   && jq -s '.' "$GROUPS_ND"   > "$GROUPS_JSON"   || printf '[]' > "$GROUPS_JSON"
+[ -s "$PROJECTS_ND" ] && jq -s '.' "$PROJECTS_ND" > "$PROJECTS_JSON" || printf '[]' > "$PROJECTS_JSON"
 
-    vars="$(api_get_arr "/projects/$pid/pipelines/$pl_id/variables")"
-    app_name_val="$(echo "$vars" | jq -r '.[]|select(.key=="APP_NAME")|.value' | head -n1 || true)"
-    app_version_val="$(echo "$vars" | jq -r '.[]|select(.key=="APP_VERSION")|.value' | head -n1 || true)"
-    [[ -n "$app_name_val" || -n "$app_version_val" ]] && appflag="true"
-  fi
+# Resumo geral direto do NDJSON
+OVERALL_JSON="$TMP_DIR/overall.json"
+jq -s '
+  def known: ["success","failed","running","canceled","skipped","manual","pending","created","scheduled","none"];
+  def empty_counts: {success:0, failed:0, running:0, canceled:0, skipped:0, manual:0, pending:0, created:0, scheduled:0, none:0, other:0};
+  def norm(s): (known | index(s)) as $i | if $i==null then "other" else s end;
 
+  . as $items
+  | {
+      total_projects: ($items|length),
+      with_general_pipeline: ([$items[] | select(.pipelines.has_general_pipeline==true)] | length),
+      with_APP_NAME_or_APP_VERSION: ([$items[] | select(.pipelines.has_APP_NAME_or_APP_VERSION==true)] | length),
+      status_counts:
+        (reduce ($items[] | (.pipelines.latest?.status // "none") | norm(.)) as $s
+          (empty_counts; .[$s] += 1))
+    }
+' "$PROJECTS_ND" > "$OVERALL_JSON"
+
+# Resumo por APM (100% em jq)
+APM_SUMMARY_JSON="$TMP_DIR/summary_by_apm.json"
+jq -s '
+  def known: ["success","failed","running","canceled","skipped","manual","pending","created","scheduled","none"];
+  def empty_counts: {success:0, failed:0, running:0, canceled:0, skipped:0, manual:0, pending:0, created:0, scheduled:0, none:0, other:0};
+  def norm(s): (known | index(s)) as $i | if $i==null then "other" else s end;
+
+  sort_by(.apm_id)
+  | group_by(.apm_id)
+  | map({
+      apm_id: (.[0].apm_id),
+      total_projects: (length),
+      with_general_pipeline: ([.[] | select(.pipelines.has_general_pipeline==true)] | length),
+      with_APP_NAME_or_APP_VERSION: ([.[] | select(.pipelines.has_APP_NAME_or_APP_VERSION==true)] | length),
+      status_counts:
+        (reduce (.[] | (.pipelines.latest?.status // "none") | norm(.)) as $s
+          (empty_counts; .[$s] += 1))
+    })
+' "$PROJECTS_JSON" > "$APM_SUMMARY_JSON"
+
+# Monta o JSON final usando --slurpfile (evita --argjson gigante)
+final_json="$(
   jq -n \
-    --arg apm_id "$apm_id" \
-    --arg ns_full "$ns_full" \
-    --arg ns_web "$ns_web" \
-    --arg project_id_str "$pid" \
-    --arg project_pwn "$p_pwn" \
-    --arg project_web_url "$p_web" \
-    --arg default_branch "$p_def" \
-    --arg has_general_pipeline_str "$has_general" \
-    --arg latest_pipeline_id_str "$pl_id" \
-    --arg latest_pipeline_status "$pl_status" \
-    --arg latest_pipeline_ref "$pl_ref" \
-    --arg latest_pipeline_user "$pl_user" \
-    --arg latest_pipeline_created_at "$pl_created" \
-    --arg latest_pipeline_updated_at "$pl_updated" \
-    --arg latest_pipeline_web_url "$pl_url" \
-    --arg has_app_vars_str "$appflag" \
-    --arg app_name_value "$app_name_val" \
-    --arg app_version_value "$app_version_val" \
-    '
-    def n: if .=="" then null else . end;
-    def b: if .=="true" then true else false end;
+    --arg generated_at "$(date -Iseconds)" \
+    --arg gitlab_url "$GITLAB_URL" \
+    --arg root_group_id "$root_id" \
+    --arg root_group_full_path "${G_PATH[$root_id]}" \
+    --arg root_group_web_url "${G_URL[$root_id]}" \
+    --slurpfile groups "$GROUPS_JSON" \
+    --slurpfile projects "$PROJECTS_JSON" \
+    --slurpfile summary_by_apm "$APM_SUMMARY_JSON" \
+    --slurpfile summary_overall "$OVERALL_JSON" '
     {
-      apm_id: $apm_id,
-      group: { full_path: ($ns_full|n), web_url: ($ns_web|n) },
-      project: { id:$project_id_str, path_with_namespace:$project_pwn, web_url:$project_web_url,
-                 default_branch: ($default_branch|n) },
-      pipelines: {
-        has_general_pipeline: ($has_general_pipeline_str|b),
-        latest: (
-          ($latest_pipeline_id_str|n) as $pid
-          | if $pid==null or $latest_pipeline_status=="none"
-            then null
-            else {
-              id:$latest_pipeline_id_str, status:$latest_pipeline_status,
-              ref:($latest_pipeline_ref|n), user:($latest_pipeline_user|n),
-              created_at:($latest_pipeline_created_at|n), updated_at:($latest_pipeline_updated_at|n),
-              web_url:($latest_pipeline_web_url|n),
-              variables:{ APP_NAME:($app_name_value|n), APP_VERSION:($app_version_value|n) }
-            }
-          end
-        ),
-        has_APP_NAME_or_APP_VERSION: ($has_app_vars_str|b)
-      }
-    }' >> "$PROJECTS_ND"
+      generated_at: $generated_at,
+      gitlab_url: $gitlab_url,
+      root_group: { id:$root_group_id, full_path:$root_group_full_path, web_url:$root_group_web_url },
+      groups: $groups[0],
+      projects: $projects[0],
+      summary: { by_apm: $summary_by_apm[0], overall: $summary_overall[0] }
+    }'
+)"
 
-  log "  - $p_pwn | pipeline=$has_general status=$pl_status APP_NAME=${app_name_val:-} APP_VERSION=${app_version_val:-}"
-done
-
-# Converte NDJSON -> JSON em ARQUIVOS (evita variáveis gigantes)
-if [ -s "$PROJECTS_ND" ]; then jq -s '.' "$PROJECTS_ND" > "$PROJECTS_JSON"; else echo '[]' > "$PROJECTS_JSON"; fi
-
-# ---------------- 5) Agregações sem carregar em variáveis ----------------
-declare -A APM_TOTAL APM_WITH_PIPE APM_WITH_APPVARS APM_STATUS
-while IFS= read -r line; do
-  apm="$(echo "$line" | jq -r '.apm_id')"
-  (( APM_TOTAL["$apm"]+=1 )) 2>/dev/null || APM_TOTAL["$apm"]=1
-
-  if [[ "$(echo "$line" | jq -r '.pipelines.has_general_pipeline')" == "true" ]]; then
-    (( APM_WITH_PIPE["$apm"]+=1 )) 2>/dev/null || APM_WITH_PIPE["$apm"]=1
-  fi
-  if [[ "$(echo "$line" | jq -r '.pipelines.has_APP_NAME_or_APP_VERSION')" == "true" ]]; then
-    (( APM_WITH_APPVARS["$apm"]+=1 )) 2>/dev/null || APM_WITH_APPVARS["$apm"]=1
-  fi
-
-  st="$(echo "$line" | jq -r '.pipelines.latest?.status // "none"')"
-  key="$apm|$st"; (( APM_STATUS["$key"]+=1 )) 2>/dev/null || APM_STATUS["$key"]=1
-done < <(jq -c '.[]' "$PROJECTS_JSON")
-
-apm_summary="[]"
-for apm in "${!APM_TOTAL[@]}"; do
-  counts_obj="{}"
-  for s in success failed running canceled skipped manual pending created scheduled none other; do
-    v="${APM_STATUS[$apm|$s]:-0}"
-    counts_obj="$(jq -n --argjson obj "$counts_obj" --arg s "$s" --argjson v "$v" '$obj + {($s):$v}')" 
-  done
-  apm_summary="$(jq -n \
-    --arg apm_id "$apm" \
-    --argjson total "${APM_TOTAL[$apm]}" \
-    --argjson with_general_pipeline "${APM_WITH_PIPE[$apm]:-0}" \
-    --argjson with_APP_vars "${APM_WITH_APPVARS[$apm]:-0}" \
-    --argjson status_counts "$counts_obj" \
-    --argjson cur "$apm_summary" \
-    '$cur + [{apm_id:$apm_id, total_projects:$total, with_general_pipeline:$with_general_pipeline, with_APP_NAME_or_APP_VERSION:$with_APP_vars, status_counts:$status_counts}]'
-  )"
-done
-
-# overall usando --slurpfile para não estourar args
-overall="$(jq -n --slurpfile items "$PROJECTS_JSON" '
-  def count(f): reduce ($items[0][] | select(f)) as $i (0; .+1);
-  def status_counts:
-    reduce ($items[0][] | .pipelines.latest?.status // "none") as $s ({};
-      . + {($s): ( .[$s] // 0 ) + 1}
-    );
-  {
-    total_projects: ($items[0]|length),
-    with_general_pipeline: count(.pipelines.has_general_pipeline == true),
-    with_APP_NAME_or_APP_VERSION: count(.pipelines.has_APP_NAME_or_APP_VERSION == true),
-    status_counts: status_counts
-  }
-')"
-
-# ---------------- 6) JSON final, tudo por arquivo ----------------
-jq -n \
-  --arg generated_at "$(date -Iseconds)" \
-  --arg gitlab_url "$GITLAB_URL" \
-  --argjson root_group "{ \"id\": \"$root_id\", \"full_path\": \"${root_full_path}\", \"web_url\": \"${root_web_url}\" }" \
-  --slurpfile groups "$GROUPS_JSON" \
-  --slurpfile projects "$PROJECTS_JSON" \
-  --argjson summary_by_apm "$apm_summary" \
-  --argjson summary_overall "$overall" \
-  '{
-    generated_at: $generated_at,
-    gitlab_url: $gitlab_url,
-    root_group: $root_group,
-    groups: $groups[0],
-    projects: $projects[0],
-    summary: { by_apm: $summary_by_apm, overall: $summary_overall }
-  }' > "$OUT_JSON"
-
-SUCCESS=1
+printf '%s\n' "$final_json" | tee "$OUT_JSON" >/dev/null
+log "OK: $OUT_JSON"
 echo "✅ Pronto: $OUT_JSON"
