@@ -1,25 +1,37 @@
 #!/usr/bin/env bash
-# gitlab_group_audit_json.sh 02
-set -euo pipefail
+# gitlab_group_audit_json.sh 03
+# Percorre o grupo raiz (GROUP_ID), varre subgrupos e projetos diretos,
+# coleta último pipeline e monta um JSON consolidado.
+# Saída: imprime no STDOUT e salva em $OUT_JSON (default: gitlab_group_audit.json)
 
+set -Eeuo pipefail
+
+# ===== Config obrigatória =====
 : "${GITLAB_URL:?Defina GITLAB_URL (ex: https://gitlab.seudominio.com)}"
 : "${GITLAB_TOKEN:?Defina GITLAB_TOKEN (PAT com read_api)}"
-: "${GROUP_ID:?Defina GROUP_ID (id numérico ou path do grupo raiz)}"
+: "${GROUP_ID:?Defina GROUP_ID (id numérico ou full_path do grupo raiz)}"
 
+# ===== Flags/variáveis =====
 VERBOSE="${VERBOSE:-1}"             # 1 = logs; 0 = silencioso
 CURL_FLAGS="${CURL_FLAGS:---retry 3 --connect-timeout 10 --max-time 60}"
+OUT_JSON="${OUT_JSON:-gitlab_group_audit.json}"
 
 API="$GITLAB_URL/api/v4"
 HDR_AUTH=("PRIVATE-TOKEN: $GITLAB_TOKEN")
 
-OUT_JSON="${OUT_JSON:-gitlab_group_audit.json}"
 TMP_DIR="$(mktemp -d)"
 PROJECTS_ND="$TMP_DIR/projects.ndjson"
 GROUPS_ND="$TMP_DIR/groups.ndjson"
 
+# ===== Debug opcional =====
+[[ "${TRACE:-0}" == "1" ]] && set -x
+
+# ===== Utilitários =====
 log(){ [[ "$VERBOSE" == "1" ]] && printf "[%(%F %T)T] %s\n" -1 "$*" >&2 || true; }
 cleanup(){ rm -rf "$TMP_DIR"; }
-trap 'echo "[ERRO] Linha $LINENO: comando '\''$BASH_COMMAND'\'' ($?)" >&2; cleanup' ERR
+
+# Trap de erro (propaga com -E): mostra RC, linha e comando
+trap 'rc=$?; echo "[ERRO] rc=$rc | linha ${BASH_LINENO[0]} | cmd: ${BASH_COMMAND}" >&2' ERR
 trap 'cleanup' EXIT
 
 need(){ command -v "$1" >/dev/null 2>&1 || { echo "ERRO: '$1' não encontrado." >&2; exit 1; }; }
@@ -28,6 +40,7 @@ need jq
 
 urlenc(){ jq -rn --arg x "$1" '$x|@uri'; }
 
+# GET simples (sem paginação)
 api_get(){
   local path="$1"; local query="${2:-}"
   local url="$API$path"; [[ -n "$query" ]] && url="$url?$query"
@@ -35,7 +48,7 @@ api_get(){
   curl -sS $CURL_FLAGS -H "${HDR_AUTH[@]}" "$url"
 }
 
-# Paginação robusta: se a página não retorna array, trata como []
+# GET paginado (robusto): se resposta não for array, trata como []
 api_get_paginated(){
   local path="$1"; local query="${2:-}"; local page=1; local all="[]"
   while :; do
@@ -43,12 +56,15 @@ api_get_paginated(){
     [[ -n "$query" ]] && url="$url&$query"
     log "GET $url"
     local hdr; hdr="$(mktemp)"
+    # Não usar -f aqui: queremos capturar body mesmo em 4xx/5xx e normalizar para [].
     local body; body="$(curl -sS $CURL_FLAGS -D "$hdr" -H "${HDR_AUTH[@]}" "$url")"
 
+    # Soma arrays; se body não for array, vira [] para não quebrar
     all="$(jq -cs 'add' \
           <(echo "$all") \
           <(echo "$body" | jq -c 'if type=="array" then . else [] end' 2>/dev/null || echo '[]'))"
 
+    # Descobre próxima página pelo cabeçalho
     local next; next="$(awk -F': ' 'tolower($1)=="x-next-page"{gsub("\r","",$2);print $2}' "$hdr")"
     rm -f "$hdr"
     [[ -z "$next" ]] && { echo "$all"; return; }
@@ -56,6 +72,7 @@ api_get_paginated(){
   done
 }
 
+# Extrai APM do nome do grupo: "12345 - Nome"
 extract_apm_id(){
   local name="$1"
   if [[ "$name" =~ ^[[:space:]]*([0-9]+)[[:space:]]*-[[:space:]]*.+$ ]]; then
@@ -65,10 +82,10 @@ extract_apm_id(){
   fi
 }
 
-# ---------- mapas de grupos ----------
+# ===== Mapas de grupos =====
 declare -A G_NAME G_PATH G_URL G_PARENT G_APM
 
-# ---------- grupo raiz ----------
+# ===== Grupo raiz =====
 log "Carregando grupo raiz: $GROUP_ID"
 root="$(api_get "/groups/$(urlenc "$GROUP_ID")")"
 root_id="$(echo "$root" | jq -r '.id')"
@@ -77,7 +94,7 @@ G_PATH["$root_id"]="$(echo "$root" | jq -r '.full_path')"
 G_URL["$root_id"]="$(echo "$root" | jq -r '.web_url')"
 G_PARENT["$root_id"]=""
 
-# ---------- BFS subgrupos ----------
+# ===== BFS subgrupos =====
 declare -A VISITED
 queue=("$root_id")
 all_groups=()
@@ -102,7 +119,7 @@ while ((${#queue[@]})); do
 done
 log "Total de grupos (inclui raiz): ${#all_groups[@]}"
 
-# ---------- APM herdado + salvar groups NDJSON ----------
+# ===== APM herdado + salvar groups NDJSON =====
 for gid in "${all_groups[@]}"; do
   cur="$gid"; found=""
   while [[ -n "$cur" ]]; do
@@ -133,16 +150,16 @@ for gid in "${all_groups[@]}"; do
     }' >> "$GROUPS_ND"
 done
 
-# ---------- coletores de resumo ----------
+# ===== Coletores de resumo =====
 declare -A APM_TOTAL APM_WITH_PIPE APM_WITH_APPVARS
 declare -A APM_STATUS   # chave: "APM|status" => count
-
 inc(){ local arr="$1" key="$2" cur=0; eval "cur=\${$arr[\$key]:-0}"; ((cur++)); eval "$arr[\"$key\"]=\$cur"; }
 
-# ---------- projetos diretos por grupo ----------
+# ===== Projetos diretos por grupo =====
 for gid in "${all_groups[@]}"; do
   gpath="${G_PATH[$gid]}"; gurl="${G_URL[$gid]}"; gapm="${G_APM[$gid]}"
   [[ -z "$gapm" ]] && gapm="(sem_apm)"
+
   projs="$(api_get_paginated "/groups/$gid/projects" "with_shared=false&include_subgroups=false")"
   pcount="$(echo "$projs" | jq 'length')"
   log "Grupo ${gpath} (APM=$gapm): $pcount projeto(s) diretos"
@@ -155,7 +172,7 @@ for gid in "${all_groups[@]}"; do
     pweb="$(echo "$p" | jq -r '.web_url')"
     dbranch="$(echo "$p" | jq -r '.default_branch // empty')"
 
-    # último pipeline
+    # Último pipeline (pela atualização)
     pls="$(api_get "/projects/$pid/pipelines" "per_page=1&order_by=updated_at&sort=desc")"
     plen="$(echo "$pls" | jq 'length')"
 
@@ -173,7 +190,7 @@ for gid in "${all_groups[@]}"; do
       pl_user="$(echo "$pls" | jq -r '.[0].user.username // .[0].user.name // ""')"
       pl_url="$pweb/-/pipelines/$pl_id"
 
-      # variáveis do pipeline (robustas)
+      # Variáveis do pipeline (robustas; se der erro, vira [])
       vars="$(api_get "/projects/$pid/pipelines/$pl_id/variables" || true)"
       vars="$(echo "${vars:-[]}" | jq -c 'if type=="array" then . else [] end' 2>/dev/null || echo '[]')"
       app_name_val="$(echo "$vars" | jq -r '.[]|select(.key=="APP_NAME")|.value' | head -n1 || true)"
@@ -183,9 +200,9 @@ for gid in "${all_groups[@]}"; do
       fi
     fi
 
-    # ---- salva projeto em NDJSON ----
-    has_general_bool="false"; [[ "$has_general" == "true" ]] && has_general_bool="true"
-    has_appvars_bool="false"; [[ "$appflag" == "true" ]] && has_appvars_bool="true"
+    # NDJSON por projeto
+    has_general_bool=$([[ "$has_general" == "true" ]] && echo true || echo false)
+    has_appvars_bool=$([[ "$appflag" == "true" ]] && echo true || echo false)
 
     jq -n \
       --arg apm_id "$gapm" \
@@ -251,23 +268,23 @@ for gid in "${all_groups[@]}"; do
         }
       }' >> "$PROJECTS_ND"
 
-    # agregadores
+    # Agregadores
     inc APM_TOTAL "$gapm"
     [[ "$has_general" == "true" ]] && inc APM_WITH_PIPE "$gapm"
     [[ "$appflag" == "true" ]] && inc APM_WITH_APPVARS "$gapm"
-    key_status="$gapm|$pl_status"
-    inc APM_STATUS "$key_status"
+    inc APM_STATUS "$gapm|$pl_status"
 
     log "  - $ppath | general_pipeline=$has_general status=$pl_status APP_NAME=${app_name_val:-} APP_VERSION=${app_version_val:-}"
   done
 done
 
-# ---------- montar JSON final ----------
+# ===== Montar JSON final =====
 log "Montando JSON final: $OUT_JSON"
 
 groups_json="$( [ -s "$GROUPS_ND" ] && jq -s '.' "$GROUPS_ND" || echo '[]' )"
 projects_json="$( [ -s "$PROJECTS_ND" ] && jq -s '.' "$PROJECTS_ND" || echo '[]' )"
 
+# Resumo por APM
 apm_keys="$(printf "%s\n" "${!APM_TOTAL[@]}" | sort -V || true)"
 apm_summary="[]"
 while IFS= read -r apm; do
@@ -279,8 +296,7 @@ while IFS= read -r apm; do
   statuses=(success failed running canceled skipped manual pending created scheduled none other)
   counts_obj="{}"
   for s in "${statuses[@]}"; do
-    k="$apm|$s"
-    v="${APM_STATUS[$k]:-0}"
+    v="${APM_STATUS["$apm|$s"]:-0}"
     counts_obj="$(jq -n --argjson obj "$counts_obj" --arg s "$s" --argjson v "$v" '$obj + {($s):$v}')" 
   done
 
@@ -295,6 +311,7 @@ while IFS= read -r apm; do
   )"
 done <<< "$apm_keys"
 
+# Resumo geral a partir de projects_json
 overall="$(jq -n --argjson items "$projects_json" '
   def count(f): reduce ( .[] | select(f) ) as $i (0; .+1);
   def status_counts:
@@ -306,7 +323,7 @@ overall="$(jq -n --argjson items "$projects_json" '
     status_counts: (items|status_counts)
   }')"
 
-# ---------- objeto final (imprime e salva) ----------
+# ===== Objeto final (imprime e salva) =====
 final_json="$(
   jq -n \
     --arg generated_at "$(date -Iseconds)" \
