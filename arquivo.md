@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# gitlab_group_audit_json.sh — robusto e tolerante a falhas 02
+# gitlab_group_audit_json.sh — JSON only, robusto e com logs
 set -euo pipefail
 
 : "${GITLAB_URL:?Defina GITLAB_URL (ex: https://gitlab.seudominio.com)}"
@@ -22,10 +22,8 @@ warn(){ printf "[%(%F %T)T] WARN: %s\n" -1 "$*" >&2; }
 err(){  printf "[%(%F %T)T] ERRO: %s\n" -1 "$*" >&2; }
 
 cleanup(){
-  # não removo NDJSONs se der erro, pra você poder inspecionar
   [[ -n "${TMP_DIR:-}" && -d "$TMP_DIR" ]] && rm -rf "$TMP_DIR" 2>/dev/null || true
 }
-
 trap 'err "Linha $LINENO: comando falhou ($?)";' ERR
 trap 'cleanup' EXIT
 
@@ -35,78 +33,48 @@ need jq
 
 urlenc(){ jq -rn --arg x "$1" '$x|@uri'; }
 
-# --- HTTP helpers: retornam sempre JSON válido (ou vazio) ---
+# --- HTTP helpers: retornam corpo JSON (ou vazio) e nunca quebram o fluxo ---
 _http_raw(){
   local url="$1"
   log "GET $url"
-  # Devolve: corpo\n---HTTP_CODE:NNN---
   curl -sS $CURL_FLAGS -H "${HDR_AUTH[@]}" -w "\n---HTTP_CODE:%{http_code}---" "$url"
 }
-
 _http_split(){
-  # Lê stdin e separa corpo e código
   awk 'BEGIN{body="";code=""}
        /---HTTP_CODE:/ {code=$0; sub(/.*---HTTP_CODE:/,"",code); sub(/---.*/,"",code); print body > "/dev/stderr"; print code; next}
        {body=body $0 ORS}'
 }
-
 api_get_or_empty(){
-  # api_get_or_empty "/rota" "query=..." "[]"
   local path="$1"; local query="${2:-}"; local empty="${3:-[]}"
-  local url="$API$path"
-  [[ -n "$query" ]] && url="$url?$query"
-
+  local url="$API$path"; [[ -n "$query" ]] && url="$url?$query"
   local raw; raw="$(_http_raw "$url")"
-  # separa corpo (via stderr) e código (stdout)
   local code body
   body="$(printf "%s" "$raw" | _http_split 2> >(cat))"
   code="$(printf "%s" "$raw" | tail -n1)"
-
-  if [[ ! "$code" =~ ^[0-9]{3}$ ]]; then
-    warn "Código HTTP inválido p/ $url"
-    echo "$empty"; return
-  fi
-  if (( code < 200 || code >= 300 )); then
-    warn "HTTP $code em $url — usando vazio"
-    echo "$empty"; return
-  fi
-
-  # valida se é JSON
-  if ! echo "$body" | jq -e . >/dev/null 2>&1; then
-    warn "Resposta não-JSON em $url — usando vazio"
-    echo "$empty"; return
-  fi
+  if [[ ! "$code" =~ ^[0-9]{3}$ ]]; then warn "Código HTTP inválido p/ $url"; echo "$empty"; return; fi
+  if (( code < 200 || code >= 300 )); then warn "HTTP $code em $url — usando vazio"; echo "$empty"; return; fi
+  if ! echo "$body" | jq -e . >/dev/null 2>&1; then warn "Resposta não-JSON em $url — usando vazio"; echo "$empty"; return; fi
   echo "$body"
 }
-
-api_get_json_object(){ api_get_or_empty "$1" "$2" "{}"; }
-api_get_json_array(){  api_get_or_empty "$1" "$2" "[]";  }
+# <<< correção: wrappers tolerantes ao 2º argumento >>>
+api_get_json_object(){ local q="${2-}"; api_get_or_empty "$1" "$q" "{}"; }
+api_get_json_array(){  local q="${2-}"; api_get_or_empty "$1" "$q" "[]";  }
 
 api_get_paginated_array(){
-  # pagina em segurança; se uma página quebrar, tenta seguir
   local path="$1"; local query="${2:-}"; local page=1; local acc="[]"
   while :; do
-    local url="$API$path?per_page=100&page=$page"
-    [[ -n "$query" ]] && url="$url&$query"
-
+    local url="$API$path?per_page=100&page=$page"; [[ -n "$query" ]] && url="$url&$query"
     local raw; raw="$(_http_raw "$url")"
     local code body
     body="$(printf "%s" "$raw" | _http_split 2> >(cat))"
     code="$(printf "%s" "$raw" | tail -n1)"
-
     if [[ ! "$code" =~ ^[0-9]{3}$ || $code -lt 200 || $code -ge 300 ]]; then
-      warn "HTTP $code (página $page) em $url — parando paginação aqui"
-      break
+      warn "HTTP $code (página $page) em $url — parando paginação aqui"; break
     fi
     if ! echo "$body" | jq -e . >/dev/null 2>&1; then
-      warn "Página $page não é JSON em $url — parando paginação aqui"
-      break
+      warn "Página $page não é JSON em $url — parando paginação aqui"; break
     fi
-    # agrega
     acc="$(jq -cs 'add' <(echo "$acc") <(echo "$body"))"
-
-    # checa header X-Next-Page
-    # como não guardamos o header aqui, inferimos pelo length<100
     local len; len="$(echo "$body" | jq 'length')"
     (( len < 100 )) && break
     ((page++))
@@ -131,8 +99,7 @@ log "Carregando grupo raiz: $GROUP_ID"
 root="$(api_get_json_object "/groups/$(urlenc "$GROUP_ID")")"
 root_id="$(echo "$root" | jq -r '.id')"
 if [[ -z "$root_id" || "$root_id" == "null" ]]; then
-  err "Não achei o grupo raiz ($GROUP_ID). Token/URL/ID corretos?"
-  exit 1
+  err "Não achei o grupo raiz ($GROUP_ID). Token/URL/ID corretos?"; exit 1
 fi
 G_NAME["$root_id"]="$(echo "$root" | jq -r '.name')"
 G_PATH["$root_id"]="$(echo "$root" | jq -r '.full_path')"
@@ -316,7 +283,7 @@ for gid in "${all_groups[@]}"; do
       }
       ' >> "$PROJECTS_ND"
 
-    # agregados
+    # agregadores
     inc APM_TOTAL "$gapm"
     [[ "$has_general" == "true" ]] && inc APM_WITH_PIPE "$gapm"
     [[ "$appflag" == "true" ]] && inc APM_WITH_APPVARS "$gapm"
