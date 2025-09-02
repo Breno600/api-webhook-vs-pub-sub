@@ -5,162 +5,72 @@ set -euo pipefail
 : "${GITLAB_TOKEN:?Defina GITLAB_TOKEN (PAT com read_api)}"
 : "${GROUP_ID:?Defina GROUP_ID (id numérico ou path do grupo raiz)}"
 
-VERBOSE="${VERBOSE:-1}"            # 1 = logs ligados, 0 = silencioso
+VERBOSE="${VERBOSE:-1}"            # 1 = logs; 0 = silencioso
 CURL_FLAGS="${CURL_FLAGS:---retry 3 --connect-timeout 10 --max-time 60}"
-
 API="$GITLAB_URL/api/v4"
 HDR_AUTH=("PRIVATE-TOKEN: $GITLAB_TOKEN")
 
-PROJECTS_CSV="projects_report.csv"
-APM_SUMMARY_CSV="apm_ci_summary.csv"
-OVERALL_SUMMARY_CSV="overall_ci_summary.csv"
+OUT_CSV="projects_report.csv"
+OUT_APM="apm_summary.csv"
+OUT_XLSX="gitlab_group_audit.xlsx"
 
-log() { [[ "$VERBOSE" == "1" ]] && printf "[%(%F %T)T] %s\n" -1 "$*" >&2 || true; }
-trap 'echo "[ERRO] Linha $LINENO: comando '\''$BASH_COMMAND'\'' saiu com $?" >&2' ERR
+log(){ [[ "$VERBOSE" == "1" ]] && printf "[%(%F %T)T] %s\n" -1 "$*" >&2 || true; }
+trap 'echo "[ERRO] Linha $LINENO: comando '\''$BASH_COMMAND'\'' ($?)" >&2' ERR
 
-# -------- util --------
-urlenc() { jq -rn --arg x "$1" '$x|@uri'; }
+need(){ command -v "$1" >/dev/null 2>&1 || { echo "ERRO: '$1' não encontrado."; exit 1; }; }
+need curl
+need jq
+need python3
 
-is_known_status() {
-  case "$1" in
-    success|failed|running|canceled|skipped|manual|pending|created|scheduled) return 0;;
-    *) return 1;;
-  esac
-}
+urlenc(){ jq -rn --arg x "$1" '$x|@uri'; }
 
-# -------- armazenamentos --------
-declare -A GROUP_NAME       # [gid]=name
-declare -A GROUP_FULLPATH   # [gid]=full_path
-declare -A GROUP_WEBURL     # [gid]=web_url
-declare -A GROUP_PARENT     # [gid]=parent_id (ou vazio)
-declare -A GROUP_APM        # [gid]=apm_id (herdado do ancestral "APM_ID - Nome" mais próximo)
-
-# Agregadores por APM
-declare -A APM_TOTAL        # [apm]=count projetos
-declare -A APM_WITH_CI      # [apm]=count has_ci=yes
-declare -A APM_WITHOUT_CI   # [apm]=count has_ci=no
-declare -A APM_STATUS       # [apm|status]=count (status do último pipeline)
-
-# Agregado geral
-ALL="__ALL__"
-APM_TOTAL[$ALL]=0
-APM_WITH_CI[$ALL]=0
-APM_WITHOUT_CI[$ALL]=0
-
-# -------- API helpers --------
-api_get() {
+api_get(){
   local path="$1"; local query="${2:-}"
   local url="$API$path"; [[ -n "$query" ]] && url="$url?$query"
   log "GET $url"
   curl -sS $CURL_FLAGS -H "${HDR_AUTH[@]}" "$url"
 }
 
-api_get_paginated() {
-  local path="$1"; local query="${2:-}"; local page="1"; local all="[]"
+api_get_paginated(){
+  local path="$1"; local query="${2:-}"; local page=1; local all="[]"
   while :; do
     local url="$API$path?per_page=100&page=$page"
     [[ -n "$query" ]] && url="$url&$query"
     log "GET $url"
-    local tmp_headers; tmp_headers="$(mktemp)"
-    local body; body="$(curl -sS $CURL_FLAGS -D "$tmp_headers" -H "${HDR_AUTH[@]}" "$url")"
+    local hdr tmp; hdr="$(mktemp)"
+    local body; body="$(curl -sS $CURL_FLAGS -D "$hdr" -H "${HDR_AUTH[@]}" "$url")"
     all="$(jq -cs 'add' <(echo "$all") <(echo "$body"))"
-    local next; next="$(awk -F': ' 'tolower($1)=="x-next-page"{gsub("\r","",$2);print $2}' "$tmp_headers")"
-    rm -f "$tmp_headers"
+    local next; next="$(awk -F': ' 'tolower($1)=="x-next-page"{gsub("\r","",$2);print $2}' "$hdr")"
+    rm -f "$hdr"
     [[ -z "$next" ]] && { echo "$all"; return; }
     page="$next"
   done
 }
 
-extract_apm_id_from_name() {
+extract_apm_id(){
   local name="$1"
   if [[ "$name" =~ ^[[:space:]]*([0-9]+)[[:space:]]*-[[:space:]]*.+$ ]]; then
-    echo "${BASHREMATCH[1]}"
+    echo "${BASH_REMATCH[1]}"
   else
     echo ""
   fi
 }
 
-# Caminha ancestrais até achar um grupo cujo nome siga "APM_ID - Nome"
-find_apm_for_group() {
-  local gid="$1"
-  [[ -n "${GROUP_APM[$gid]:-}" ]] && { echo "${GROUP_APM[$gid]}"; return; }
+# -------- estruturas --------
+declare -A G_NAME G_PATH G_URL G_PARENT G_APM
+declare -A APM_TOTAL APM_WITH_PIPE APM_WITH_APPVARS
+declare -A APM_STATUS  # chave "APM|status" => count
 
-  local cur="$gid"
-  while [[ -n "$cur" ]]; do
-    local gname="${GROUP_NAME[$cur]:-}"
-    local apm="$(extract_apm_id_from_name "$gname")"
-    if [[ -n "$apm" ]]; then
-      GROUP_APM["$gid"]="$apm"
-      echo "$apm"
-      return
-    fi
-    cur="${GROUP_PARENT[$cur]:-}"
-  done
-  GROUP_APM["$gid"]=""
-  echo ""
-}
+echo "apm_id,group_id,group_full_path,group_web_url,project_id,project_path_with_namespace,project_web_url,default_branch,has_general_pipeline,latest_pipeline_id,latest_pipeline_status,latest_pipeline_ref,latest_pipeline_user,latest_pipeline_created_at,latest_pipeline_updated_at,latest_pipeline_web_url,has_appname_or_appversion_var,app_name_value,app_version_value" > "$OUT_CSV"
 
-has_ci_file() {
-  local pid="$1"; local dbranch="$2"
-  [[ -z "$dbranch" || "$dbranch" == "null" ]] && { echo "no"; return; }
-  local encb; encb="$(urlenc "$dbranch")"
-  # Tenta .gitlab-ci.yml e .gitlab-ci.yaml
-  for fname in ".gitlab-ci.yml" ".gitlab-ci.yaml"; do
-    local code
-    code="$(curl -sS -o /dev/null -w "%{http_code}" $CURL_FLAGS \
-      -H "${HDR_AUTH[@]}" \
-      "$API/projects/${pid}/repository/files/$(urlenc "$fname")?ref=$encb")"
-    [[ "$code" == "200" ]] && { echo "yes"; return; }
-  done
-  echo "no"
-}
-
-latest_pipeline_status() {
-  local pid="$1"
-  local js; js="$(api_get "/projects/${pid}/pipelines" "per_page=1&order_by=updated_at&sort=desc")"
-  local len; len="$(echo "$js" | jq 'length')"
-  if (( len > 0 )); then
-    echo "$js" | jq -r '.[0].status'
-  else
-    echo "none"
-  fi
-}
-
-latest_pipeline_url() {
-  local pid="$1"; local web="$2"
-  local js; js="$(api_get "/projects/${pid}/pipelines" "per_page=1&order_by=updated_at&sort=desc")"
-  local len; len="$(echo "$js" | jq 'length')"
-  if (( len > 0 )); then
-    local plid; plid="$(echo "$js" | jq -r '.[0].id')"
-    echo "$web/-/pipelines/$plid"
-  else
-    echo ""
-  fi
-}
-
-inc() {
-  # inc "ARRNAME" "KEY"
-  local arr="$1" key="$2"
-  local cur=0
-  eval "cur=\${$arr[\$key]:-0}"
-  ((cur++))
-  eval "$arr[\"$key\"]=\$cur"
-}
-
-# -------- CSV headers --------
-echo "apm_id,group_id,group_full_path,group_web_url,project_id,project_path_with_namespace,project_web_url,default_branch,has_ci_file,latest_pipeline_status,latest_pipeline_web_url" > "$PROJECTS_CSV"
-echo "apm_id,total_projects,with_ci,without_ci,latest_success,latest_failed,latest_running,latest_canceled,latest_skipped,latest_manual,latest_pending,latest_created,latest_scheduled,latest_none,latest_other" > "$APM_SUMMARY_CSV"
-echo "scope,total_projects,with_ci,without_ci,latest_success,latest_failed,latest_running,latest_canceled,latest_skipped,latest_manual,latest_pending,latest_created,latest_scheduled,latest_none,latest_other" > "$OVERALL_SUMMARY_CSV"
-
-# -------- Carrega grupo raiz --------
+# -------- carrega grupo raiz --------
 log "Carregando grupo raiz: $GROUP_ID"
 root="$(api_get "/groups/$(urlenc "$GROUP_ID")")"
 root_id="$(echo "$root" | jq -r '.id')"
-GROUP_NAME["$root_id"]="$(echo "$root" | jq -r '.name')"
-GROUP_FULLPATH["$root_id"]="$(echo "$root" | jq -r '.full_path')"
-GROUP_WEBURL["$root_id"]="$(echo "$root" | jq -r '.web_url')"
-GROUP_PARENT["$root_id"]=""
-log "Root id=$root_id full_path=${GROUP_FULLPATH[$root_id]}"
+G_NAME["$root_id"]="$(echo "$root" | jq -r '.name')"
+G_PATH["$root_id"]="$(echo "$root" | jq -r '.full_path')"
+G_URL["$root_id"]="$(echo "$root" | jq -r '.web_url')"
+G_PARENT["$root_id"]=""
 
 # -------- BFS de subgrupos --------
 declare -A VISITED
@@ -173,35 +83,47 @@ while ((${#queue[@]})); do
   VISITED["$gid"]=1
   all_groups+=("$gid")
 
-  log "Buscando subgrupos de gid=$gid (${GROUP_FULLPATH[$gid]})"
+  log "Subgrupos de ${G_PATH[$gid]} (id=$gid)…"
   subs="$(api_get_paginated "/groups/$gid/subgroups")"
   mapfile -t ids < <(echo "$subs" | jq -r '.[].id')
   for sgid in "${ids[@]}"; do
-    GROUP_NAME["$sgid"]="$(echo "$subs" | jq -r ".[] | select(.id==$sgid) | .name")"
-    GROUP_FULLPATH["$sgid"]="$(echo "$subs" | jq -r ".[] | select(.id==$sgid) | .full_path")"
-    GROUP_WEBURL["$sgid"]="$(echo "$subs" | jq -r ".[] | select(.id==$sgid) | .web_url")"
-    GROUP_PARENT["$sgid"]="$(echo "$subs" | jq -r ".[] | select(.id==$sgid) | .parent_id // \"\"")"
-    log "  + subgroup: id=$sgid full_path=${GROUP_FULLPATH[$sgid]}"
+    G_NAME["$sgid"]="$(echo "$subs" | jq -r ".[]|select(.id==$sgid)|.name")"
+    G_PATH["$sgid"]="$(echo "$subs" | jq -r ".[]|select(.id==$sgid)|.full_path")"
+    G_URL["$sgid"]="$(echo "$subs" | jq -r ".[]|select(.id==$sgid)|.web_url")"
+    G_PARENT["$sgid"]="$(echo "$subs" | jq -r ".[]|select(.id==$sgid)|.parent_id // \"\"")"
     queue+=("$sgid")
+    log "  + ${G_PATH[$sgid]} (id=$sgid)"
   done
 done
 log "Total de grupos (inclui raiz): ${#all_groups[@]}"
 
-# Pré-calcula APM herdado para todos os grupos
+# -------- calcula APM herdado --------
 for gid in "${all_groups[@]}"; do
-  find_apm_for_group "$gid" >/dev/null
+  # sobe a árvore até achar "APM_ID - Nome"
+  cur="$gid"; found=""
+  while [[ -n "$cur" ]]; do
+    try="$(extract_apm_id "${G_NAME[$cur]}")"
+    if [[ -n "$try" ]]; then found="$try"; break; fi
+    cur="${G_PARENT[$cur]:-}"
+  done
+  G_APM["$gid"]="$found"
 done
 
-# -------- Itera grupos e coleta projetos diretos --------
-for gid in "${all_groups[@]}"; do
-  gpath="${GROUP_FULLPATH[$gid]}"
-  gurl="${GROUP_WEBURL[$gid]}"
-  gname="${GROUP_NAME[$gid]}"
-  gapm="${GROUP_APM[$gid]}"
+inc(){ # inc <assoc> <key>
+  local arr="$1" key="$2" cur=0
+  eval "cur=\${$arr[\$key]:-0}"
+  ((cur++))
+  eval "$arr[\"$key\"]=\$cur"
+}
 
+# -------- coleta projetos --------
+for gid in "${all_groups[@]}"; do
+  gpath="${G_PATH[$gid]}"; gurl="${G_URL[$gid]}"; gapm="${G_APM[$gid]}"
+  [[ -z "$gapm" ]] && gapm="(sem_apm)"
   projs="$(api_get_paginated "/groups/$gid/projects" "with_shared=false&include_subgroups=false")"
   pcount="$(echo "$projs" | jq 'length')"
-  log "Processando grupo id=$gid path=$gpath (APM=${gapm:-none}) - projetos diretos: $pcount"
+  log "Grupo ${gpath} (APM=$gapm): $pcount projeto(s) diretos"
+
   (( pcount == 0 )) && continue
 
   for ((i=0;i<pcount;i++)); do
@@ -211,68 +133,210 @@ for gid in "${all_groups[@]}"; do
     pweb="$(echo "$p" | jq -r '.web_url')"
     dbranch="$(echo "$p" | jq -r '.default_branch // empty')"
 
-    hci="$(has_ci_file "$pid" "$dbranch")"
-    status="$(latest_pipeline_status "$pid")"
-    plurl="$(latest_pipeline_url "$pid" "$pweb")"
+    # Pipelines (último)
+    pls="$(api_get "/projects/$pid/pipelines" "per_page=1&order_by=updated_at&sort=desc")"
+    plen="$(echo "$pls" | jq 'length')"
+    has_general="no"
+    pl_id=""; pl_status="none"; pl_ref=""; pl_user=""; pl_created=""; pl_updated=""; pl_url=""
+    appflag="no"; app_name_val=""; app_version_val=""
 
-    apm="${gapm:-}"
-    [[ -z "$apm" ]] && apm="(sem_apm)"
+    if (( plen > 0 )); then
+      has_general="yes"
+      pl_id="$(echo "$pls" | jq -r '.[0].id')"
+      pl_status="$(echo "$pls" | jq -r '.[0].status')"
+      pl_ref="$(echo "$pls" | jq -r '.[0].ref')"
+      pl_created="$(echo "$pls" | jq -r '.[0].created_at')"
+      pl_updated="$(echo "$pls" | jq -r '.[0].updated_at')"
+      # pega usuário
+      pl_user="$(echo "$pls" | jq -r '.[0].user.username // .[0].user.name // ""')"
+      pl_url="$pweb/-/pipelines/$pl_id"
 
-    # CSV por projeto
-    echo "$apm,$gid,$gpath,$gurl,$pid,$ppath,$pweb,$dbranch,$hci,$status,$plurl" >> "$PROJECTS_CSV"
-
-    # Agregadores por APM
-    inc APM_TOTAL "$apm"
-    inc APM_TOTAL "$ALL"
-
-    if [[ "$hci" == "yes" ]]; then
-      inc APM_WITH_CI "$apm"
-      inc APM_WITH_CI "$ALL"
-    else
-      inc APM_WITHOUT_CI "$apm"
-      inc APM_WITHOUT_CI "$ALL"
+      # variáveis do pipeline mais recente
+      vars="$(api_get "/projects/$pid/pipelines/$pl_id/variables")" || vars="[]"
+      app_name_val="$(echo "$vars" | jq -r '.[]|select(.key=="APP_NAME")|.value' | head -n1 || true)"
+      app_version_val="$(echo "$vars" | jq -r '.[]|select(.key=="APP_VERSION")|.value' | head -n1 || true)"
+      [[ -n "$app_name_val" || -n "$app_version_val" ]] && appflag="yes"
     fi
 
-    if is_known_status "$status"; then
-      inc APM_STATUS "$apm|$status"
-      inc APM_STATUS "$ALL|$status"
-    else
-      inc APM_STATUS "$apm|other"
-      inc APM_STATUS "$ALL|other"
-    fi
+    # CSV
+    echo "$gapm,$gid,$gpath,$gurl,$pid,$ppath,$pweb,$dbranch,$has_general,$pl_id,$pl_status,$pl_ref,$pl_user,$pl_created,$pl_updated,$pl_url,$appflag,$app_name_val,$app_version_val" >> "$OUT_CSV"
 
-    log "  - proj=$ppath branch=${dbranch:-<none>} ci=$hci status=$status"
+    # agregados por APM
+    inc APM_TOTAL "$gapm"
+    [[ "$has_general" == "yes" ]] && inc APM_WITH_PIPE "$gapm"
+    [[ "$appflag" == "yes" ]] && inc APM_WITH_APPVARS "$gapm"
+    inc APM_STATUS "$gapm|$pl_status"
+    log "  - $ppath | pipeline=$has_general status=$pl_status APP_NAME=${app_name_val:--} APP_VERSION=${app_version_val:--}"
   done
 done
 
-# -------- Emite resumo por APM --------
-emit_line_apm() {
-  local apm="$1"
-  local t="${APM_TOTAL[$apm]:-0}"
-  local wci="${APM_WITH_CI[$apm]:-0}"
-  local nci="${APM_WITHOUT_CI[$apm]:-0}"
-  local s_success="${APM_STATUS[$apm|success]:-0}"
-  local s_failed="${APM_STATUS[$apm|failed]:-0}"
-  local s_running="${APM_STATUS[$apm|running]:-0}"
-  local s_canceled="${APM_STATUS[$apm|canceled]:-0}"
-  local s_skipped="${APM_STATUS[$apm|skipped]:-0}"
-  local s_manual="${APM_STATUS[$apm|manual]:-0}"
-  local s_pending="${APM_STATUS[$apm|pending]:-0}"
-  local s_created="${APM_STATUS[$apm|created]:-0}"
-  local s_scheduled="${APM_STATUS[$apm|scheduled]:-0}"
-  local s_none="${APM_STATUS[$apm|none]:-0}"
-  local s_other="${APM_STATUS[$apm|other]:-0}"
-  echo "$apm,$t,$wci,$nci,$s_success,$s_failed,$s_running,$s_canceled,$s_skipped,$s_manual,$s_pending,$s_created,$s_scheduled,$s_none,$s_other"
-}
-
-# Linhas por APM (ordena por chave)
-mapfile -t apm_keys < <(printf "%s\n" "${!APM_TOTAL[@]}" | grep -v "^$ALL$" | sort -V)
-for k in "${apm_keys[@]}"; do
-  emit_line_apm "$k" >> "$APM_SUMMARY_CSV"
+# -------- resumo por APM CSV --------
+echo "apm_id,total_projects,with_general_pipeline,with_app_vars(APP_NAME_or_APP_VERSION),status_success,status_failed,status_running,status_canceled,status_skipped,status_manual,status_pending,status_created,status_scheduled,status_none,status_other" > "$OUT_APM"
+# ordena as chaves
+mapfile -t apms < <(printf "%s\n" "${!APM_TOTAL[@]}" | sort -V)
+for apm in "${apms[@]}"; do
+  t="${APM_TOTAL[$apm]:-0}"
+  wg="${APM_WITH_PIPE[$apm]:-0}"
+  wa="${APM_WITH_APPVARS[$apm]:-0}"
+  s_success="${APM_STATUS[$apm|success]:-0}"
+  s_failed="${APM_STATUS[$apm|failed]:-0}"
+  s_running="${APM_STATUS[$apm|running]:-0}"
+  s_canceled="${APM_STATUS[$apm|canceled]:-0}"
+  s_skipped="${APM_STATUS[$apm|skipped]:-0}"
+  s_manual="${APM_STATUS[$apm|manual]:-0}"
+  s_pending="${APM_STATUS[$apm|pending]:-0}"
+  s_created="${APM_STATUS[$apm|created]:-0}"
+  s_scheduled="${APM_STATUS[$apm|scheduled]:-0}"
+  s_none="${APM_STATUS[$apm|none]:-0}"
+  s_other="${APM_STATUS[$apm|other]:-0}"
+  echo "$apm,$t,$wg,$wa,$s_success,$s_failed,$s_running,$s_canceled,$s_skipped,$s_manual,$s_pending,$s_created,$s_scheduled,$s_none,$s_other" >> "$OUT_APM"
 done
 
-# Resumo geral
-emit_line_apm "$ALL" | sed "s/^$ALL/overall/" >> "$OVERALL_SUMMARY_CSV"
+# -------- XLSX bonito (usa xlsxwriter) --------
+log "Gerando Excel estilizado: $OUT_XLSX"
+python3 - <<'PY'
+import csv, os, xlsxwriter
+from datetime import datetime
 
-log "Finalizado."
-log "Arquivos: $PROJECTS_CSV | $APM_SUMMARY_CSV | $OVERALL_SUMMARY_CSV"
+CSV_PROJECTS = "projects_report.csv"
+CSV_APM = "apm_summary.csv"
+XLSX = "gitlab_group_audit.xlsx"
+
+wb = xlsxwriter.Workbook(XLSX)
+
+# formatos
+fmt_header = wb.add_format({"bold": True, "bg_color": "#F2F2F2", "border":1})
+fmt_link   = wb.add_format({"font_color": "blue", "underline": 1})
+fmt_ok     = wb.add_format({"font_color":"#2E7D32"})   # verde
+fmt_fail   = wb.add_format({"font_color":"#C62828"})   # vermelho
+fmt_warn   = wb.add_format({"font_color":"#EF6C00"})   # laranja
+fmt_text   = wb.add_format({"text_wrap": True})
+fmt_int    = wb.add_format({"num_format": "0"})
+fmt_center = wb.add_format({"align":"center"})
+fmt_date   = wb.add_format({"num_format":"yyyy-mm-dd hh:mm"})
+
+# --- aba Projetos ---
+ws = wb.add_worksheet("Projetos")
+with open(CSV_PROJECTS, newline='', encoding='utf-8') as f:
+    reader = csv.reader(f)
+    rows = list(reader)
+
+# cabeçalho
+for j, h in enumerate(rows[0]):
+    ws.write(0, j, h, fmt_header)
+
+# índices de colunas (para links/format)
+headers = rows[0]
+col_idx = {name:i for i,name in enumerate(headers)}
+
+def w(row, col, val, fmt=None):
+    ws.write(row, col, val, fmt)
+
+# dados
+for i, r in enumerate(rows[1:], start=1):
+    # links clicáveis
+    g_url = r[col_idx["group_web_url"]]
+    p_web = r[col_idx["project_web_url"]]
+    pl_url = r[col_idx["latest_pipeline_web_url"]]
+
+    for j, val in enumerate(r):
+        fmt = None
+        if headers[j] in ("latest_pipeline_created_at","latest_pipeline_updated_at") and val:
+            try:
+                dt = datetime.fromisoformat(val.replace("Z","+00:00")).astimezone()
+                ws.write_datetime(i, j, dt, fmt_date); continue
+            except Exception:
+                pass
+
+        if headers[j] == "group_web_url" and g_url:
+            ws.write_url(i, j, g_url, fmt_link, g_url); continue
+        if headers[j] == "project_web_url" and p_web:
+            ws.write_url(i, j, p_web, fmt_link, p_web); continue
+        if headers[j] == "latest_pipeline_web_url" and pl_url:
+            ws.write_url(i, j, pl_url, fmt_link, pl_url); continue
+
+        w(i, j, val, fmt_text)
+
+# largura auto-ajustada (simples)
+for j in range(len(headers)):
+    length = max([len(str(r[j])) for r in rows[:200]]+[len(headers[j])])
+    ws.set_column(j, j, min(max(12, length+2), 60))
+
+# filtros + congelar cabeçalho
+ws.autofilter(0, 0, len(rows)-1, len(headers)-1)
+ws.freeze_panes(1, 0)
+
+# formatação condicional por status
+status_col = col_idx.get("latest_pipeline_status")
+if status_col is not None:
+    ws.conditional_format(1, status_col, len(rows)-1, status_col,
+                          {"type":"text", "criteria":"containing", "value":"success", "format":fmt_ok})
+    ws.conditional_format(1, status_col, len(rows)-1, status_col,
+                          {"type":"text", "criteria":"containing", "value":"failed", "format":fmt_fail})
+    ws.conditional_format(1, status_col, len(rows)-1, status_col,
+                          {"type":"text", "criteria":"containing", "value":"running", "format":fmt_warn})
+
+# --- aba Resumo por APM ---
+ws2 = wb.add_worksheet("Resumo por APM")
+with open(CSV_APM, newline='', encoding='utf-8') as f:
+    reader = csv.reader(f)
+    rows2 = list(reader)
+
+for j, h in enumerate(rows2[0]): ws2.write(0, j, h, fmt_header)
+for i, r in enumerate(rows2[1:], start=1):
+    for j, v in enumerate(r):
+        if j == 0:
+            ws2.write(i, j, v)  # apm_id
+        else:
+            try:
+                ws2.write_number(i, j, int(v), fmt_int)
+            except:
+                ws2.write(i, j, v)
+
+ws2.autofilter(0, 0, len(rows2)-1, len(rows2[0])-1)
+ws2.freeze_panes(1, 0)
+for j in range(len(rows2[0])):
+    length = max([len(str(r[j])) for r in rows2[:200]]+[len(rows2[0][j])])
+    ws2.set_column(j, j, min(max(12, length+2), 45))
+
+# --- aba Resumo Geral (a partir dos dados de projetos) ---
+ws3 = wb.add_worksheet("Resumo geral")
+# Contagens globais
+headers3 = ["metric","value"]
+for j,h in enumerate(headers3): ws3.write(0, j, h, fmt_header)
+
+# total projetos
+total_projects = max(0, len(rows)-1)
+ws3.write(1,0,"total_projects"); ws3.write_number(1,1,total_projects, fmt_int)
+
+# por status
+from collections import Counter
+status_idx = col_idx["latest_pipeline_status"]
+has_gen_idx = col_idx["has_general_pipeline"]
+appflag_idx = col_idx["has_appname_or_appversion_var"]
+
+status_counts = Counter(r[status_idx] for r in rows[1:])
+row3 = 2
+for k,v in sorted(status_counts.items()):
+    ws3.write(row3,0,f"status:{k}")
+    try: ws3.write_number(row3,1,int(v), fmt_int)
+    except: ws3.write(row3,1,str(v))
+    row3+=1
+
+# com pipeline geral
+with_gen = sum(1 for r in rows[1:] if r[has_gen_idx]=="yes")
+ws3.write(row3,0,"with_general_pipeline"); ws3.write_number(row3,1,with_gen, fmt_int); row3+=1
+# com APP_NAME/APP_VERSION
+with_appvars = sum(1 for r in rows[1:] if r[appflag_idx]=="yes")
+ws3.write(row3,0,"with_APP_NAME_or_APP_VERSION"); ws3.write_number(row3,1,with_appvars, fmt_int); row3+=1
+
+ws3.set_column(0,0,40); ws3.set_column(1,1,18)
+
+wb.close()
+PY
+
+echo
+echo "✅ Concluído!"
+echo "• CSV detalhado: $OUT_CSV"
+echo "• Resumo por APM: $OUT_APM"
+echo "• Excel bonito:   $OUT_XLSX"
