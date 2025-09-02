@@ -1,33 +1,39 @@
 #!/usr/bin/env bash
-# gitlab_group_audit_json.sh — JSON only, robusto, AUTO auth (PRIVATE-TOKEN/Bearer) e subpath
+# gitlab_group_audit_json.sh — robusto contra falhas de API/HTML
 set -euo pipefail
 
 : "${GITLAB_URL:?Defina GITLAB_URL (ex: https://gitlab.seudominio.com)}"
-: "${GITLAB_TOKEN:?Defina GITLAB_TOKEN (token com permissão de leitura)}"
+: "${GITLAB_TOKEN:?Defina GITLAB_TOKEN (PAT com read_api)}"
 : "${GROUP_ID:?Defina GROUP_ID (id numérico ou path do grupo raiz)}"
 
-VERBOSE="${VERBOSE:-1}"                   # 1 = logs; 0 = silencioso
-CURL_FLAGS="${CURL_FLAGS:---retry 3 --connect-timeout 10 --max-time 60}"
+VERBOSE="${VERBOSE:-1}"  # 1=log; 0=silencioso
+# adiciona --location para seguir 301/302
+CURL_FLAGS="${CURL_FLAGS:---retry 3 --connect-timeout 10 --max-time 60 --location}"
+
+# Se seu GitLab estiver em subpath (ex.: /gitlab), ajuste aqui:
+API="${API:-$GITLAB_URL/api/v4}"
+
+HDR_AUTH=("PRIVATE-TOKEN: $GITLAB_TOKEN")
+
 OUT_JSON="${OUT_JSON:-gitlab_group_audit.json}"
-
-# Prefixo do API: útil se GitLab está em subpath (ex.: /gitlab/api/v4)
-GITLAB_API_PREFIX="${GITLAB_API_PREFIX:-/api/v4}"
-
-# Modo auth: AUTO tenta PRIVATE-TOKEN e, se 401/403, tenta Bearer
-GITLAB_AUTH="${GITLAB_AUTH:-AUTO}"        # AUTO | PRIVATE | BEARER
-
-API_BASE="${GITLAB_URL%/}${GITLAB_API_PREFIX}"
-
 TMP_DIR="$(mktemp -d)"
 PROJECTS_ND="$TMP_DIR/projects.ndjson"
 GROUPS_ND="$TMP_DIR/groups.ndjson"
 
 log(){ [[ "$VERBOSE" == "1" ]] && printf "[%(%F %T)T] %s\n" -1 "$*" >&2 || true; }
 warn(){ printf "[%(%F %T)T] WARN: %s\n" -1 "$*" >&2; }
-err(){  printf "[%(%F %T)T] ERRO: %s\n" -1 "$*" >&2; }
+err (){ printf "[%(%F %T)T] ERRO: %s\n" -1 "$*" >&2; }
 
-cleanup(){ [[ -n "${TMP_DIR:-}" && -d "$TMP_DIR" ]] && rm -rf "$TMP_DIR" 2>/dev/null || true; }
-trap 'err "Linha $LINENO: comando falhou ($?)";' ERR
+# Não remover tmp se der erro (pra você inspecionar)
+SUCCESS=0
+cleanup(){
+  if [[ $SUCCESS -eq 1 ]]; then
+    rm -rf "$TMP_DIR" 2>/dev/null || true
+  else
+    warn "Mantendo temporários em: $TMP_DIR (para inspeção)"
+  fi
+}
+trap 'err "Linha $LINENO: comando falhou ($?)" ; exit 1' ERR
 trap 'cleanup' EXIT
 
 need(){ command -v "$1" >/dev/null 2>&1 || { err "'$1' não encontrado"; exit 1; }; }
@@ -36,60 +42,22 @@ need jq
 
 urlenc(){ jq -rn --arg x "$1" '$x|@uri'; }
 
-# ---------- AUTH helpers ----------
-_build_headers(){
-  local mode="$1"
-  if [[ "$mode" == "PRIVATE" ]]; then
-    printf "%s\0" "PRIVATE-TOKEN: $GITLAB_TOKEN"
-  else
-    printf "%s\0" "Authorization: Bearer $GITLAB_TOKEN"
-  fi
+# -------- Helpers HTTP seguros --------
+_http_raw(){
+  local url="$1"
+  log "GET $url"
+  curl -sS $CURL_FLAGS -H "${HDR_AUTH[@]}" -w "\n---HTTP_CODE:%{http_code}---" "$url"
 }
-
-# Faz GET e retorna "body\n---HTTP_CODE:NNN---"
-_http_raw_with_mode(){
-  local url="$1" mode="$2"
-  log "GET ($mode) $url"
-  # constrói -H múltiplos
-  local headers; headers="$(_build_headers "$mode")"
-  # transformar NUL-separated em múltiplos -H
-  local args=()
-  while IFS= read -r -d '' h; do args+=(-H "$h"); done <<< "$headers"
-  curl -sS $CURL_FLAGS "${args[@]}" -w "\n---HTTP_CODE:%{http_code}---" "$url"
-}
-
 _http_split(){
   awk 'BEGIN{body="";code=""}
        /---HTTP_CODE:/ {code=$0; sub(/.*---HTTP_CODE:/,"",code); sub(/---.*/,"",code); print body > "/dev/stderr"; print code; next}
        {body=body $0 ORS}'
 }
-
-# Tenta com um modo; se 401/403 e AUTO, tenta o outro
-_http_raw_auto(){
-  local url="$1"
-  if [[ "$GITLAB_AUTH" == "PRIVATE" ]]; then
-    _http_raw_with_mode "$url" "PRIVATE"
-  elif [[ "$GITLAB_AUTH" == "BEARER" ]]; then
-    _http_raw_with_mode "$url" "BEARER"
-  else
-    # AUTO
-    local raw; raw="$(_http_raw_with_mode "$url" "PRIVATE")"
-    local code body
-    body="$(printf "%s" "$raw" | _http_split 2> >(cat))"
-    code="$(printf "%s" "$raw" | tail -n1)"
-    if [[ "$code" == "401" || "$code" == "403" ]]; then
-      warn "PRIVATE-TOKEN retornou $code; tentando Authorization: Bearer"
-      _http_raw_with_mode "$url" "BEARER"
-    else
-      printf "%s" "$raw"
-    fi
-  fi
-}
-
 api_get_or_empty(){
+  # api_get_or_empty "/rota" "q=..." "[]"  -> retorna sempre JSON válido
   local path="$1"; local query="${2:-}"; local empty="${3:-[]}"
-  local url="$API_BASE$path"; [[ -n "$query" ]] && url="$url?$query"
-  local raw; raw="$(_http_raw_auto "$url")"
+  local url="$API$path"; [[ -n "$query" ]] && url="$url?$query"
+  local raw; raw="$(_http_raw "$url")"
   local code body
   body="$(printf "%s" "$raw" | _http_split 2> >(cat))"
   code="$(printf "%s" "$raw" | tail -n1)"
@@ -99,23 +67,23 @@ api_get_or_empty(){
   if ! echo "$body" | jq -e . >/dev/null 2>&1; then warn "Resposta não-JSON em $url — usando vazio"; echo "$empty"; return; fi
   echo "$body"
 }
-api_get_json_object(){ local q="${2-}"; api_get_or_empty "$1" "$q" "{}"; }
-api_get_json_array(){  local q="${2-}"; api_get_or_empty "$1" "$q" "[]";  }
+api_get_obj(){ local q="${2-}"; api_get_or_empty "$1" "$q" "{}"; }
+api_get_arr(){ local q="${2-}"; api_get_or_empty "$1" "$q" "[]"; }
 
-api_get_paginated_array(){
+api_get_paginated_arr(){
   local path="$1"; local query="${2:-}"; local page=1; local acc="[]"
   while :; do
-    local url="$API_BASE$path?per_page=100&page=$page"; [[ -n "$query" ]] && url="$url&$query"
-    local raw; raw="$(_http_raw_auto "$url")"
+    local url="$API$path?per_page=100&page=$page"; [[ -n "$query" ]] && url="$url&$query"
+    local raw; raw="$(_http_raw "$url")"
     local code body
     body="$(printf "%s" "$raw" | _http_split 2> >(cat))"
     code="$(printf "%s" "$raw" | tail -n1)"
     log "HTTP $code $path?page=$page"
     if [[ ! "$code" =~ ^[0-9]{3}$ || $code -lt 200 || $code -ge 300 ]]; then
-      warn "HTTP $code (página $page) em $url — parando paginação aqui"; break
+      warn "Página $page com HTTP $code — parando paginação aqui"; break
     fi
     if ! echo "$body" | jq -e . >/dev/null 2>&1; then
-      warn "Página $page não é JSON em $url — parando paginação"; break
+      warn "Página $page não é JSON — parando paginação aqui"; break
     fi
     acc="$(jq -cs 'add' <(echo "$acc") <(echo "$body"))"
     local len; len="$(echo "$body" | jq 'length')"
@@ -128,7 +96,7 @@ api_get_paginated_array(){
 extract_apm_id(){
   local name="$1"
   if [[ "$name" =~ ^[[:space:]]*([0-9]+)[[:space:]]*-[[:space:]]*.+$ ]]; then
-    echo "${BASH_REMATCH[1]}"
+    echo "${BASHREMATCH[1]}"
   else
     echo ""
   fi
@@ -139,15 +107,14 @@ declare -A G_NAME G_PATH G_URL G_PARENT G_APM
 
 # ---------- grupo raiz ----------
 log "Carregando grupo raiz: $GROUP_ID"
-root="$(api_get_json_object "/groups/$(urlenc "$GROUP_ID")")"
+root="$(api_get_obj "/groups/$(urlenc "$GROUP_ID")")"
 root_id="$(echo "$root" | jq -r '.id')"
 if [[ -z "$root_id" || "$root_id" == "null" ]]; then
   err "Não achei o grupo raiz ($GROUP_ID). Verifique:
-  - TOKEN compatível (PAT usa PRIVATE-TOKEN; OAuth/Group/Project tokens usam Bearer)
-  - Escopo do token: 'read_api'
-  - Visibilidade: o usuário do token é membro do grupo?
-  - API_BASE: $API_BASE (ajuste GITLAB_API_PREFIX se houver subpath)
-  - GROUP_ID: use id numérico ou path correto (path é URL-encoded automaticamente)."
+  - URL do API: $API (ajuste se GitLab estiver em subpath)
+  - Token PAT tem escopo 'read_api' e o usuário vê o grupo
+  - Está usando PRIVATE-TOKEN (PAT) mesmo
+  - GROUP_ID é id numérico ou path correto (com '/' será URL-encoded automaticamente)."
   exit 1
 fi
 G_NAME["$root_id"]="$(echo "$root" | jq -r '.name')"
@@ -167,7 +134,7 @@ while ((${#queue[@]})); do
   all_groups+=("$gid")
 
   log "Subgrupos de ${G_PATH[$gid]} (id=$gid)…"
-  subs="$(api_get_paginated_array "/groups/$gid/subgroups")"
+  subs="$(api_get_paginated_arr "/groups/$gid/subgroups")"
   mapfile -t ids < <(echo "$subs" | jq -r '.[].id')
   for sgid in "${ids[@]}"; do
     G_NAME["$sgid"]="$(echo "$subs" | jq -r ".[]|select(.id==$sgid)|.name")"
@@ -216,7 +183,7 @@ inc(){ local arr="$1" key="$2" cur=0; eval "cur=\${$arr[\$key]:-0}"; ((cur++)); 
 for gid in "${all_groups[@]}"; do
   gpath="${G_PATH[$gid]}"; gurl="${G_URL[$gid]}"; gapm="${G_APM[$gid]}"
   [[ -z "$gapm" ]] && gapm="(sem_apm)"
-  projs="$(api_get_paginated_array "/groups/$gid/projects" "with_shared=false&include_subgroups=false")"
+  projs="$(api_get_paginated_arr "/groups/$gid/projects" "with_shared=false&include_subgroups=false")"
   pcount="$(echo "$projs" | jq 'length')"
   log "Grupo ${gpath} (APM=$gapm): $pcount projeto(s) diretos"
   (( pcount == 0 )) && continue
@@ -229,7 +196,7 @@ for gid in "${all_groups[@]}"; do
     dbranch="$(echo "$p" | jq -r '.default_branch // empty')"
 
     # último pipeline (tolerante)
-    pls="$(api_get_json_array "/projects/$pid/pipelines" "per_page=1&order_by=updated_at&sort=desc")"
+    pls="$(api_get_arr "/projects/$pid/pipelines" "per_page=1&order_by=updated_at&sort=desc")"
     plen="$(echo "$pls" | jq 'length')"
 
     has_general="false"
@@ -247,7 +214,7 @@ for gid in "${all_groups[@]}"; do
       pl_url="$pweb/-/pipelines/$pl_id"
 
       # variáveis do pipeline (tolerante)
-      vars="$(api_get_json_array "/projects/$pid/pipelines/$pl_id/variables")"
+      vars="$(api_get_arr "/projects/$pid/pipelines/$pl_id/variables")"
       app_name_val="$(echo "$vars" | jq -r '.[]|select(.key=="APP_NAME")|.value' | head -n1 || true)"
       app_version_val="$(echo "$vars" | jq -r '.[]|select(.key=="APP_VERSION")|.value' | head -n1 || true)"
       if [[ -n "$app_name_val" || -n "$app_version_val" ]]; then
@@ -288,55 +255,42 @@ for gid in "${all_groups[@]}"; do
 
       {
         apm_id: $apm_id,
-        group: {
-          id:        $group_id_str,
-          full_path: $group_full_path,
-          web_url:   $group_web_url
-        },
-        project: {
-          id:                  $project_id_str,
-          path_with_namespace: $project_pwn,
-          web_url:             $project_web_url,
-          default_branch:      ($default_branch | null_if_empty)
-        },
+        group: { id:$group_id_str, full_path:$group_full_path, web_url:$group_web_url },
+        project: { id:$project_id_str, path_with_namespace:$project_pwn, web_url:$project_web_url,
+                   default_branch: ($default_branch|null_if_empty) },
         pipelines: {
-          has_general_pipeline: ($has_general_pipeline_str | to_bool),
+          has_general_pipeline: ($has_general_pipeline_str|to_bool),
           latest: (
-            ($latest_pipeline_id_str | null_if_empty) as $pid
+            ($latest_pipeline_id_str|null_if_empty) as $pid
             | if $pid == null or $latest_pipeline_status == "none"
               then null
               else {
-                id:        $latest_pipeline_id_str,
-                status:    $latest_pipeline_status,
-                ref:       ($latest_pipeline_ref       | null_if_empty),
-                user:      ($latest_pipeline_user      | null_if_empty),
-                created_at:($latest_pipeline_created_at| null_if_empty),
-                updated_at:($latest_pipeline_updated_at| null_if_empty),
-                web_url:   ($latest_pipeline_web_url   | null_if_empty),
-                variables: {
-                  APP_NAME:    ($app_name_value    | null_if_empty),
-                  APP_VERSION: ($app_version_value | null_if_empty)
-                }
+                id:$latest_pipeline_id_str, status:$latest_pipeline_status,
+                ref:($latest_pipeline_ref|null_if_empty),
+                user:($latest_pipeline_user|null_if_empty),
+                created_at:($latest_pipeline_created_at|null_if_empty),
+                updated_at:($latest_pipeline_updated_at|null_if_empty),
+                web_url:($latest_pipeline_web_url|null_if_empty),
+                variables:{ APP_NAME:($app_name_value|null_if_empty),
+                            APP_VERSION:($app_version_value|null_if_empty) }
               }
             end
           ),
-          has_APP_NAME_or_APP_VERSION: ($has_app_vars_str | to_bool)
+          has_APP_NAME_or_APP_VERSION: ($has_app_vars_str|to_bool)
         }
-      }
-      ' >> "$PROJECTS_ND"
+      }' >> "$PROJECTS_ND"
 
     # agregadores
     inc APM_TOTAL "$gapm"
     [[ "$has_general" == "true" ]] && inc APM_WITH_PIPE "$gapm"
-    [[ "$appflag" == "true" ]] && inc APM_WITH_APPVARS "$gapm"
-    key_status="$gapm|$pl_status"
-    inc APM_STATUS "$key_status"
+    [[ "$appflag" == "true"  ]] && inc APM_WITH_APPVARS "$gapm"
+    inc APM_STATUS "$gapm|$pl_status"
 
     log "  - $ppath | general_pipeline=$has_general status=$pl_status APP_NAME=${app_name_val:-} APP_VERSION=${app_version_val:-}"
   done
 done
 
-# ---------- montar JSON final ----------
+# ---------- montar JSON final (sempre escreve algo) ----------
 log "Montando JSON final: $OUT_JSON"
 
 groups_json="$( [ -s "$GROUPS_ND" ] && jq -s '.' "$GROUPS_ND" || echo '[]' )"
@@ -354,8 +308,7 @@ while IFS= read -r apm; do
   statuses=(success failed running canceled skipped manual pending created scheduled none other)
   counts_obj="{}"
   for s in "${statuses[@]}"; do
-    k="$apm|$s"
-    v="${APM_STATUS[$k]:-0}"
+    v="${APM_STATUS[$apm|$s]:-0}"
     counts_obj="$(jq -n --argjson obj "$counts_obj" --arg s "$s" --argjson v "$v" '$obj + {($s):$v}')" 
   done
 
@@ -403,4 +356,6 @@ jq -n \
     summary: { by_apm: $summary_by_apm, overall: $summary_overall }
   }' > "$OUT_JSON"
 
+SUCCESS=1
+log "OK: $OUT_JSON"
 echo "✅ Pronto: $OUT_JSON"
