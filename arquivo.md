@@ -2,202 +2,277 @@
 set -euo pipefail
 
 : "${GITLAB_URL:?Defina GITLAB_URL (ex: https://gitlab.seudominio.com)}"
-: "${GITLAB_TOKEN:?Defina GITLAB_TOKEN (Personal Access Token com permissões de leitura)}"
-: "${GROUP_ID:?Defina GROUP_ID (ID numérico ou path do grupo raiz)}"
+: "${GITLAB_TOKEN:?Defina GITLAB_TOKEN (PAT com read_api)}"
+: "${GROUP_ID:?Defina GROUP_ID (id numérico ou path do grupo raiz)}"
 
-# Dependências
-for bin in curl jq; do
-  command -v "$bin" >/dev/null 2>&1 || { echo "ERRO: '$bin' não encontrado."; exit 1; }
-done
+VERBOSE="${VERBOSE:-1}"            # 1 = logs ligados, 0 = silencioso
+CURL_FLAGS="${CURL_FLAGS:---retry 3 --connect-timeout 10 --max-time 60}"
 
 API="$GITLAB_URL/api/v4"
 HDR_AUTH=("PRIVATE-TOKEN: $GITLAB_TOKEN")
 
-# Arquivos de saída
 PROJECTS_CSV="projects_report.csv"
-APM_SUMMARY_CSV="apm_summary.csv"
+APM_SUMMARY_CSV="apm_ci_summary.csv"
+OVERALL_SUMMARY_CSV="overall_ci_summary.csv"
 
-# CSV header
-echo "group_id,group_full_path,group_web_url,project_id,project_path_with_namespace,default_branch,has_ci_file,latest_pipeline_status,latest_pipeline_web_url" > "$PROJECTS_CSV"
+log() { [[ "$VERBOSE" == "1" ]] && printf "[%(%F %T)T] %s\n" -1 "$*" >&2 || true; }
+trap 'echo "[ERRO] Linha $LINENO: comando '\''$BASH_COMMAND'\'' saiu com $?" >&2' ERR
 
-declare -A GROUP_WEBURL          # [group_id] = web_url
-declare -A GROUP_FULLPATH       # [group_id] = full_path
-declare -A APM_COUNTS           # [apm_id]  = count_projects
+# -------- util --------
+urlenc() { jq -rn --arg x "$1" '$x|@uri'; }
 
-#############################################
-# Funções utilitárias
-#############################################
+is_known_status() {
+  case "$1" in
+    success|failed|running|canceled|skipped|manual|pending|created|scheduled) return 0;;
+    *) return 1;;
+  esac
+}
+
+# -------- armazenamentos --------
+declare -A GROUP_NAME       # [gid]=name
+declare -A GROUP_FULLPATH   # [gid]=full_path
+declare -A GROUP_WEBURL     # [gid]=web_url
+declare -A GROUP_PARENT     # [gid]=parent_id (ou vazio)
+declare -A GROUP_APM        # [gid]=apm_id (herdado do ancestral "APM_ID - Nome" mais próximo)
+
+# Agregadores por APM
+declare -A APM_TOTAL        # [apm]=count projetos
+declare -A APM_WITH_CI      # [apm]=count has_ci=yes
+declare -A APM_WITHOUT_CI   # [apm]=count has_ci=no
+declare -A APM_STATUS       # [apm|status]=count (status do último pipeline)
+
+# Agregado geral
+ALL="__ALL__"
+APM_TOTAL[$ALL]=0
+APM_WITH_CI[$ALL]=0
+APM_WITHOUT_CI[$ALL]=0
+
+# -------- API helpers --------
+api_get() {
+  local path="$1"; local query="${2:-}"
+  local url="$API$path"; [[ -n "$query" ]] && url="$url?$query"
+  log "GET $url"
+  curl -sS $CURL_FLAGS -H "${HDR_AUTH[@]}" "$url"
+}
 
 api_get_paginated() {
-  # Uso: api_get_paginated "/rota" "query=..." 
-  local path="$1"
-  local query="${2:-}"
-  local page=1
-  local out tmp headers next
-
-  out="[]"
+  local path="$1"; local query="${2:-}"; local page="1"; local all="[]"
   while :; do
-    read -r tmp headers < <(
-      curl -sS -i \
-        -H "${HDR_AUTH[@]}" \
-        "${API}${path}?per_page=100&page=${page}${query:+&}${query}" | awk 'BEGIN{h=1} 
-          /^[[:space:]]*$/ && h==1 {h=0; print; next} 
-          { if(h){print > "/dev/stderr"} else {print} }'
-    )
-
-    # 'tmp' é a parte JSON (stdout), 'headers' veio por stderr; reorganizamos acima
-    # Para simplificar, re-executamos com -D - para obter headers limpos:
-    response="$(curl -sS -D - -H "${HDR_AUTH[@]}" "${API}${path}?per_page=100&page=${page}${query:+&}${query}")"
-    headers="$(printf "%s" "$response" | sed -n '1,/^\r$/p')"
-    json="$(printf "%s" "$response" | sed '1,/^\r$/d')"
-
-    # Agrega JSON (array) ao 'out'
-    out="$(jq -c --slurp 'add' <(echo "$out") <(echo "$json"))"
-    next="$(printf "%s" "$headers" | awk -F': ' 'tolower($1)=="x-next-page"{gsub("\r","",$2);print $2}')"
-
-    if [[ -z "$next" ]]; then
-      echo "$out"
-      return
-    fi
-    page=$((page+1))
+    local url="$API$path?per_page=100&page=$page"
+    [[ -n "$query" ]] && url="$url&$query"
+    log "GET $url"
+    local tmp_headers; tmp_headers="$(mktemp)"
+    local body; body="$(curl -sS $CURL_FLAGS -D "$tmp_headers" -H "${HDR_AUTH[@]}" "$url")"
+    all="$(jq -cs 'add' <(echo "$all") <(echo "$body"))"
+    local next; next="$(awk -F': ' 'tolower($1)=="x-next-page"{gsub("\r","",$2);print $2}' "$tmp_headers")"
+    rm -f "$tmp_headers"
+    [[ -z "$next" ]] && { echo "$all"; return; }
+    page="$next"
   done
 }
 
-api_get() {
-  # Sem paginação
-  local path="$1"
-  local query="${2:-}"
-  curl -sS -H "${HDR_AUTH[@]}" "${API}${path}${query:+?}${query}"
-}
-
-urlenc() {
-  # URL encode simples p/ branch etc.
-  python3 - <<'PY' "$1"
-import sys, urllib.parse
-print(urllib.parse.quote(sys.argv[1], safe=''))
-PY
-}
-
-extract_apm_id() {
-  # Extrai APM_ID do nome do grupo se padrão "12345 - Nome" (flexível em espaços)
-  local group_name="$1"
-  if [[ "$group_name" =~ ^[[:space:]]*([0-9]+)[[:space:]]*-[[:space:]]*.+$ ]]; then
-    echo "${BASH_REMATCH[1]}"
+extract_apm_id_from_name() {
+  local name="$1"
+  if [[ "$name" =~ ^[[:space:]]*([0-9]+)[[:space:]]*-[[:space:]]*.+$ ]]; then
+    echo "${BASHREMATCH[1]}"
   else
     echo ""
   fi
 }
 
-#############################################
-# Coletar informações do grupo raiz
-#############################################
-root_group="$(api_get "/groups/$(urlenc "$GROUP_ID")")"
-root_id="$(echo "$root_group" | jq -r '.id')"
-root_full_path="$(echo "$root_group" | jq -r '.full_path')"
-root_web_url="$(echo "$root_group" | jq -r '.web_url')"
+# Caminha ancestrais até achar um grupo cujo nome siga "APM_ID - Nome"
+find_apm_for_group() {
+  local gid="$1"
+  [[ -n "${GROUP_APM[$gid]:-}" ]] && { echo "${GROUP_APM[$gid]}"; return; }
 
-GROUP_WEBURL["$root_id"]="$root_web_url"
-GROUP_FULLPATH["$root_id"]="$root_full_path"
+  local cur="$gid"
+  while [[ -n "$cur" ]]; do
+    local gname="${GROUP_NAME[$cur]:-}"
+    local apm="$(extract_apm_id_from_name "$gname")"
+    if [[ -n "$apm" ]]; then
+      GROUP_APM["$gid"]="$apm"
+      echo "$apm"
+      return
+    fi
+    cur="${GROUP_PARENT[$cur]:-}"
+  done
+  GROUP_APM["$gid"]=""
+  echo ""
+}
 
-#############################################
-# Percorrer subgroups (recursivo BFS)
-#############################################
+has_ci_file() {
+  local pid="$1"; local dbranch="$2"
+  [[ -z "$dbranch" || "$dbranch" == "null" ]] && { echo "no"; return; }
+  local encb; encb="$(urlenc "$dbranch")"
+  # Tenta .gitlab-ci.yml e .gitlab-ci.yaml
+  for fname in ".gitlab-ci.yml" ".gitlab-ci.yaml"; do
+    local code
+    code="$(curl -sS -o /dev/null -w "%{http_code}" $CURL_FLAGS \
+      -H "${HDR_AUTH[@]}" \
+      "$API/projects/${pid}/repository/files/$(urlenc "$fname")?ref=$encb")"
+    [[ "$code" == "200" ]] && { echo "yes"; return; }
+  done
+  echo "no"
+}
+
+latest_pipeline_status() {
+  local pid="$1"
+  local js; js="$(api_get "/projects/${pid}/pipelines" "per_page=1&order_by=updated_at&sort=desc")"
+  local len; len="$(echo "$js" | jq 'length')"
+  if (( len > 0 )); then
+    echo "$js" | jq -r '.[0].status'
+  else
+    echo "none"
+  fi
+}
+
+latest_pipeline_url() {
+  local pid="$1"; local web="$2"
+  local js; js="$(api_get "/projects/${pid}/pipelines" "per_page=1&order_by=updated_at&sort=desc")"
+  local len; len="$(echo "$js" | jq 'length')"
+  if (( len > 0 )); then
+    local plid; plid="$(echo "$js" | jq -r '.[0].id')"
+    echo "$web/-/pipelines/$plid"
+  else
+    echo ""
+  fi
+}
+
+inc() {
+  # inc "ARRNAME" "KEY"
+  local arr="$1" key="$2"
+  local cur=0
+  eval "cur=\${$arr[\$key]:-0}"
+  ((cur++))
+  eval "$arr[\"$key\"]=\$cur"
+}
+
+# -------- CSV headers --------
+echo "apm_id,group_id,group_full_path,group_web_url,project_id,project_path_with_namespace,project_web_url,default_branch,has_ci_file,latest_pipeline_status,latest_pipeline_web_url" > "$PROJECTS_CSV"
+echo "apm_id,total_projects,with_ci,without_ci,latest_success,latest_failed,latest_running,latest_canceled,latest_skipped,latest_manual,latest_pending,latest_created,latest_scheduled,latest_none,latest_other" > "$APM_SUMMARY_CSV"
+echo "scope,total_projects,with_ci,without_ci,latest_success,latest_failed,latest_running,latest_canceled,latest_skipped,latest_manual,latest_pending,latest_created,latest_scheduled,latest_none,latest_other" > "$OVERALL_SUMMARY_CSV"
+
+# -------- Carrega grupo raiz --------
+log "Carregando grupo raiz: $GROUP_ID"
+root="$(api_get "/groups/$(urlenc "$GROUP_ID")")"
+root_id="$(echo "$root" | jq -r '.id')"
+GROUP_NAME["$root_id"]="$(echo "$root" | jq -r '.name')"
+GROUP_FULLPATH["$root_id"]="$(echo "$root" | jq -r '.full_path')"
+GROUP_WEBURL["$root_id"]="$(echo "$root" | jq -r '.web_url')"
+GROUP_PARENT["$root_id"]=""
+log "Root id=$root_id full_path=${GROUP_FULLPATH[$root_id]}"
+
+# -------- BFS de subgrupos --------
 declare -A VISITED
 queue=("$root_id")
 all_groups=()
 
 while ((${#queue[@]})); do
-  gid="${queue[0]}"
-  queue=("${queue[@]:1}")
-
+  gid="${queue[0]}"; queue=("${queue[@]:1}")
   [[ -n "${VISITED[$gid]:-}" ]] && continue
   VISITED["$gid"]=1
   all_groups+=("$gid")
 
-  # pega subgroups do gid
-  # NOTA: o endpoint /groups/:id/subgroups retorna subgrupos diretos
+  log "Buscando subgrupos de gid=$gid (${GROUP_FULLPATH[$gid]})"
   subs="$(api_get_paginated "/groups/$gid/subgroups")"
   mapfile -t ids < <(echo "$subs" | jq -r '.[].id')
   for sgid in "${ids[@]}"; do
-    s_web="$(echo "$subs" | jq -r ".[] | select(.id==$sgid) | .web_url")"
-    s_path="$(echo "$subs" | jq -r ".[] | select(.id==$sgid) | .full_path")"
-    GROUP_WEBURL["$sgid"]="$s_web"
-    GROUP_FULLPATH["$sgid"]="$s_path"
+    GROUP_NAME["$sgid"]="$(echo "$subs" | jq -r ".[] | select(.id==$sgid) | .name")"
+    GROUP_FULLPATH["$sgid"]="$(echo "$subs" | jq -r ".[] | select(.id==$sgid) | .full_path")"
+    GROUP_WEBURL["$sgid"]="$(echo "$subs" | jq -r ".[] | select(.id==$sgid) | .web_url")"
+    GROUP_PARENT["$sgid"]="$(echo "$subs" | jq -r ".[] | select(.id==$sgid) | .parent_id // \"\"")"
+    log "  + subgroup: id=$sgid full_path=${GROUP_FULLPATH[$sgid]}"
     queue+=("$sgid")
   done
 done
+log "Total de grupos (inclui raiz): ${#all_groups[@]}"
 
-#############################################
-# Para cada grupo (incluindo subgroups), coletar projetos
-#############################################
+# Pré-calcula APM herdado para todos os grupos
 for gid in "${all_groups[@]}"; do
-  group_info="$(api_get "/groups/$gid")"
-  group_name="$(echo "$group_info" | jq -r '.name')"
-  group_full_path="${GROUP_FULLPATH[$gid]}"
-  group_web_url="${GROUP_WEBURL[$gid]}"
+  find_apm_for_group "$gid" >/dev/null
+done
 
-  # Projetos diretos do grupo (sem include_subgroups aqui, pois já percorremos recursivamente)
+# -------- Itera grupos e coleta projetos diretos --------
+for gid in "${all_groups[@]}"; do
+  gpath="${GROUP_FULLPATH[$gid]}"
+  gurl="${GROUP_WEBURL[$gid]}"
+  gname="${GROUP_NAME[$gid]}"
+  gapm="${GROUP_APM[$gid]}"
+
   projs="$(api_get_paginated "/groups/$gid/projects" "with_shared=false&include_subgroups=false")"
+  pcount="$(echo "$projs" | jq 'length')"
+  log "Processando grupo id=$gid path=$gpath (APM=${gapm:-none}) - projetos diretos: $pcount"
+  (( pcount == 0 )) && continue
 
-  proj_count=$(echo "$projs" | jq 'length')
-  (( proj_count == 0 )) && continue
-
-  # Se o nome do grupo seguir "APM_ID - Nome", extraímos p/ agregação
-  apm_id="$(extract_apm_id "$group_name")"
-
-  for ((i=0; i<proj_count; i++)); do
+  for ((i=0;i<pcount;i++)); do
     p="$(echo "$projs" | jq ".[$i]")"
     pid="$(echo "$p" | jq -r '.id')"
     ppath="$(echo "$p" | jq -r '.path_with_namespace')"
     pweb="$(echo "$p" | jq -r '.web_url')"
     dbranch="$(echo "$p" | jq -r '.default_branch // empty')"
 
-    # Verifica se .gitlab-ci.yml existe no branch padrão
-    has_ci="no"
-    if [[ -n "$dbranch" && "$dbranch" != "null" ]]; then
-      enc_branch="$(urlenc "$dbranch")"
-      # HEAD no arquivo pra evitar baixar conteúdo
-      code=$(curl -sS -o /dev/null -w "%{http_code}" \
-        -H "${HDR_AUTH[@]}" \
-        "${API}/projects/${pid}/repository/files/$(urlenc ".gitlab-ci.yml")?ref=${enc_branch}")
-      if [[ "$code" == "200" ]]; then
-        has_ci="yes"
-      fi
+    hci="$(has_ci_file "$pid" "$dbranch")"
+    status="$(latest_pipeline_status "$pid")"
+    plurl="$(latest_pipeline_url "$pid" "$pweb")"
+
+    apm="${gapm:-}"
+    [[ -z "$apm" ]] && apm="(sem_apm)"
+
+    # CSV por projeto
+    echo "$apm,$gid,$gpath,$gurl,$pid,$ppath,$pweb,$dbranch,$hci,$status,$plurl" >> "$PROJECTS_CSV"
+
+    # Agregadores por APM
+    inc APM_TOTAL "$apm"
+    inc APM_TOTAL "$ALL"
+
+    if [[ "$hci" == "yes" ]]; then
+      inc APM_WITH_CI "$apm"
+      inc APM_WITH_CI "$ALL"
+    else
+      inc APM_WITHOUT_CI "$apm"
+      inc APM_WITHOUT_CI "$ALL"
     fi
 
-    # Último pipeline (ordenado por atualização)
-    latest_status="none"
-    latest_pipeline_url=""
-    pipelines="$(api_get "/projects/${pid}/pipelines" "per_page=1&order_by=updated_at&sort=desc")"
-    plen="$(echo "$pipelines" | jq 'length')"
-    if (( plen > 0 )); then
-      latest_status="$(echo "$pipelines" | jq -r '.[0].status')"
-      plid="$(echo "$pipelines" | jq -r '.[0].id')"
-      latest_pipeline_url="$pweb/-/pipelines/$plid"
+    if is_known_status "$status"; then
+      inc APM_STATUS "$apm|$status"
+      inc APM_STATUS "$ALL|$status"
+    else
+      inc APM_STATUS "$apm|other"
+      inc APM_STATUS "$ALL|other"
     fi
 
-    # Linha do CSV (projeto)
-    echo "$gid,$group_full_path,$group_web_url,$pid,$ppath,$dbranch,$has_ci,$latest_status,$latest_pipeline_url" >> "$PROJECTS_CSV"
-
-    # Agregação por APM_ID (conta repositórios sob grupos que seguem o padrão)
-    if [[ -n "$apm_id" ]]; then
-      cur="${APM_COUNTS[$apm_id]:-0}"
-      APM_COUNTS["$apm_id"]=$((cur+1))
-    fi
+    log "  - proj=$ppath branch=${dbranch:-<none>} ci=$hci status=$status"
   done
 done
 
-#############################################
-# CSV de resumo por APM
-#############################################
-echo "apm_id,total_repositories" > "$APM_SUMMARY_CSV"
-for k in "${!APM_COUNTS[@]}"; do
-  echo "$k,${APM_COUNTS[$k]}" >> "$APM_SUMMARY_CSV"
+# -------- Emite resumo por APM --------
+emit_line_apm() {
+  local apm="$1"
+  local t="${APM_TOTAL[$apm]:-0}"
+  local wci="${APM_WITH_CI[$apm]:-0}"
+  local nci="${APM_WITHOUT_CI[$apm]:-0}"
+  local s_success="${APM_STATUS[$apm|success]:-0}"
+  local s_failed="${APM_STATUS[$apm|failed]:-0}"
+  local s_running="${APM_STATUS[$apm|running]:-0}"
+  local s_canceled="${APM_STATUS[$apm|canceled]:-0}"
+  local s_skipped="${APM_STATUS[$apm|skipped]:-0}"
+  local s_manual="${APM_STATUS[$apm|manual]:-0}"
+  local s_pending="${APM_STATUS[$apm|pending]:-0}"
+  local s_created="${APM_STATUS[$apm|created]:-0}"
+  local s_scheduled="${APM_STATUS[$apm|scheduled]:-0}"
+  local s_none="${APM_STATUS[$apm|none]:-0}"
+  local s_other="${APM_STATUS[$apm|other]:-0}"
+  echo "$apm,$t,$wci,$nci,$s_success,$s_failed,$s_running,$s_canceled,$s_skipped,$s_manual,$s_pending,$s_created,$s_scheduled,$s_none,$s_other"
+}
+
+# Linhas por APM (ordena por chave)
+mapfile -t apm_keys < <(printf "%s\n" "${!APM_TOTAL[@]}" | grep -v "^$ALL$" | sort -V)
+for k in "${apm_keys[@]}"; do
+  emit_line_apm "$k" >> "$APM_SUMMARY_CSV"
 done
 
-echo
-echo "✅ Concluído!"
-echo "• Detalhes por projeto: $PROJECTS_CSV"
-echo "• Resumo por APM_ID:    $APM_SUMMARY_CSV"
-echo
-echo "Dica: abra o CSV em um editor/planilha e filtre por 'group_full_path' ou 'latest_pipeline_status'."
+# Resumo geral
+emit_line_apm "$ALL" | sed "s/^$ALL/overall/" >> "$OVERALL_SUMMARY_CSV"
+
+log "Finalizado."
+log "Arquivos: $PROJECTS_CSV | $APM_SUMMARY_CSV | $OVERALL_SUMMARY_CSV"
