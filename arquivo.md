@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# gitlab_group_audit_json.sh 05
-# Varre grupo raiz (GROUP_ID), subgrupos e projetos diretos, coleta último pipeline
-# e monta JSON. Saída no STDOUT e em $OUT_JSON.
+# gitlab_group_audit_json.sh 06
+# Varre o grupo raiz (GROUP_ID), subgrupos e projetos diretos, coleta o último pipeline
+# e monta um JSON final (STDOUT e OUT_JSON).
 set -Eeuo pipefail
 
 : "${GITLAB_URL:?Defina GITLAB_URL (ex: https://gitlab.seudominio.com)}"
@@ -48,7 +48,6 @@ api_get_paginated(){
     local hdr body
     hdr="$(mktemp)"
     body="$(curl -sS $CURL_FLAGS -D "$hdr" -H "${HDR_AUTH[@]}" "$url")" || body='[]'
-    # Normaliza para array e agrega sem passar JSON gigante por argv
     all="$(jq -cs 'add' \
           <(printf '%s' "$all") \
           <(printf '%s' "$body" | jq -c 'if type=="array" then . else [] end' 2>/dev/null || printf '[]'))"
@@ -69,7 +68,7 @@ extract_apm_id(){
   fi
 }
 
-# mapas
+# mapas de grupos
 declare -A G_NAME G_PATH G_URL G_PARENT G_APM
 
 # grupo raiz
@@ -81,7 +80,7 @@ G_PATH["$root_id"]="$(printf '%s' "$root" | jq -r '.full_path')"
 G_URL["$root_id"]="$(printf '%s' "$root" | jq -r '.web_url')"
 G_PARENT["$root_id"]=""
 
-# BFS subgrupos (robusto a respostas não-array)
+# BFS subgrupos (robusto a não-array)
 declare -A VISITED
 queue=("$root_id")
 all_groups=()
@@ -93,10 +92,8 @@ while ((${#queue[@]})); do
 
   log "Subgrupos de ${G_PATH[$gid]} (id=$gid)…"
   subs="$(api_get_paginated "/groups/$gid/subgroups")"
-  # Carrega metadados dos subgrupos desta página só uma vez
   mapfile -t ids < <(printf '%s' "$subs" | jq -r 'if type=="array" then .[].id else empty end')
   if ((${#ids[@]})); then
-    # Indexa por id para não re-jq em loop
     for sgid in "${ids[@]}"; do
       sg="$(printf '%s' "$subs" | jq -c --argjson i "$sgid" '.[] | select(.id==$i)')"
       G_NAME["$sgid"]="$(printf '%s' "$sg" | jq -r '.name')"
@@ -133,7 +130,7 @@ for gid in "${all_groups[@]}"; do
       apm_id:    ($apm_id_str    | null_if_empty) }' >> "$GROUPS_ND"
 done
 
-# coletores (mantidos para logs; agregação final será em jq)
+# coletores (para logs); agregação final será em jq
 declare -A APM_TOTAL APM_WITH_PIPE APM_WITH_APPVARS
 declare -A APM_STATUS
 if (( BASH_VERSINFO[0] > 4 || ( BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 3 ) )); then
@@ -142,11 +139,10 @@ else
   inc(){ local arr="$1" key="$2" cur; eval 'cur=${'"$arr"'[$key]:-0}'; cur=$((cur+1)); eval "$arr[\"\$key\"]=\$cur"; }
 fi
 
-# projetos diretos
+# projetos diretos de cada grupo
 for gid in "${all_groups[@]}"; do
   gpath="${G_PATH[$gid]}"; gurl="${G_URL[$gid]}"; gapm="${G_APM[$gid]}"; [[ -z "$gapm" ]] && gapm="(sem_apm)"
   projs="$(api_get_paginated "/groups/$gid/projects" "with_shared=false&include_subgroups=false")"
-  # Garante array
   pcount="$(printf '%s' "$projs" | jq 'if type=="array" then length else 0 end')"
   log "Grupo ${gpath} (APM=$gapm): $pcount projeto(s) diretos"
   (( pcount == 0 )) && continue
@@ -158,7 +154,7 @@ for gid in "${all_groups[@]}"; do
     pweb="$(printf '%s' "$p" | jq -r '.web_url')"
     dbranch="$(printf '%s' "$p" | jq -r '.default_branch // empty')"
 
-    # ===== pipelines (normalização) =====
+    # ===== pipelines (normalização robusta) =====
     pls_raw="$(api_get "/projects/$pid/pipelines" "per_page=1&order_by=updated_at&sort=desc" || true)"
     pls="$(printf '%s' "${pls_raw:-[]}" | jq -c 'if type=="array" then . else [] end' 2>/dev/null || printf '[]')"
     plen="$(printf '%s' "$pls" | jq 'length')"
@@ -184,7 +180,7 @@ for gid in "${all_groups[@]}"; do
       [[ -n "$app_name_val" || -n "$app_version_val" ]] && appflag="true"
     fi
 
-    # NDJSON projeto
+    # NDJSON do projeto
     has_general_bool=$([[ "$has_general" == "true" ]] && echo true || echo false)
     has_appvars_bool=$([[ "$appflag" == "true" ]] && echo true || echo false)
 
@@ -257,7 +253,13 @@ PROJECTS_JSON="$TMP_DIR/projects.json"
 [ -s "$GROUPS_ND" ]   && jq -s '.' "$GROUPS_ND"   > "$GROUPS_JSON"   || printf '[]' > "$GROUPS_JSON"
 [ -s "$PROJECTS_ND" ] && jq -s '.' "$PROJECTS_ND" > "$PROJECTS_JSON" || printf '[]' > "$PROJECTS_JSON"
 
-# Resumo geral direto do NDJSON
+# (Opcional) validação leve do formato do projects.json
+jq -e 'type=="array" and all(.[]; type=="object")' "$PROJECTS_JSON" >/dev/null || {
+  echo "ERRO: $PROJECTS_JSON não é um array de objetos válido." >&2
+  exit 1
+}
+
+# Resumo geral direto do NDJSON (usa -s)
 OVERALL_JSON="$TMP_DIR/overall.json"
 jq -s '
   def known: ["success","failed","running","canceled","skipped","manual","pending","created","scheduled","none"];
@@ -275,9 +277,9 @@ jq -s '
     }
 ' "$PROJECTS_ND" > "$OVERALL_JSON"
 
-# Resumo por APM (100% em jq)
+# Resumo por APM (SEM -s; entrada já é um array)
 APM_SUMMARY_JSON="$TMP_DIR/summary_by_apm.json"
-jq -s '
+jq '
   def known: ["success","failed","running","canceled","skipped","manual","pending","created","scheduled","none"];
   def empty_counts: {success:0, failed:0, running:0, canceled:0, skipped:0, manual:0, pending:0, created:0, scheduled:0, none:0, other:0};
   def norm(s): (known | index(s)) as $i | if $i==null then "other" else s end;
@@ -295,7 +297,7 @@ jq -s '
     })
 ' "$PROJECTS_JSON" > "$APM_SUMMARY_JSON"
 
-# Monta o JSON final usando --slurpfile (evita --argjson gigante)
+# Monta o JSON final com --slurpfile (evita argv gigante)
 final_json="$(
   jq -n \
     --arg generated_at "$(date -Iseconds)" \
