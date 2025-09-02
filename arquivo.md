@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
-# gitlab_group_audit_json.sh — JSON only, robusto e com logs
+# gitlab_group_audit_json.sh — JSON only, robusto, AUTO auth (PRIVATE-TOKEN/Bearer) e subpath
 set -euo pipefail
 
 : "${GITLAB_URL:?Defina GITLAB_URL (ex: https://gitlab.seudominio.com)}"
-: "${GITLAB_TOKEN:?Defina GITLAB_TOKEN (PAT com read_api)}"
+: "${GITLAB_TOKEN:?Defina GITLAB_TOKEN (token com permissão de leitura)}"
 : "${GROUP_ID:?Defina GROUP_ID (id numérico ou path do grupo raiz)}"
 
-VERBOSE="${VERBOSE:-1}"             # 1 = logs; 0 = silencioso
+VERBOSE="${VERBOSE:-1}"                   # 1 = logs; 0 = silencioso
 CURL_FLAGS="${CURL_FLAGS:---retry 3 --connect-timeout 10 --max-time 60}"
 OUT_JSON="${OUT_JSON:-gitlab_group_audit.json}"
 
-API="$GITLAB_URL/api/v4"
-HDR_AUTH=("PRIVATE-TOKEN: $GITLAB_TOKEN")
+# Prefixo do API: útil se GitLab está em subpath (ex.: /gitlab/api/v4)
+GITLAB_API_PREFIX="${GITLAB_API_PREFIX:-/api/v4}"
+
+# Modo auth: AUTO tenta PRIVATE-TOKEN e, se 401/403, tenta Bearer
+GITLAB_AUTH="${GITLAB_AUTH:-AUTO}"        # AUTO | PRIVATE | BEARER
+
+API_BASE="${GITLAB_URL%/}${GITLAB_API_PREFIX}"
 
 TMP_DIR="$(mktemp -d)"
 PROJECTS_ND="$TMP_DIR/projects.ndjson"
@@ -21,9 +26,7 @@ log(){ [[ "$VERBOSE" == "1" ]] && printf "[%(%F %T)T] %s\n" -1 "$*" >&2 || true;
 warn(){ printf "[%(%F %T)T] WARN: %s\n" -1 "$*" >&2; }
 err(){  printf "[%(%F %T)T] ERRO: %s\n" -1 "$*" >&2; }
 
-cleanup(){
-  [[ -n "${TMP_DIR:-}" && -d "$TMP_DIR" ]] && rm -rf "$TMP_DIR" 2>/dev/null || true
-}
+cleanup(){ [[ -n "${TMP_DIR:-}" && -d "$TMP_DIR" ]] && rm -rf "$TMP_DIR" 2>/dev/null || true; }
 trap 'err "Linha $LINENO: comando falhou ($?)";' ERR
 trap 'cleanup' EXIT
 
@@ -33,46 +36,86 @@ need jq
 
 urlenc(){ jq -rn --arg x "$1" '$x|@uri'; }
 
-# --- HTTP helpers: retornam corpo JSON (ou vazio) e nunca quebram o fluxo ---
-_http_raw(){
-  local url="$1"
-  log "GET $url"
-  curl -sS $CURL_FLAGS -H "${HDR_AUTH[@]}" -w "\n---HTTP_CODE:%{http_code}---" "$url"
+# ---------- AUTH helpers ----------
+_build_headers(){
+  local mode="$1"
+  if [[ "$mode" == "PRIVATE" ]]; then
+    printf "%s\0" "PRIVATE-TOKEN: $GITLAB_TOKEN"
+  else
+    printf "%s\0" "Authorization: Bearer $GITLAB_TOKEN"
+  fi
 }
+
+# Faz GET e retorna "body\n---HTTP_CODE:NNN---"
+_http_raw_with_mode(){
+  local url="$1" mode="$2"
+  log "GET ($mode) $url"
+  # constrói -H múltiplos
+  local headers; headers="$(_build_headers "$mode")"
+  # transformar NUL-separated em múltiplos -H
+  local args=()
+  while IFS= read -r -d '' h; do args+=(-H "$h"); done <<< "$headers"
+  curl -sS $CURL_FLAGS "${args[@]}" -w "\n---HTTP_CODE:%{http_code}---" "$url"
+}
+
 _http_split(){
   awk 'BEGIN{body="";code=""}
        /---HTTP_CODE:/ {code=$0; sub(/.*---HTTP_CODE:/,"",code); sub(/---.*/,"",code); print body > "/dev/stderr"; print code; next}
        {body=body $0 ORS}'
 }
+
+# Tenta com um modo; se 401/403 e AUTO, tenta o outro
+_http_raw_auto(){
+  local url="$1"
+  if [[ "$GITLAB_AUTH" == "PRIVATE" ]]; then
+    _http_raw_with_mode "$url" "PRIVATE"
+  elif [[ "$GITLAB_AUTH" == "BEARER" ]]; then
+    _http_raw_with_mode "$url" "BEARER"
+  else
+    # AUTO
+    local raw; raw="$(_http_raw_with_mode "$url" "PRIVATE")"
+    local code body
+    body="$(printf "%s" "$raw" | _http_split 2> >(cat))"
+    code="$(printf "%s" "$raw" | tail -n1)"
+    if [[ "$code" == "401" || "$code" == "403" ]]; then
+      warn "PRIVATE-TOKEN retornou $code; tentando Authorization: Bearer"
+      _http_raw_with_mode "$url" "BEARER"
+    else
+      printf "%s" "$raw"
+    fi
+  fi
+}
+
 api_get_or_empty(){
   local path="$1"; local query="${2:-}"; local empty="${3:-[]}"
-  local url="$API$path"; [[ -n "$query" ]] && url="$url?$query"
-  local raw; raw="$(_http_raw "$url")"
+  local url="$API_BASE$path"; [[ -n "$query" ]] && url="$url?$query"
+  local raw; raw="$(_http_raw_auto "$url")"
   local code body
   body="$(printf "%s" "$raw" | _http_split 2> >(cat))"
   code="$(printf "%s" "$raw" | tail -n1)"
+  log "HTTP $code $path"
   if [[ ! "$code" =~ ^[0-9]{3}$ ]]; then warn "Código HTTP inválido p/ $url"; echo "$empty"; return; fi
   if (( code < 200 || code >= 300 )); then warn "HTTP $code em $url — usando vazio"; echo "$empty"; return; fi
   if ! echo "$body" | jq -e . >/dev/null 2>&1; then warn "Resposta não-JSON em $url — usando vazio"; echo "$empty"; return; fi
   echo "$body"
 }
-# <<< correção: wrappers tolerantes ao 2º argumento >>>
 api_get_json_object(){ local q="${2-}"; api_get_or_empty "$1" "$q" "{}"; }
 api_get_json_array(){  local q="${2-}"; api_get_or_empty "$1" "$q" "[]";  }
 
 api_get_paginated_array(){
   local path="$1"; local query="${2:-}"; local page=1; local acc="[]"
   while :; do
-    local url="$API$path?per_page=100&page=$page"; [[ -n "$query" ]] && url="$url&$query"
-    local raw; raw="$(_http_raw "$url")"
+    local url="$API_BASE$path?per_page=100&page=$page"; [[ -n "$query" ]] && url="$url&$query"
+    local raw; raw="$(_http_raw_auto "$url")"
     local code body
     body="$(printf "%s" "$raw" | _http_split 2> >(cat))"
     code="$(printf "%s" "$raw" | tail -n1)"
+    log "HTTP $code $path?page=$page"
     if [[ ! "$code" =~ ^[0-9]{3}$ || $code -lt 200 || $code -ge 300 ]]; then
       warn "HTTP $code (página $page) em $url — parando paginação aqui"; break
     fi
     if ! echo "$body" | jq -e . >/dev/null 2>&1; then
-      warn "Página $page não é JSON em $url — parando paginação aqui"; break
+      warn "Página $page não é JSON em $url — parando paginação"; break
     fi
     acc="$(jq -cs 'add' <(echo "$acc") <(echo "$body"))"
     local len; len="$(echo "$body" | jq 'length')"
@@ -99,7 +142,13 @@ log "Carregando grupo raiz: $GROUP_ID"
 root="$(api_get_json_object "/groups/$(urlenc "$GROUP_ID")")"
 root_id="$(echo "$root" | jq -r '.id')"
 if [[ -z "$root_id" || "$root_id" == "null" ]]; then
-  err "Não achei o grupo raiz ($GROUP_ID). Token/URL/ID corretos?"; exit 1
+  err "Não achei o grupo raiz ($GROUP_ID). Verifique:
+  - TOKEN compatível (PAT usa PRIVATE-TOKEN; OAuth/Group/Project tokens usam Bearer)
+  - Escopo do token: 'read_api'
+  - Visibilidade: o usuário do token é membro do grupo?
+  - API_BASE: $API_BASE (ajuste GITLAB_API_PREFIX se houver subpath)
+  - GROUP_ID: use id numérico ou path correto (path é URL-encoded automaticamente)."
+  exit 1
 fi
 G_NAME["$root_id"]="$(echo "$root" | jq -r '.name')"
 G_PATH["$root_id"]="$(echo "$root" | jq -r '.full_path')"
@@ -153,15 +202,8 @@ for gid in "${all_groups[@]}"; do
     --arg apm_id_str "$apm_id_str" \
     '
     def null_if_empty: if . == "" then null else . end;
-
-    {
-      id:        $id_str,
-      name:      $name,
-      full_path: $full_path,
-      web_url:   $web_url,
-      parent_id: ($parent_id_str | null_if_empty),
-      apm_id:    ($apm_id_str    | null_if_empty)
-    }
+    { id:$id_str, name:$name, full_path:$full_path, web_url:$web_url,
+      parent_id: ($parent_id_str|null_if_empty), apm_id: ($apm_id_str|null_if_empty) }
     ' >> "$GROUPS_ND"
 done
 
@@ -294,7 +336,7 @@ for gid in "${all_groups[@]}"; do
   done
 done
 
-# ---------- montar JSON final (sempre escreve algo) ----------
+# ---------- montar JSON final ----------
 log "Montando JSON final: $OUT_JSON"
 
 groups_json="$( [ -s "$GROUPS_ND" ] && jq -s '.' "$GROUPS_ND" || echo '[]' )"
