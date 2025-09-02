@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# gitlab_group_audit_json.sh 01
 set -euo pipefail
 
 : "${GITLAB_URL:?Defina GITLAB_URL (ex: https://gitlab.seudominio.com)}"
@@ -59,10 +60,10 @@ extract_apm_id(){
   fi
 }
 
-# -------- mapas de grupos --------
+# ---------- mapas de grupos ----------
 declare -A G_NAME G_PATH G_URL G_PARENT G_APM
 
-# -------- grupo raiz --------
+# ---------- grupo raiz ----------
 log "Carregando grupo raiz: $GROUP_ID"
 root="$(api_get "/groups/$(urlenc "$GROUP_ID")")"
 root_id="$(echo "$root" | jq -r '.id')"
@@ -71,7 +72,7 @@ G_PATH["$root_id"]="$(echo "$root" | jq -r '.full_path')"
 G_URL["$root_id"]="$(echo "$root" | jq -r '.web_url')"
 G_PARENT["$root_id"]=""
 
-# -------- BFS subgrupos --------
+# ---------- BFS subgrupos ----------
 declare -A VISITED
 queue=("$root_id")
 all_groups=()
@@ -96,7 +97,7 @@ while ((${#queue[@]})); do
 done
 log "Total de grupos (inclui raiz): ${#all_groups[@]}"
 
-# -------- APM herdado por grupo --------
+# ---------- APM herdado + salvar groups NDJSON (robusto) ----------
 for gid in "${all_groups[@]}"; do
   cur="$gid"; found=""
   while [[ -n "$cur" ]]; do
@@ -105,24 +106,39 @@ for gid in "${all_groups[@]}"; do
     cur="${G_PARENT[$cur]:-}"
   done
   G_APM["$gid"]="$found"
-  # salva NDJSON de grupos
-  jq -n --arg id "$gid" \
-        --arg name "${G_NAME[$gid]}" \
-        --arg full_path "${G_PATH[$gid]}" \
-        --arg web_url "${G_URL[$gid]}" \
-        --arg parent_id "${G_PARENT[$gid]}" \
-        --arg apm_id "$found" \
-        '{id:($id|tonumber), name:$name, full_path:$full_path, web_url:$web_url, parent_id: ( ($parent_id|length)>0 ? ($parent_id|tonumber) : null ), apm_id: ( ($apm_id|length)>0 ? $apm_id : null )}' \
-    >> "$GROUPS_ND"
+
+  # salva NDJSON (ids como string; sem tonumber)
+  parent_id_str="${G_PARENT[$gid]:-}"
+  apm_id_str="$found"
+
+  jq -n \
+    --arg id_str "$gid" \
+    --arg name "${G_NAME[$gid]}" \
+    --arg full_path "${G_PATH[$gid]}" \
+    --arg web_url "${G_URL[$gid]}" \
+    --arg parent_id_str "$parent_id_str" \
+    --arg apm_id_str "$apm_id_str" \
+    '
+    def null_if_empty: if . == "" then null else . end;
+
+    {
+      id:        $id_str,
+      name:      $name,
+      full_path: $full_path,
+      web_url:   $web_url,
+      parent_id: ($parent_id_str | null_if_empty),
+      apm_id:    ($apm_id_str    | null_if_empty)
+    }
+    ' >> "$GROUPS_ND"
 done
 
-# -------- coletores para resumo --------
+# ---------- coletores de resumo ----------
 declare -A APM_TOTAL APM_WITH_PIPE APM_WITH_APPVARS
 declare -A APM_STATUS   # chave: "APM|status" => count
 
 inc(){ local arr="$1" key="$2" cur=0; eval "cur=\${$arr[\$key]:-0}"; ((cur++)); eval "$arr[\"$key\"]=\$cur"; }
 
-# -------- projetos diretos de cada grupo --------
+# ---------- projetos diretos por grupo ----------
 for gid in "${all_groups[@]}"; do
   gpath="${G_PATH[$gid]}"; gurl="${G_URL[$gid]}"; gapm="${G_APM[$gid]}"
   [[ -z "$gapm" ]] && gapm="(sem_apm)"
@@ -143,22 +159,21 @@ for gid in "${all_groups[@]}"; do
     plen="$(echo "$pls" | jq 'length')"
 
     has_general="false"
-    pl_id="null"; pl_status="none"; pl_ref=""; pl_user=""; pl_created=""; pl_updated=""; pl_url=""
+    pl_id=""; pl_status="none"; pl_ref=""; pl_user=""; pl_created=""; pl_updated=""; pl_url=""
     appflag="false"; app_name_val=""; app_version_val=""
 
     if (( plen > 0 )); then
       has_general="true"
-      pl_id_raw="$(echo "$pls" | jq -r '.[0].id')"
-      pl_id="$pl_id_raw"
+      pl_id="$(echo "$pls" | jq -r '.[0].id')"
       pl_status="$(echo "$pls" | jq -r '.[0].status')"
       pl_ref="$(echo "$pls" | jq -r '.[0].ref')"
       pl_created="$(echo "$pls" | jq -r '.[0].created_at')"
       pl_updated="$(echo "$pls" | jq -r '.[0].updated_at')"
       pl_user="$(echo "$pls" | jq -r '.[0].user.username // .[0].user.name // ""')"
-      pl_url="$pweb/-/pipelines/$pl_id_raw"
+      pl_url="$pweb/-/pipelines/$pl_id"
 
       # variáveis do pipeline
-      vars="$(api_get "/projects/$pid/pipelines/$pl_id_raw/variables")" || vars="[]"
+      vars="$(api_get "/projects/$pid/pipelines/$pl_id/variables")" || vars="[]"
       app_name_val="$(echo "$vars" | jq -r '.[]|select(.key=="APP_NAME")|.value' | head -n1 || true)"
       app_version_val="$(echo "$vars" | jq -r '.[]|select(.key=="APP_VERSION")|.value' | head -n1 || true)"
       if [[ -n "$app_name_val" || -n "$app_version_val" ]]; then
@@ -166,62 +181,75 @@ for gid in "${all_groups[@]}"; do
       fi
     fi
 
-    # salva projeto em NDJSON
+    # ---- salva projeto em NDJSON (robusto) ----
+    has_general_bool="false"; [[ "$has_general" == "true" ]] && has_general_bool="true"
+    has_appvars_bool="false"; [[ "$appflag" == "true" ]] && has_appvars_bool="true"
+
     jq -n \
       --arg apm_id "$gapm" \
-      --argjson group_id "$gid" \
+      --arg group_id_str "$gid" \
       --arg group_full_path "$gpath" \
       --arg group_web_url "$gurl" \
-      --argjson project_id "$pid" \
-      --arg project_path_with_namespace "$ppath" \
+      --arg project_id_str "$pid" \
+      --arg project_pwn "$ppath" \
       --arg project_web_url "$pweb" \
       --arg default_branch "$dbranch" \
-      --argjson has_general_pipeline "$has_general" \
-      --argjson latest_pipeline_id "$pl_id" \
+      --arg has_general_pipeline_str "$has_general_bool" \
+      --arg latest_pipeline_id_str "$pl_id" \
       --arg latest_pipeline_status "$pl_status" \
       --arg latest_pipeline_ref "$pl_ref" \
       --arg latest_pipeline_user "$pl_user" \
       --arg latest_pipeline_created_at "$pl_created" \
       --arg latest_pipeline_updated_at "$pl_updated" \
       --arg latest_pipeline_web_url "$pl_url" \
-      --argjson has_app_vars "$appflag" \
+      --arg has_app_vars_str "$has_appvars_bool" \
       --arg app_name_value "$app_name_val" \
       --arg app_version_value "$app_version_val" \
-      '{
+      '
+      def null_if_empty: if . == "" then null else . end;
+      def to_bool:
+        if . == "true" then true
+        elif . == "false" then false
+        else false end;
+
+      {
         apm_id: $apm_id,
         group: {
-          id: $group_id,
+          id:        $group_id_str,
           full_path: $group_full_path,
-          web_url: $group_web_url
+          web_url:   $group_web_url
         },
         project: {
-          id: $project_id,
-          path_with_namespace: $project_path_with_namespace,
-          web_url: $project_web_url,
-          default_branch: ($default_branch|length>0 ? $default_branch : null)
+          id:                  $project_id_str,
+          path_with_namespace: $project_pwn,
+          web_url:             $project_web_url,
+          default_branch:      ($default_branch | null_if_empty)
         },
         pipelines: {
-          has_general_pipeline: $has_general_pipeline,
+          has_general_pipeline: ($has_general_pipeline_str | to_bool),
           latest: (
-            $latest_pipeline_id|type=="number" and $latest_pipeline_status!="none"
-            ? {
-                id: $latest_pipeline_id,
-                status: $latest_pipeline_status,
-                ref: ($latest_pipeline_ref|length>0 ? $latest_pipeline_ref : null),
-                user: ($latest_pipeline_user|length>0 ? $latest_pipeline_user : null),
-                created_at: ($latest_pipeline_created_at|length>0 ? $latest_pipeline_created_at : null),
-                updated_at: ($latest_pipeline_updated_at|length>0 ? $latest_pipeline_updated_at : null),
-                web_url: ($latest_pipeline_web_url|length>0 ? $latest_pipeline_web_url : null),
+            ($latest_pipeline_id_str | null_if_empty) as $pid
+            | if $pid == null or $latest_pipeline_status == "none"
+              then null
+              else {
+                id:        $latest_pipeline_id_str,
+                status:    $latest_pipeline_status,
+                ref:       ($latest_pipeline_ref       | null_if_empty),
+                user:      ($latest_pipeline_user      | null_if_empty),
+                created_at:($latest_pipeline_created_at| null_if_empty),
+                updated_at:($latest_pipeline_updated_at| null_if_empty),
+                web_url:   ($latest_pipeline_web_url   | null_if_empty),
                 variables: {
-                  APP_NAME: ($app_name_value|length>0 ? $app_name_value : null),
-                  APP_VERSION: ($app_version_value|length>0 ? $app_version_value : null)
+                  APP_NAME:    ($app_name_value    | null_if_empty),
+                  APP_VERSION: ($app_version_value | null_if_empty)
                 }
               }
-            : null
+            end
           ),
-          has_APP_NAME_or_APP_VERSION: $has_app_vars
+          has_APP_NAME_or_APP_VERSION: ($has_app_vars_str | to_bool)
         }
-      }' >> "$PROJECTS_ND"
+      }
+      ' >> "$PROJECTS_ND"
 
     # agregadores
     inc APM_TOTAL "$gapm"
@@ -234,12 +262,12 @@ for gid in "${all_groups[@]}"; do
   done
 done
 
-# -------- monta JSON final --------
+# ---------- montar JSON final ----------
 log "Montando JSON final: $OUT_JSON"
 
-# arrays
-groups_json="$(jq -s '.' "$GROUPS_ND" 2>/dev/null || echo '[]')"
-projects_json="$(jq -s '.' "$PROJECTS_ND" 2>/dev/null || echo '[]')"
+# arrays (se vazios, vira [])
+groups_json="$( [ -s "$GROUPS_ND" ] && jq -s '.' "$GROUPS_ND" || echo '[]' )"
+projects_json="$( [ -s "$PROJECTS_ND" ] && jq -s '.' "$PROJECTS_ND" || echo '[]' )"
 
 # resumo por APM
 apm_keys="$(printf "%s\n" "${!APM_TOTAL[@]}" | sort -V || true)"
@@ -250,8 +278,6 @@ while IFS= read -r apm; do
   wg="${APM_WITH_PIPE[$apm]:-0}"
   wa="${APM_WITH_APPVARS[$apm]:-0}"
 
-  # status breakdown
-  # lista comum de status conhecidos, mais os que apareceram
   statuses=(success failed running canceled skipped manual pending created scheduled none other)
   counts_obj="{}"
   for s in "${statuses[@]}"; do
@@ -271,7 +297,7 @@ while IFS= read -r apm; do
   )"
 done <<< "$apm_keys"
 
-# resumo geral (a partir do projects_json)
+# resumo geral a partir de projects_json
 overall="$(jq -n --argjson items "$projects_json" '
   def count(f): reduce ( .[] | select(f) ) as $i (0; .+1);
   def status_counts:
@@ -290,7 +316,9 @@ overall="$(jq -n --argjson items "$projects_json" '
 jq -n \
   --arg generated_at "$(date -Iseconds)" \
   --arg gitlab_url "$GITLAB_URL" \
-  --argjson root_group "$(jq -n --argjson id "$root_id" --arg full_path "${G_PATH[$root_id]}" --arg web_url "${G_URL[$root_id]}" '{id:id, full_path: $full_path, web_url: $web_url}')" \
+  --arg root_group_id "$root_id" \
+  --arg root_group_full_path "${G_PATH[$root_id]}" \
+  --arg root_group_web_url "${G_URL[$root_id]}" \
   --argjson groups "$groups_json" \
   --argjson projects "$projects_json" \
   --argjson summary_by_apm "$apm_summary" \
@@ -298,13 +326,10 @@ jq -n \
   '{
     generated_at: $generated_at,
     gitlab_url: $gitlab_url,
-    root_group: $root_group,
+    root_group: { id: $root_group_id, full_path: $root_group_full_path, web_url: $root_group_web_url },
     groups: $groups,
     projects: $projects,
-    summary: {
-      by_apm: $summary_by_apm,
-      overall: $summary_overall
-    }
+    summary: { by_apm: $summary_by_apm, overall: $summary_overall }
   }' > "$OUT_JSON"
 
 log "OK: $OUT_JSON"
