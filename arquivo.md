@@ -2,11 +2,15 @@
 Nome “simples” da app
 */}}
 {{- define "app-template.name" -}}
-{{- if .Values.app.name -}}
-{{- .Values.app.name -}}
-{{- else -}}
-{{- .Chart.Name -}}
-{{- end -}}
+{{- if .Values.app }}
+  {{- if .Values.app.name }}
+    {{- .Values.app.name -}}
+  {{- else }}
+    {{- .Chart.Name -}}
+  {{- end }}
+{{- else }}
+  {{- .Chart.Name -}}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -35,17 +39,3 @@ app.kubernetes.io/managed-by: "harness"
 app.kubernetes.io/part-of: "business-apps"
 env: {{ include "app-template.env" . | quote }}
 {{- end }}
-
-----
-
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ include "app-template.fullname" . }}-secret
-  labels:
-    {{- include "app-template.labels" . | nindent 4 }}
-type: Opaque
-stringData:
-  {{- range $k, $v := .Values.secretValues }}
-  {{ $k }}: {{ $v | quote }}
-  {{- end }}
