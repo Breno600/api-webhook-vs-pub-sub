@@ -1,41 +1,51 @@
 {{/*
-Nome “simples” da app
+  Service opcional + defaults seguros
 */}}
-{{- define "app-template.name" -}}
-{{- if .Values.app }}
-  {{- if .Values.app.name }}
-    {{- .Values.app.name -}}
-  {{- else }}
-    {{- .Chart.Name -}}
+
+{{- /* controla se o Service será criado ou não */ -}}
+{{- $svcEnabled := true -}}
+{{- if .Values.service }}
+  {{- if hasKey .Values.service "enabled" }}
+    {{- $svcEnabled = .Values.service.enabled -}}
   {{- end }}
-{{- else }}
-  {{- .Chart.Name -}}
-{{- end }}
 {{- end }}
 
-{{/*
-Ambiente, com default pra nunca ficar nil
-*/}}
-{{- define "app-template.env" -}}
-{{- default "dev" .Values.env -}}
-{{- end }}
+{{- if $svcEnabled }}
 
-{{/*
-Nome completo: app-ENV (ex: app-generic-dev)
-*/}}
-{{- define "app-template.fullname" -}}
-{{- $name := include "app-template.name" . -}}
-{{- $env  := include "app-template.env" . -}}
-{{- printf "%s-%s" $name $env | trunc 63 | trimSuffix "-" -}}
-{{- end }}
+  {{- /* defaults */ -}}
+  {{- $svcType := "ClusterIP" -}}
+  {{- $svcPort := 80 -}}
+  {{- $targetPort := $svcPort -}}
 
-{{/*
-Labels padrão SEMPRE string
-*/}}
-{{- define "app-template.labels" -}}
-app.kubernetes.io/name: {{ include "app-template.name" . | quote }}
-app.kubernetes.io/instance: {{ include "app-template.fullname" . | quote }}
-app.kubernetes.io/managed-by: "harness"
-app.kubernetes.io/part-of: "business-apps"
-env: {{ include "app-template.env" . | quote }}
+  {{- if .Values.service }}
+    {{- if .Values.service.type }}
+      {{- $svcType = .Values.service.type -}}
+    {{- end }}
+    {{- if .Values.service.port }}
+      {{- $svcPort = .Values.service.port -}}
+      {{- $targetPort = .Values.service.port -}}
+    {{- end }}
+    {{- if .Values.service.targetPort }}
+      {{- $targetPort = .Values.service.targetPort -}}
+    {{- end }}
+  {{- end }}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "app-template.fullname" . }}
+  labels:
+    {{- include "app-template.labels" . | nindent 4 }}
+spec:
+  type: {{ $svcType }}
+  ports:
+    - name: http
+      port: {{ $svcPort }}
+      targetPort: {{ $targetPort }}
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ include "app-template.name" . }}
+    app.kubernetes.io/instance: {{ include "app-template.fullname" . }}
+    env: {{ include "app-template.env" . }}
+
 {{- end }}
