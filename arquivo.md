@@ -172,3 +172,10 @@ spec:
     {{- toYaml .Values.hpa.behavior | nindent 4 }}
   {{- end }}
 {{- end }}
+
+---
+
+{{- if .Values.resources }}
+resources:
+  {{- toYaml .Values.resources | nindent 12 }}
+{{- end }}
