@@ -1,51 +1,56 @@
 {{/*
-  Service opcional + defaults seguros
+Expand the name of the chart.
 */}}
+{{- define "otel-chart.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
 
-{{- /* controla se o Service será criado ou não */ -}}
-{{- $svcEnabled := true -}}
-{{- if .Values.service }}
-  {{- if hasKey .Values.service "enabled" }}
-    {{- $svcEnabled = .Values.service.enabled -}}
-  {{- end }}
+{{/*
+Create a default fully qualified app name.
+*/}}
+{{- define "otel-chart.fullname" -}}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name (include "otel-chart.name" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Chart name and version as used by the chart label.
+*/}}
+{{- define "otel-chart.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Common labels
+*/}}
+{{- define "otel-chart.labels" -}}
+helm.sh/chart: {{ include "otel-chart.chart" . }}
+app.kubernetes.io/name: {{ include "otel-chart.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
 
-{{- if $svcEnabled }}
+{{/*
+Selector labels
+*/}}
+{{- define "otel-chart.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "otel-chart.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}
 
-  {{- /* defaults */ -}}
-  {{- $svcType := "ClusterIP" -}}
-  {{- $svcPort := 80 -}}
-  {{- $targetPort := $svcPort -}}
-
-  {{- if .Values.service }}
-    {{- if .Values.service.type }}
-      {{- $svcType = .Values.service.type -}}
-    {{- end }}
-    {{- if .Values.service.port }}
-      {{- $svcPort = .Values.service.port -}}
-      {{- $targetPort = .Values.service.port -}}
-    {{- end }}
-    {{- if .Values.service.targetPort }}
-      {{- $targetPort = .Values.service.targetPort -}}
-    {{- end }}
-  {{- end }}
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ include "app-template.fullname" . }}
-  labels:
-    {{- include "app-template.labels" . | nindent 4 }}
-spec:
-  type: {{ $svcType }}
-  ports:
-    - name: http
-      port: {{ $svcPort }}
-      targetPort: {{ $targetPort }}
-      protocol: TCP
-  selector:
-    app.kubernetes.io/name: {{ include "app-template.name" . }}
-    app.kubernetes.io/instance: {{ include "app-template.fullname" . }}
-    env: {{ include "app-template.env" . }}
-
+{{/*
+Service account name
+*/}}
+{{- define "otel-chart.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "otel-chart.fullname" .) .Values.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.name }}
 {{- end }}
+{{- end -}}
