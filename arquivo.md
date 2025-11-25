@@ -1,59 +1,77 @@
 ---
 # ============================================================
-# PLAY 1 - CONTROL NODE (jumper/ansible)
-# Lê o YAML da máquina e o YAML do pacote e exporta como facts
-# para o próximo play.
+# PLAY 1 - CONTROLLER
+# Lê o YAML do grupo, descobre as máquinas e o package,
+# carrega o package e cria hosts dinâmicos para o PLAY 2.
 # ============================================================
 
-- name: "[CONTROL] Carregar config da máquina e do pacote"
+- name: "[CONTROL] Carregar grupo e pacote"
   hosts: localhost
   gather_facts: false
 
   vars:
-    # arquivo da máquina (pode virar parâmetro depois)
-    machine_file_name: "{{ machine_file_name | default('ip-100.99.41.58.yaml') }}"
-    machine_file_path: "{{ playbook_dir }}/machine/{{ machine_file_name }}"
+    repo_root: "{{ playbook_dir }}/.."
+    group_file_name: "{{ group_file_name | default('teste-module.yaml') }}"
+    group_file_path: "{{ repo_root }}/group-machine/{{ group_file_name }}"
 
   tasks:
-    - name: "Carregar YAML da máquina"
+    - name: "Carregar YAML do grupo"
       ansible.builtin.include_vars:
-        file: "{{ machine_file_path }}"
-        name: machine_cfg
+        file: "{{ group_file_path }}"
+        name: group_cfg
 
-    - name: "Definir nome do pacote"
-      ansible.builtin.set_fact:
-        selected_package: "{{ machine_cfg.package }}"
-
-    - name: "Carregar YAML do pacote"
+    - name: "Carregar YAML do package do grupo"
       ansible.builtin.include_vars:
-        file: "{{ playbook_dir }}/package/{{ selected_package }}.yaml"
+        file: "{{ repo_root }}/package/{{ group_cfg.package }}.yaml"
         name: package_cfg
 
     - name: "Exportar facts para o próximo play"
       ansible.builtin.set_fact:
-        pkg_before_script: "{{ package_cfg.before_script  | default([]) }}"
-        pkg_after_script:  "{{ package_cfg.after_script   | default([]) }}"
+        pkg_before_script:  "{{ package_cfg.before_script  | default([]) }}"
+        pkg_after_script:   "{{ package_cfg.after_script   | default([]) }}"
         pkg_install_module: "{{ package_cfg.install_module | default([]) }}"
+        pkg_remove_module:  "{{ package_cfg.remove_module  | default([]) }}"
+
+    # Aqui a gente NÃO usa o "package" do machine/*.yaml
+    # Só usa a lista de arquivos para descobrir o IP
+
+    - name: "Registrar hosts do grupo (dinâmico)"
+      ansible.builtin.add_host:
+        name: "{{ host_ip }}"
+        ansible_host: "{{ host_ip }}"
+        ansible_user: ansible
+        ansible_ssh_private_key_file: "~/.ssh/id_rsa"
+        groups: dynamic_group
+      loop: "{{ group_cfg.machines }}"
+      loop_control:
+        loop_var: machine_file
+      vars:
+        host_ip: >-
+          {{
+            machine_file
+            | regex_replace('^ip-', '')
+            | regex_replace('\\.ya?ml$', '')
+            | regex_replace('-', '.')
+          }}
 
 # ============================================================
-# PLAY 2 - TARGET NODE (máquina 100.99.41.58)
+# PLAY 2 - TARGETS (todas as máquinas do grupo)
 # Executa before_script -> instala módulos do Nexus -> after_script
+# para cada máquina do grupo.
 # ============================================================
 
-- name: "[TARGET] Aplicar pacote na máquina"
-  hosts: "{{ target_host | default('100.99.41.58') }}"
+- name: "[TARGET-GROUP] Aplicar pacote nas máquinas do grupo"
+  hosts: dynamic_group
   become: yes
   gather_facts: false
 
   vars:
-    # Puxa os facts criados no localhost no play anterior
-    pkg_before_script: "{{ hostvars['localhost']['pkg_before_script'] }}"
-    pkg_after_script:  "{{ hostvars['localhost']['pkg_after_script'] }}"
+    pkg_before_script:  "{{ hostvars['localhost']['pkg_before_script'] }}"
+    pkg_after_script:   "{{ hostvars['localhost']['pkg_after_script'] }}"
     pkg_install_module: "{{ hostvars['localhost']['pkg_install_module'] }}"
+    pkg_remove_module:  "{{ hostvars['localhost']['pkg_remove_module'] }}"
 
-    # Ajustar essa URL pro caminho real do seu repositório no Nexus
-    nexus_base_url: "https://nexus-ci.onefiserv.net/REPO/PATH"
-
+    nexus_base_url: "https://nexus-ci.onefiserv.net/repository/raw-apm00054846-dev/packages/Linux"
     nexus_user: "{{ lookup('env', 'NEXUS_USER') }}"
     nexus_password: "{{ lookup('env', 'NEXUS_PASSWORD') }}"
 
@@ -78,6 +96,11 @@
       ansible.builtin.shell: "rpm -Uvh --force /tmp/{{ item }}.x86_64.rpm"
       loop: "{{ pkg_install_module }}"
       when: pkg_install_module | length > 0
+
+    - name: "[REMOVE] Remover módulos (RPM)"
+      ansible.builtin.shell: "rpm -e --nodeps {{ item }}"
+      loop: "{{ pkg_remove_module }}"
+      when: pkg_remove_module | length > 0
 
     - name: "[AFTER] Executar after_script"
       ansible.builtin.shell: "{{ item }}"
