@@ -1,20 +1,19 @@
----
 # ansible/predeploy_per_machine.yml
 #
 # Tarefas executadas para CADA máquina no pré-deploy.
-# Variáveis esperadas:
-#   - machine_name      (vem do loop no predeploy_from_execution.yml)
-#   - repo_root         (definido no play pai)
-#   - status_dir        (definido no play pai)
-#   - deployment_ref    (definido no play pai)
-#   - nexus_base_url    (extra-vars / group_vars)
-#   - nexus_user / nexus_password (opcionais)
+# Variáveis de contexto (vêm do loop do play principal):
+#   - machine_name
+#   - repo_root
+#   - status_dir
+#   - deployment_ref
 
 - name: "Definir caminhos para {{ machine_name }}"
   ansible.builtin.set_fact:
-    sitef_base_dir: "/opt/SoftwareExpress/sitef"
-    machine_file:   "{{ repo_root }}/../machine/{{ machine_name }}.yml"
-    status_file:    "{{ status_dir }}/predeploy-{{ machine_name }}.json"
+    machine_file: "{{ repo_root }}/machine/{{ machine_name }}.yml"
+    status_file: "{{ status_dir }}/predeploy-{{ machine_name }}.json"
+    host_base_dir: "/opt/SoftwareExpress/sitef"
+    host_pkg_dir: "/opt/SoftwareExpress/sitef/package/linux"
+    host_scripts_dir: "/opt/SoftwareExpress/sitef/scripts"
 
 - name: "Carregar config da máquina {{ machine_name }}"
   ansible.builtin.include_vars:
@@ -23,13 +22,12 @@
 
 - name: "Carregar config do pacote {{ machine_cfg.package }}"
   ansible.builtin.include_vars:
-    file: "{{ repo_root }}/../package/{{ machine_cfg.package }}.yml"
+    file: "{{ repo_root }}/package/{{ machine_cfg.package }}.yml"
     name: package_cfg
 
-# ---------------------------------------------------------------------------
-# 1) Status inicial "queued" (JSON fica no repositório, host do Ansible)
-# ---------------------------------------------------------------------------
-
+# ----------------------------------------------------------
+# Status inicial (queued)
+# ----------------------------------------------------------
 - name: "Criar status inicial (queued) para {{ machine_name }}"
   ansible.builtin.copy:
     dest: "{{ status_file }}"
@@ -44,66 +42,65 @@
         "timestamp": "{{ ansible_date_time.iso8601 }}"
       }
 
-# ---------------------------------------------------------------------------
-# 2) CRIAR DIRS / COPIAR RPM E SCRIPTS **NA MÁQUINA ALVO**
-# ---------------------------------------------------------------------------
-
+# ----------------------------------------------------------
+# Criar diretórios NA MÁQUINA ALVO
+# ----------------------------------------------------------
 - name: "Garantir diretórios base no host {{ machine_cfg.host }}"
   become: true
-  delegate_to: "{{ machine_cfg.host }}"
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: "0755"
   loop:
-    - "{{ sitef_base_dir }}"
-    - "{{ sitef_base_dir }}/package"
-    - "{{ sitef_base_dir }}/package/linux"
-    - "{{ sitef_base_dir }}/scripts"
-
-- name: "Baixar componentes do package {{ machine_cfg.package }} para {{ machine_cfg.host }}"
-  become: true
+    - "{{ host_base_dir }}"
+    - "{{ host_pkg_dir }}"
+    - "{{ host_scripts_dir }}"
+    - "{{ host_scripts_dir }}/{{ package_cfg.script }}"
   delegate_to: "{{ machine_cfg.host }}"
-  ansible.builtin.get_url:
-    # Ex.: components:
-    #   - packages/linux/sitef-core-0.0.1-0.x86_64.rpm
-    url: "{{ nexus_base_url }}/{{ item }}"
-    dest: "{{ sitef_base_dir }}/package/linux/{{ item | basename }}"
-    mode: "0644"
-    force: true
-    url_username: "{{ nexus_user | default(omit) }}"
-    url_password: "{{ nexus_password | default(omit) }}"
-    force_basic_auth: "{{ (nexus_user is defined) | ternary(true, omit) }}"
-  loop: "{{ package_cfg.components }}"
 
-- name: "Copiar scripts do package {{ package_cfg.script }} para {{ machine_cfg.host }}"
+# ----------------------------------------------------------
+# Copiar RPM(s) para a máquina alvo
+# package_cfg.components:
+#   - packages/linux/sitef-core-0.0.1-0.x86_64.rpm
+# ----------------------------------------------------------
+- name: "Baixar componentes do package {{ machine_cfg.package }} para {{ machine_name }}"
   become: true
-  delegate_to: "{{ machine_cfg.host }}"
   ansible.builtin.copy:
-    # pasta local no repo: ../scripts/<script_name>/*
-    src: "{{ repo_root }}/../scripts/{{ package_cfg.script }}/"
-    dest: "{{ sitef_base_dir }}/scripts/{{ package_cfg.script }}/"
-    mode: "0755"
-
-# ---------------------------------------------------------------------------
-# 3) Executar pré-deploy via init_parallel.sh **NA MÁQUINA ALVO**
-# ---------------------------------------------------------------------------
-
-- name: "Executar script de pré-deploy (init_parallel.sh) em {{ machine_cfg.host }}"
-  become: true
+    src: "{{ repo_root }}/{{ item }}"
+    dest: "{{ host_pkg_dir }}/"
+    mode: "0644"
+  loop: "{{ package_cfg.components }}"
   delegate_to: "{{ machine_cfg.host }}"
+
+# ----------------------------------------------------------
+# Copiar scripts do package para a máquina alvo
+# scripts/<script>/...
+# ----------------------------------------------------------
+- name: "Copiar scripts do package {{ machine_cfg.package }} para {{ machine_name }}"
+  become: true
+  ansible.builtin.copy:
+    src: "{{ repo_root }}/scripts/{{ package_cfg.script }}/"
+    dest: "{{ host_scripts_dir }}/{{ package_cfg.script }}/"
+    mode: "0755"
+  delegate_to: "{{ machine_cfg.host }}"
+
+# ----------------------------------------------------------
+# Executar o init_parallel.sh NA MÁQUINA ALVO
+# Usando env_vars definidos no machine/<nome>.yml
+# ----------------------------------------------------------
+- name: "Executar script de pré-deploy (init_parallel.sh) em {{ machine_name }}"
+  become: true
   ansible.builtin.shell: |
-    cd "{{ sitef_base_dir }}/scripts/{{ package_cfg.script }}"
+    cd "{{ host_scripts_dir }}/{{ package_cfg.script }}"
     ./init_parallel.sh
-  args:
-    executable: /bin/bash
+  delegate_to: "{{ machine_cfg.host }}"
   environment: "{{ machine_cfg.env_vars | default({}) }}"
   register: predeploy_result
+  ignore_errors: true
 
-# ---------------------------------------------------------------------------
-# 4) Atualizar JSON com status=success
-# ---------------------------------------------------------------------------
-
+# ----------------------------------------------------------
+# Atualizar status para success ou failed
+# ----------------------------------------------------------
 - name: "Atualizar status para success de {{ machine_name }}"
   ansible.builtin.copy:
     dest: "{{ status_file }}"
@@ -120,3 +117,20 @@
         "stderr": {{ predeploy_result.stderr | to_json }}
       }
   when: predeploy_result is succeeded
+
+- name: "Atualizar status para failed de {{ machine_name }}"
+  ansible.builtin.copy:
+    dest: "{{ status_file }}"
+    content: |
+      {
+        "machine": "{{ machine_name }}",
+        "host": "{{ machine_cfg.host }}",
+        "package": "{{ machine_cfg.package }}",
+        "rollback": "{{ machine_cfg.rollback | default('') }}",
+        "status": "failed",
+        "deployment_ref": "{{ deployment_ref }}",
+        "timestamp": "{{ ansible_date_time.iso8601 }}",
+        "stdout": {{ predeploy_result.stdout | to_json }},
+        "stderr": {{ predeploy_result.stderr | to_json }}
+      }
+  when: predeploy_result is failed
