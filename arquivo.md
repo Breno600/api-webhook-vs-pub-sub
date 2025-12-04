@@ -1,168 +1,70 @@
----
-# =====================================================================
-# PLAY 1 - CONTROLLER (localhost)
-# Lê execution/<arquivo>.yml e prepara hosts dinâmicos + JSON status
-# =====================================================================
-- name: "[CONTROLLER] Preparar predeploy a partir do execution"
-  hosts: localhost
-  gather_facts: false
+#!/bin/bash
+set -euo pipefail
 
-  vars:
-    repo_root: "{{ playbook_dir | dirname }}"
+# === Variáveis vindas do Harness ===
+GIT_TOKEN="${GIT_TOKEN:?GIT_TOKEN nao definido}"
+GIT_TAG="${GIT_TAG:?GIT_TAG nao definido}"                             # ex: DEV000000002
+EXECUTION_FILE_NAME="${EXECUTION_FILE_NAME:?EXECUTION_FILE_NAME nao definido}"  # ex: machine_list_dev.yml
+GIT_BRANCH="${GIT_BRANCH:-main}"                                       # branch onde vai o commit
 
-    # Variáveis vindas da pipeline:
-    #  - execution_file_name: nome do YAML em execution/
-    #  - deployment_ref: TAG do Git (ex: DEV000000002)
-    execution_file_name: "{{ execution_file_name | default('machine_list_dev.yml') }}"
-    deployment_ref: "{{ deployment_ref | default('DEV_LOCAL') }}"
+GIT_USER_NAME="${GIT_USER_NAME:-harness-bot}"
+GIT_USER_EMAIL="${GIT_USER_EMAIL:-harness-bot@example.local}"
 
-    execution_file: "{{ repo_root }}/execution/{{ execution_file_name }}"
+echo "== 1) Clonando repositorio (branch ${GIT_BRANCH}) =="
 
-  tasks:
-    - name: "Carregar arquivo do execution (lista de máquinas)"
-      ansible.builtin.include_vars:
-        file: "{{ execution_file }}"
-        name: execution_cfg
+REPO_URL="https://${GIT_TOKEN}@gitlab.onefiserv.net/latam/latam/merchant-latam/LAC/aws-cd-configuration/elastic-compute-cloud-sitef.git"
 
-    - name: "Definir lista de máquinas do execution"
-      ansible.builtin.set_fact:
-        execution_machines: "{{ execution_cfg.machines | default([]) }}"
+WORKDIR="/tmp/elastic-compute-cloud-sitef"   # <= MESMO caminho que aparece no seu print
+rm -rf "$WORKDIR" || true
+git clone --branch "$GIT_BRANCH" "$REPO_URL" "$WORKDIR"
 
-    - name: "Falhar se nao houver nenhuma maquina no execution"
-      ansible.builtin.fail:
-        msg: "Nenhuma maquina definida em {{ execution_file }} (chave 'machines')."
-      when: execution_machines | length == 0
+cd "$WORKDIR"
+git config --global --add safe.directory "$WORKDIR"
+git fetch --tags
 
-    - name: "Garantir diretório de status para TAG"
-      ansible.builtin.file:
-        path: "{{ repo_root }}/status/{{ deployment_ref }}"
-        state: directory
-        mode: "0755"
+echo "Repositorio em $(pwd)"
+echo "HEAD em:"
+git rev-parse --abbrev-ref HEAD
+git rev-parse HEAD
 
-    # Para cada máquina:
-    #   - lê machine/<machine>.yaml
-    #   - lê package/<package>.yaml
-    #   - cria host dinâmico para o PLAY 2
-    #   - grava JSON inicial (status=queued)
-    - name: "Registrar hosts dinamicos e gerar JSON 'queued'"
-      vars:
-        machine_file: "{{ repo_root }}/machine/{{ item }}.yaml"
-        machine_cfg: "{{ lookup('file', machine_file) | from_yaml }}"
-        package_name: "{{ machine_cfg.package }}"
-        package_file: "{{ repo_root }}/package/{{ package_name }}.yaml"
-        package_cfg: "{{ lookup('file', package_file) | from_yaml }}"
-        status_file: "{{ repo_root }}/status/{{ deployment_ref }}/predeploy-{{ item }}.json"
-      block:
-        - name: "Registrar host dinamico para {{ item }}"
-          ansible.builtin.add_host:
-            name: "predeploy_{{ item }}"
-            ansible_host: "{{ machine_cfg.host }}"
-            ansible_user: ansible
-            ansible_ssh_private_key_file: "~/.ssh/id_rsa"
-            groups: dynamic_predeploy
+echo
+echo "== 2) Rodando predeploy via Ansible =="
+echo "   TAG (deployment_ref): ${GIT_TAG}"
+echo "   execution file      : ${EXECUTION_FILE_NAME}"
 
-            # Metadados que vão para o PLAY 2
-            machine_name: "{{ item }}"
-            package_name: "{{ package_name }}"
-            rollback_name: "{{ machine_cfg.rollback | default('') }}"
-            env_vars: "{{ machine_cfg.env_vars | default({}) }}"
-            package_script: "{{ package_cfg.script }}"
-            package_components: "{{ package_cfg.components | default([]) }}"
-            deployment_ref: "{{ deployment_ref }}"
-            status_file: "{{ status_file }}"
+cd ansible
 
-        - name: "Gravar JSON de status 'queued' para {{ item }}"
-          ansible.builtin.copy:
-            dest: "{{ status_file }}"
-            mode: "0644"
-            content: |
-              {
-                "machine": "{{ item }}",
-                "host": "{{ machine_cfg.host }}",
-                "package": "{{ package_name }}",
-                "deployment_ref": "{{ deployment_ref }}",
-                "status": "queued",
-                "updated_at": "{{ lookup('pipe', 'date -u +%Y-%m-%dT%H:%M:%SZ') }}"
-              }
-      loop: "{{ execution_machines }}"
-      loop_control:
-        loop_var: item
+ansible-playbook predeploy_from_execution.yml \
+  -e "execution_file_name=${EXECUTION_FILE_NAME}" \
+  -e "deployment_ref=${GIT_TAG}" \
+  --forks 10
 
-# =====================================================================
-# PLAY 2 - TARGETS (todas as máquinas em dynamic_predeploy)
-# Executa init_parallel.sh em paralelo e atualiza JSON
-# =====================================================================
-- name: "[TARGET] Predeploy paralelo nas máquinas"
-  hosts: dynamic_predeploy
-  become: yes
-  gather_facts: false
+cd ..
 
-  vars:
-    remote_base_dir: "/opt/sitef"
-    remote_scripts_dir: "{{ remote_base_dir }}/scripts/{{ package_script }}"
-    remote_packages_dir: "{{ remote_base_dir }}/packages"
+echo
+echo "== 3) Verificando se houve alteracoes em status/${GIT_TAG} =="
 
-  tasks:
-    - name: "Criar diretórios base no target"
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: directory
-        mode: "0755"
-      loop:
-        - "{{ remote_base_dir }}"
-        - "{{ remote_scripts_dir }}"
-        - "{{ remote_packages_dir }}"
+if [ ! -d "status/${GIT_TAG}" ]; then
+  echo "ERRO: status/${GIT_TAG} nao foi criado pelo playbook."
+  echo "Verifique se o predeploy_from_execution.yml criou a pasta status/"
+  exit 1
+fi
 
-    - name: "Copiar scripts do package para o target"
-      ansible.builtin.copy:
-        src: "{{ (playbook_dir | dirname) }}/scripts/{{ package_script }}/"
-        dest: "{{ remote_scripts_dir }}/"
-        mode: "0755"
+git status status/"${GIT_TAG}"
+CHANGES=$(git status --porcelain status/"${GIT_TAG}" || true)
 
-    - name: "Atualizar JSON para status 'running'"
-      ansible.builtin.copy:
-        dest: "{{ status_file }}"
-        mode: "0644"
-        content: |
-          {
-            "machine": "{{ machine_name }}",
-            "host": "{{ ansible_host }}",
-            "package": "{{ package_name }}",
-            "deployment_ref": "{{ deployment_ref }}",
-            "status": "running",
-            "updated_at": "{{ lookup('pipe', 'date -u +%Y-%m-%dT%H:%M:%SZ') }}"
-          }
-      delegate_to: localhost
-      run_once: false
+if [ -z "$CHANGES" ]; then
+  echo "Nenhuma mudanca em status/${GIT_TAG}. Nada para commitar."
+  exit 0
+fi
 
-    - name: "Executar init_parallel.sh (predeploy)"
-      ansible.builtin.shell: |
-        set -e
-        cd {{ remote_base_dir }}
-        if [ -x "scripts/{{ package_script }}/init_parallel.sh" ]; then
-          echo "[PREDEPLOY] Executando scripts/{{ package_script }}/init_parallel.sh"
-          bash scripts/{{ package_script }}/init_parallel.sh
-        else
-          echo "[PREDEPLOY] Nao encontrei scripts/{{ package_script }}/init_parallel.sh, nada a executar."
-        fi
-      args:
-        executable: /bin/bash
-      environment: "{{ env_vars | default({}) }}"
-      register: predeploy_result
-      changed_when: predeploy_result.rc == 0
+echo
+echo "== 4) Fazendo commit e push das mudancas de status =="
+git config user.name  "${GIT_USER_NAME}"
+git config user.email "${GIT_USER_EMAIL}"
 
-    - name: "Atualizar JSON para 'success' ou 'failed'"
-      ansible.builtin.copy:
-        dest: "{{ status_file }}"
-        mode: "0644"
-        content: |
-          {
-            "machine": "{{ machine_name }}",
-            "host": "{{ ansible_host }}",
-            "package": "{{ package_name }}",
-            "deployment_ref": "{{ deployment_ref }}",
-            "status": "{{ 'success' if predeploy_result.rc == 0 else 'failed' }}",
-            "updated_at": "{{ lookup('pipe', 'date -u +%Y-%m-%dT%H:%M:%SZ') }}"
-          }
-      delegate_to: localhost
-      run_once: false
+git add "status/${GIT_TAG}"
+git commit -m "Predeploy status for ${GIT_TAG} (execution ${EXECUTION_FILE_NAME})"
+git push origin "${GIT_BRANCH}"
+
+echo "Commit de status enviado com sucesso para ${GIT_BRANCH}."
