@@ -326,3 +326,215 @@ echo "== 7) Fim da pipe 1 (status commitado em status/${GIT_TAG}) =="
 
 -----------
 
+
+# ansible/deploy_from_status.yml
+---
+# =====================================================================
+# PLAY 1 - CONTROLLER (localhost)
+# Lê o JSON de status + machine/<nome>.yaml e registra 1 host dinâmico
+# =====================================================================
+- name: "[CONTROLLER] Preparar deploy/rollback de uma máquina"
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    repo_root: "{{ playbook_dir | dirname }}"
+
+    # Variáveis vindas da pipeline (-e):
+    #  - machine_name (ex: sitef-01)
+    #  - deployment_ref (ex: DEV000000001)
+    #  - action (deploy|rollback)
+    machine_name: "{{ machine_name }}"
+    deployment_ref: "{{ deployment_ref }}"
+    action: "{{ action | default('deploy') }}"
+
+    status_file: "{{ repo_root }}/status/{{ deployment_ref }}/predeploy-{{ machine_name }}.json"
+    machine_file: "{{ repo_root }}/machine/{{ machine_name }}.yaml"
+
+  tasks:
+    - name: "Validar se arquivo de status existe"
+      ansible.builtin.stat:
+        path: "{{ status_file }}"
+      register: st_status
+
+    - name: "Falhar se status da máquina não existe para essa TAG"
+      ansible.builtin.fail:
+        msg: "Status nao encontrado para machine={{ machine_name }}, tag={{ deployment_ref }} em {{ status_file }}"
+      when: not st_status.stat.exists
+
+    - name: "Carregar JSON de status"
+      ansible.builtin.set_fact:
+        status_data: "{{ lookup('file', status_file) | from_json }}"
+
+    - name: "Falhar se predeploy nao foi sucesso"
+      ansible.builtin.fail:
+        msg: "Predeploy da machine={{ machine_name }} esta com status='{{ status_data.status }}', nao eh permitido prosseguir."
+      when: status_data.status != 'success'
+
+    - name: "Carregar YAML da máquina"
+      ansible.builtin.include_vars:
+        file: "{{ machine_file }}"
+        name: machine_cfg
+
+    - name: "Definir package a ser usado conforme ACTION"
+      ansible.builtin.set_fact:
+        selected_package: >-
+          {{
+            machine_cfg.package
+            if action == 'deploy'
+            else machine_cfg.rollback | default('')
+          }}
+
+    - name: "Falhar se rollback nao definido"
+      ansible.builtin.fail:
+        msg: "Rollback nao definido para machine={{ machine_name }} em machine/{{ machine_name }}.yaml"
+      when:
+        - action == "rollback"
+        - (selected_package is undefined or selected_package == '')
+
+    - name: "Carregar YAML do package selecionado"
+      ansible.builtin.include_vars:
+        file: "{{ repo_root }}/package/{{ selected_package }}.yaml"
+        name: package_cfg
+
+    - name: "Definir script e env_vars"
+      ansible.builtin.set_fact:
+        package_script: "{{ package_cfg.script }}"
+        package_components: "{{ package_cfg.components | default([]) }}"
+        machine_env_vars: "{{ machine_cfg.env_vars | default({}) }}"
+
+    - name: "Registrar host alvo dinamico para deploy/rollback"
+      ansible.builtin.add_host:
+        name: dynamic_deploy_target
+        ansible_host: "{{ status_data.host }}"
+        ansible_user: ansible
+        ansible_ssh_private_key_file: "~/.ssh/id_rsa"
+        groups: dynamic_deploy
+
+        # Metadados para o próximo play
+        machine_name: "{{ machine_name }}"
+        action: "{{ action }}"
+        package_name: "{{ selected_package }}"
+        package_script: "{{ package_script }}"
+        package_components: "{{ package_components }}"
+        env_vars: "{{ machine_env_vars }}"
+
+# =====================================================================
+# PLAY 2 - TARGET (dynamic_deploy)
+# Copia scripts e executa init.sh do package (deploy ou rollback)
+# =====================================================================
+- name: "[TARGET] Executar {{ action }} na máquina"
+  hosts: dynamic_deploy
+  become: yes
+  gather_facts: false
+
+  vars:
+    repo_root: "{{ playbook_dir | dirname }}"
+
+    remote_base_dir: "/opt/sitef"
+    remote_scripts_dir: "{{ remote_base_dir }}/scripts/{{ package_script }}"
+    # Os componentes já foram baixados no predeploy em /opt/sitef/packages/...
+
+  tasks:
+    - name: "Criar diretórios base no target (se ainda não existem)"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ remote_base_dir }}"
+        - "{{ remote_scripts_dir }}"
+
+    - name: "Copiar scripts do package para o target"
+      ansible.builtin.copy:
+        src: "{{ repo_root }}/scripts/{{ package_script }}/"
+        dest: "{{ remote_scripts_dir }}/"
+        mode: "0755"
+
+    - name: "Verificar se existe init.sh"
+      ansible.builtin.stat:
+        path: "{{ remote_scripts_dir }}/init.sh"
+      register: st_init
+
+    - name: "Falhar se init.sh nao existir"
+      ansible.builtin.fail:
+        msg: "init.sh nao encontrado em {{ remote_scripts_dir }}"
+      when: not st_init.stat.exists
+
+    - name: "Executar init.sh do package ({{ action }})"
+      ansible.builtin.shell: |
+        cd {{ remote_base_dir }}
+        bash scripts/{{ package_script }}/init.sh
+      environment: "{{ env_vars | default({}) }}"
+
+
+
+-----------
+
+
+
+#!/bin/bash
+set -euo pipefail
+
+GIT_TOKEN="${GIT_TOKEN:?GIT_TOKEN nao definido}"
+GIT_TAG="${GIT_TAG:?GIT_TAG nao definido}"
+MACHINE_NAME="${MACHINE_NAME:?MACHINE_NAME nao definido}"
+ACTION="${ACTION:-deploy}"
+
+echo "== 1) Clonando repositório na TAG ${GIT_TAG} =="
+
+REPO_URL="https://${GIT_TOKEN}@gitlab.onefiserv.net/latam/latam/merchant-latam/LAC/aws-cd-configuration/elastic-compute-cloud-sitef.git"
+
+WORKDIR="/tmp/elastic-compute-cloud-sitef-deploy"
+rm -rf "$WORKDIR" || true
+git clone "$REPO_URL" "$WORKDIR"
+cd "$WORKDIR"
+
+git config --global --add safe.directory "$WORKDIR"
+
+git fetch --all --tags
+git checkout "$GIT_TAG"
+
+# Só pra logar o que vamos usar
+echo "Usando:"
+echo "  TAG         : $GIT_TAG"
+echo "  MACHINE_NAME: $MACHINE_NAME"
+echo "  ACTION      : $ACTION"
+
+echo "== 2) Conferindo JSON de status da pipe 1 =="
+
+STATUS_FILE="status/${GIT_TAG}/predeploy-${MACHINE_NAME}.json"
+
+if [ ! -f "$STATUS_FILE" ]; then
+  echo "ERRO: Arquivo de status nao encontrado: $STATUS_FILE"
+  exit 1
+fi
+
+echo "Conteudo de $STATUS_FILE:"
+cat "$STATUS_FILE"
+echo
+
+# Checa status via python pra nao depender de jq
+python3 - <<PY
+import json, sys
+path = "${STATUS_FILE}"
+with open(path) as f:
+    data = json.load(f)
+status = data.get("status")
+if status != "success":
+    print(f"ERRO: predeploy da machine=${MACHINE_NAME} esta com status='{status}', nao pode prosseguir.")
+    sys.exit(1)
+print("Status OK, pode prosseguir com", "${ACTION}")
+PY
+
+echo "== 3) Rodando playbook de deploy/rollback =="
+
+cd ansible
+
+ansible-playbook deploy_from_status.yml \
+  -e "machine_name=${MACHINE_NAME}" \
+  -e "deployment_ref=${GIT_TAG}" \
+  -e "action=${ACTION}" \
+  --forks 5
+
+echo "== 4) Pipeline 2 finalizada com sucesso =="
