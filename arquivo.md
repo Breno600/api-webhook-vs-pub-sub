@@ -1,61 +1,489 @@
-[ec2-user@LZFKDVAP1237 .ssh]$ ip a
-1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
-    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-    inet 127.0.0.1/8 scope host lo
-       valid_lft forever preferred_lft forever
-2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc mq state UP group default qlen 1000
-    link/ether 02:77:40:9d:2d:99 brd ff:ff:ff:ff:ff:ff
-    altname enp0s5
-    altname ens5
-    inet 100.99.41.58/18 brd 100.99.63.255 scope global dynamic noprefixroute eth0
-       valid_lft 2443sec preferred_lft 2443sec
-[ec2-user@LZFKDVAP1237 .ssh]$ sudo bash -lc '
-echo "== DIRS ==" &&
-ls -ld /opt/SoftwareExpress/sitef \
-       /opt/SoftwareExpress/sitef/package/linux \
-       /opt/SoftwareExpress/sitef/scripts &&
-
-echo "== RPM ==" &&
-ls -l /opt/SoftwareExpress/sitef/package/linux &&
-
-echo "== SCRIPTS ==" &&
-ls -la /opt/SoftwareExpress/sitef/scripts &&
-
-echo "== INIT FILES ==" &&
-test -f /opt/SoftwareExpress/sitef/scripts/deploy-sitef-0.0.1/init_parallel.sh && echo "OK init_parallel.sh" &&
-test -f /opt/SoftwareExpress/sitef/scripts/deploy-sitef-0.0.1/init.sh && echo "OK init.sh" &&
-
-echo "== PROBE ==" &&
-ls -la /opt/SoftwareExpress/sitef/.predeploy_probe_* 2>/dev/null || echo "Probe nao encontrado" &&
-
-echo "== PARALLEL.TXT ==" &&
-cat /opt/SoftwareExpress/sitef/scripts/deploy-sitef-0.0.1/parallel.txt 2>/dev/null || echo "parallel.txt nao existe" &&
-
-echo "== PKGS INSTALADOS (se aplicavel) ==" &&
-rpm -qa | grep -i sitef || true
-'
-== DIRS ==
-drwxr-xr-x. 4 root root 4096 Dec  5 11:06 /opt/SoftwareExpress/sitef
-drwxr-xr-x. 2 root root   43 Dec  5 10:48 /opt/SoftwareExpress/sitef/package/linux
-drwxr-xr-x. 3 root root   32 Dec  5 10:48 /opt/SoftwareExpress/sitef/scripts
-== RPM ==
-total 36
--rw-r--r--. 1 root root 34016 Dec  5 10:48 sitef-core-0.0.1-0.x86_64.rpm
-== SCRIPTS ==
-total 4
-drwxr-xr-x. 3 root root   32 Dec  5 10:48 .
-drwxr-xr-x. 4 root root 4096 Dec  5 11:06 ..
-drwxr-xr-x. 2 root root   65 Dec  5 10:48 deploy-sitef-0.0.1
-== INIT FILES ==
-OK init_parallel.sh
-OK init.sh
-== PROBE ==
--rw-r--r--. 1 root root 115 Dec  5 10:48 /opt/SoftwareExpress/sitef/.predeploy_probe_DEV000000003_sitef-01_1764931702
--rw-r--r--. 1 root root 115 Dec  5 11:01 /opt/SoftwareExpress/sitef/.predeploy_probe_DEV000000003_sitef-01_1764932465
--rw-r--r--. 1 root root 115 Dec  5 11:04 /opt/SoftwareExpress/sitef/.predeploy_probe_DEV000000003_sitef-01_1764932640
--rw-r--r--. 1 root root 115 Dec  5 11:06 /opt/SoftwareExpress/sitef/.predeploy_probe_DEV000000003_sitef-01_1764932782
-== PARALLEL.TXT ==
-Executando backup...
-Backup finalizado
-== PKGS INSTALADOS (se aplicavel) ==
-[ec2-user@LZFKDVAP1237 .ssh]$
+Exec using JSCH
+Connecting to 10.218.238.144 ....
+Connection to 10.218.238.144 established
+Executing command ...
+== DEPLOY PIPELINE ==
+BRANCH         : develop
+ACTION         : deploy
+DEPLOYMENT_REF : DEV000000003
+EXECUTION_FILE : execution/machine_list_dev.yml
+Clonando repo em /tmp/tmp.RbFzgx2MT3...
+Cloning into '/tmp/tmp.RbFzgx2MT3/elastic-compute-cloud-sitef'...
+remote: Enumerating objects: 383, done.
+remote: Counting objects:   0% (1/333)
+remote: Counting objects:   1% (4/333)
+remote: Counting objects:   2% (7/333)
+remote: Counting objects:   3% (10/333)
+remote: Counting objects:   4% (14/333)
+remote: Counting objects:   5% (17/333)
+remote: Counting objects:   6% (20/333)
+remote: Counting objects:   7% (24/333)
+remote: Counting objects:   8% (27/333)
+remote: Counting objects:   9% (30/333)
+remote: Counting objects:  10% (34/333)
+remote: Counting objects:  11% (37/333)
+remote: Counting objects:  12% (40/333)
+remote: Counting objects:  13% (44/333)
+remote: Counting objects:  14% (47/333)
+remote: Counting objects:  15% (50/333)
+remote: Counting objects:  16% (54/333)
+remote: Counting objects:  17% (57/333)
+remote: Counting objects:  18% (60/333)
+remote: Counting objects:  19% (64/333)
+remote: Counting objects:  20% (67/333)
+remote: Counting objects:  21% (70/333)
+remote: Counting objects:  22% (74/333)
+remote: Counting objects:  23% (77/333)
+remote: Counting objects:  24% (80/333)
+remote: Counting objects:  25% (84/333)
+remote: Counting objects:  26% (87/333)
+remote: Counting objects:  27% (90/333)
+remote: Counting objects:  28% (94/333)
+remote: Counting objects:  29% (97/333)
+remote: Counting objects:  30% (100/333)
+remote: Counting objects:  31% (104/333)
+remote: Counting objects:  32% (107/333)
+remote: Counting objects:  33% (110/333)
+remote: Counting objects:  34% (114/333)
+remote: Counting objects:  35% (117/333)
+remote: Counting objects:  36% (120/333)
+remote: Counting objects:  37% (124/333)
+remote: Counting objects:  38% (127/333)
+remote: Counting objects:  39% (130/333)
+remote: Counting objects:  40% (134/333)
+remote: Counting objects:  41% (137/333)
+remote: Counting objects:  42% (140/333)
+remote: Counting objects:  43% (144/333)
+remote: Counting objects:  44% (147/333)
+remote: Counting objects:  45% (150/333)
+remote: Counting objects:  46% (154/333)
+remote: Counting objects:  47% (157/333)
+remote: Counting objects:  48% (160/333)
+remote: Counting objects:  49% (164/333)
+remote: Counting objects:  50% (167/333)
+remote: Counting objects:  51% (170/333)
+remote: Counting objects:  52% (174/333)
+remote: Counting objects:  53% (177/333)
+remote: Counting objects:  54% (180/333)
+remote: Counting objects:  55% (184/333)
+remote: Counting objects:  56% (187/333)
+remote: Counting objects:  57% (190/333)
+remote: Counting objects:  58% (194/333)
+remote: Counting objects:  59% (197/333)
+remote: Counting objects:  60% (200/333)
+remote: Counting objects:  61% (204/333)
+remote: Counting objects:  62% (207/333)
+remote: Counting objects:  63% (210/333)
+remote: Counting objects:  64% (214/333)
+remote: Counting objects:  65% (217/333)
+remote: Counting objects:  66% (220/333)
+remote: Counting objects:  67% (224/333)
+remote: Counting objects:  68% (227/333)
+remote: Counting objects:  69% (230/333)
+remote: Counting objects:  70% (234/333)
+remote: Counting objects:  71% (237/333)
+remote: Counting objects:  72% (240/333)
+remote: Counting objects:  73% (244/333)
+remote: Counting objects:  74% (247/333)
+remote: Counting objects:  75% (250/333)
+remote: Counting objects:  76% (254/333)
+remote: Counting objects:  77% (257/333)
+remote: Counting objects:  78% (260/333)
+remote: Counting objects:  79% (264/333)
+remote: Counting objects:  80% (267/333)
+remote: Counting objects:  81% (270/333)
+remote: Counting objects:  82% (274/333)
+remote: Counting objects:  83% (277/333)
+remote: Counting objects:  84% (280/333)
+remote: Counting objects:  85% (284/333)
+remote: Counting objects:  86% (287/333)
+remote: Counting objects:  87% (290/333)
+remote: Counting objects:  88% (294/333)
+remote: Counting objects:  89% (297/333)
+remote: Counting objects:  90% (300/333)
+remote: Counting objects:  91% (304/333)
+remote: Counting objects:  92% (307/333)
+remote: Counting objects:  93% (310/333)
+remote: Counting objects:  94% (314/333)
+remote: Counting objects:  95% (317/333)
+remote: Counting objects:  96% (320/333)
+remote: Counting objects:  97% (324/333)
+remote: Counting objects:  98% (327/333)
+remote: Counting objects:  99% (330/333)
+remote: Counting objects: 100% (333/333)
+remote: Counting objects: 100% (333/333), done.
+remote: Compressing objects:   0% (1/320)
+remote: Compressing objects:   1% (4/320)
+remote: Compressing objects:   2% (7/320)
+remote: Compressing objects:   3% (10/320)
+remote: Compressing objects:   4% (13/320)
+remote: Compressing objects:   5% (16/320)
+remote: Compressing objects:   6% (20/320)
+remote: Compressing objects:   7% (23/320)
+remote: Compressing objects:   8% (26/320)
+remote: Compressing objects:   9% (29/320)
+remote: Compressing objects:  10% (32/320)
+remote: Compressing objects:  11% (36/320)
+remote: Compressing objects:  12% (39/320)
+remote: Compressing objects:  13% (42/320)
+remote: Compressing objects:  14% (45/320)
+remote: Compressing objects:  15% (48/320)
+remote: Compressing objects:  16% (52/320)
+remote: Compressing objects:  17% (55/320)
+remote: Compressing objects:  18% (58/320)
+remote: Compressing objects:  19% (61/320)
+remote: Compressing objects:  20% (64/320)
+remote: Compressing objects:  21% (68/320)
+remote: Compressing objects:  22% (71/320)
+remote: Compressing objects:  23% (74/320)
+remote: Compressing objects:  24% (77/320)
+remote: Compressing objects:  25% (80/320)
+remote: Compressing objects:  26% (84/320)
+remote: Compressing objects:  27% (87/320)
+remote: Compressing objects:  28% (90/320)
+remote: Compressing objects:  29% (93/320)
+remote: Compressing objects:  30% (96/320)
+remote: Compressing objects:  31% (100/320)
+remote: Compressing objects:  32% (103/320)
+remote: Compressing objects:  33% (106/320)
+remote: Compressing objects:  34% (109/320)
+remote: Compressing objects:  35% (112/320)
+remote: Compressing objects:  36% (116/320)
+remote: Compressing objects:  37% (119/320)
+remote: Compressing objects:  38% (122/320)
+remote: Compressing objects:  39% (125/320)
+remote: Compressing objects:  40% (128/320)
+remote: Compressing objects:  41% (132/320)
+remote: Compressing objects:  42% (135/320)
+remote: Compressing objects:  43% (138/320)
+remote: Compressing objects:  44% (141/320)
+remote: Compressing objects:  45% (144/320)
+remote: Compressing objects:  46% (148/320)
+remote: Compressing objects:  47% (151/320)
+remote: Compressing objects:  48% (154/320)
+remote: Compressing objects:  49% (157/320)
+remote: Compressing objects:  50% (160/320)
+remote: Compressing objects:  51% (164/320)
+remote: Compressing objects:  52% (167/320)
+remote: Compressing objects:  53% (170/320)
+remote: Compressing objects:  54% (173/320)
+remote: Compressing objects:  55% (176/320)
+remote: Compressing objects:  56% (180/320)
+remote: Compressing objects:  57% (183/320)
+remote: Compressing objects:  58% (186/320)
+remote: Compressing objects:  59% (189/320)
+remote: Compressing objects:  60% (192/320)
+remote: Compressing objects:  61% (196/320)
+remote: Compressing objects:  62% (199/320)
+remote: Compressing objects:  63% (202/320)
+remote: Compressing objects:  64% (205/320)
+remote: Compressing objects:  65% (208/320)
+remote: Compressing objects:  66% (212/320)
+remote: Compressing objects:  67% (215/320)
+remote: Compressing objects:  68% (218/320)
+remote: Compressing objects:  69% (221/320)
+remote: Compressing objects:  70% (224/320)
+remote: Compressing objects:  71% (228/320)
+remote: Compressing objects:  72% (231/320)
+remote: Compressing objects:  73% (234/320)
+remote: Compressing objects:  74% (237/320)
+remote: Compressing objects:  75% (240/320)
+remote: Compressing objects:  76% (244/320)
+remote: Compressing objects:  77% (247/320)
+remote: Compressing objects:  78% (250/320)
+remote: Compressing objects:  79% (253/320)
+remote: Compressing objects:  80% (256/320)
+remote: Compressing objects:  81% (260/320)
+remote: Compressing objects:  82% (263/320)
+remote: Compressing objects:  83% (266/320)
+remote: Compressing objects:  84% (269/320)
+remote: Compressing objects:  85% (272/320)
+remote: Compressing objects:  86% (276/320)
+remote: Compressing objects:  87% (279/320)
+remote: Compressing objects:  88% (282/320)
+remote: Compressing objects:  89% (285/320)
+remote: Compressing objects:  90% (288/320)
+remote: Compressing objects:  91% (292/320)
+remote: Compressing objects:  92% (295/320)
+remote: Compressing objects:  93% (298/320)
+remote: Compressing objects:  94% (301/320)
+remote: Compressing objects:  95% (304/320)
+remote: Compressing objects:  96% (308/320)
+remote: Compressing objects:  97% (311/320)
+remote: Compressing objects:  98% (314/320)
+remote: Compressing objects:  99% (317/320)
+remote: Compressing objects: 100% (320/320)
+remote: Compressing objects: 100% (320/320), done.
+remote: Total 383 (delta 192), reused 0 (delta 0), pack-reused 50
+Receiving objects:   0% (1/383)
+Receiving objects:   1% (4/383)
+Receiving objects:   2% (8/383)
+Receiving objects:   3% (12/383)
+Receiving objects:   4% (16/383)
+Receiving objects:   5% (20/383)
+Receiving objects:   6% (23/383)
+Receiving objects:   7% (27/383)
+Receiving objects:   8% (31/383)
+Receiving objects:   9% (35/383)
+Receiving objects:  10% (39/383)
+Receiving objects:  11% (43/383)
+Receiving objects:  12% (46/383)
+Receiving objects:  13% (50/383)
+Receiving objects:  14% (54/383)
+Receiving objects:  15% (58/383)
+Receiving objects:  16% (62/383)
+Receiving objects:  17% (66/383)
+Receiving objects:  18% (69/383)
+Receiving objects:  19% (73/383)
+Receiving objects:  20% (77/383)
+Receiving objects:  21% (81/383)
+Receiving objects:  22% (85/383)
+Receiving objects:  23% (89/383)
+Receiving objects:  24% (92/383)
+Receiving objects:  25% (96/383)
+Receiving objects:  26% (100/383)
+Receiving objects:  27% (104/383)
+Receiving objects:  28% (108/383)
+Receiving objects:  29% (112/383)
+Receiving objects:  30% (115/383)
+Receiving objects:  31% (119/383)
+Receiving objects:  32% (123/383)
+Receiving objects:  33% (127/383)
+Receiving objects:  34% (131/383)
+Receiving objects:  35% (135/383)
+Receiving objects:  36% (138/383)
+Receiving objects:  37% (142/383)
+Receiving objects:  38% (146/383)
+Receiving objects:  39% (150/383)
+Receiving objects:  40% (154/383)
+Receiving objects:  41% (158/383)
+Receiving objects:  42% (161/383)
+Receiving objects:  43% (165/383)
+Receiving objects:  44% (169/383)
+Receiving objects:  45% (173/383)
+Receiving objects:  46% (177/383)
+Receiving objects:  47% (181/383)
+Receiving objects:  48% (184/383)
+Receiving objects:  49% (188/383)
+Receiving objects:  50% (192/383)
+Receiving objects:  51% (196/383)
+Receiving objects:  52% (200/383)
+Receiving objects:  53% (203/383)
+Receiving objects:  54% (207/383)
+Receiving objects:  55% (211/383)
+Receiving objects:  56% (215/383)
+Receiving objects:  57% (219/383)
+Receiving objects:  58% (223/383)
+Receiving objects:  59% (226/383)
+Receiving objects:  60% (230/383)
+Receiving objects:  61% (234/383)
+Receiving objects:  62% (238/383)
+Receiving objects:  63% (242/383)
+Receiving objects:  64% (246/383)
+Receiving objects:  65% (249/383)
+Receiving objects:  66% (253/383)
+Receiving objects:  67% (257/383)
+Receiving objects:  68% (261/383)
+Receiving objects:  69% (265/383)
+Receiving objects:  70% (269/383)
+Receiving objects:  71% (272/383)
+Receiving objects:  72% (276/383)
+Receiving objects:  73% (280/383)
+Receiving objects:  74% (284/383)
+Receiving objects:  75% (288/383)
+Receiving objects:  76% (292/383)
+Receiving objects:  77% (295/383)
+Receiving objects:  78% (299/383)
+Receiving objects:  79% (303/383)
+Receiving objects:  80% (307/383)
+Receiving objects:  81% (311/383)
+Receiving objects:  82% (315/383)
+Receiving objects:  83% (318/383)
+Receiving objects:  84% (322/383)
+Receiving objects:  85% (326/383)
+Receiving objects:  86% (330/383)
+Receiving objects:  87% (334/383)
+Receiving objects:  88% (338/383)
+Receiving objects:  89% (341/383)
+Receiving objects:  90% (345/383)
+Receiving objects:  91% (349/383)
+Receiving objects:  92% (353/383)
+Receiving objects:  93% (357/383)
+Receiving objects:  94% (361/383)
+Receiving objects:  95% (364/383)
+Receiving objects:  96% (368/383)
+Receiving objects:  97% (372/383)
+Receiving objects:  98% (376/383)
+Receiving objects:  99% (380/383)
+Receiving objects: 100% (383/383)
+Receiving objects: 100% (383/383), 55.32 KiB | 11.06 MiB/s, done.
+Resolving deltas:   0% (0/211)
+Resolving deltas:   1% (3/211)
+Resolving deltas:   2% (5/211)
+Resolving deltas:   3% (7/211)
+Resolving deltas:   4% (9/211)
+Resolving deltas:   5% (11/211)
+Resolving deltas:   6% (13/211)
+Resolving deltas:   7% (15/211)
+Resolving deltas:   8% (17/211)
+Resolving deltas:   9% (19/211)
+Resolving deltas:  10% (22/211)
+Resolving deltas:  11% (24/211)
+Resolving deltas:  12% (26/211)
+Resolving deltas:  13% (28/211)
+Resolving deltas:  14% (30/211)
+Resolving deltas:  15% (32/211)
+Resolving deltas:  16% (34/211)
+Resolving deltas:  17% (36/211)
+Resolving deltas:  18% (38/211)
+Resolving deltas:  19% (41/211)
+Resolving deltas:  20% (43/211)
+Resolving deltas:  21% (45/211)
+Resolving deltas:  22% (47/211)
+Resolving deltas:  23% (49/211)
+Resolving deltas:  24% (51/211)
+Resolving deltas:  25% (53/211)
+Resolving deltas:  26% (55/211)
+Resolving deltas:  27% (57/211)
+Resolving deltas:  28% (60/211)
+Resolving deltas:  29% (62/211)
+Resolving deltas:  30% (64/211)
+Resolving deltas:  31% (66/211)
+Resolving deltas:  32% (68/211)
+Resolving deltas:  33% (70/211)
+Resolving deltas:  34% (72/211)
+Resolving deltas:  35% (74/211)
+Resolving deltas:  36% (76/211)
+Resolving deltas:  37% (79/211)
+Resolving deltas:  38% (81/211)
+Resolving deltas:  39% (83/211)
+Resolving deltas:  40% (85/211)
+Resolving deltas:  41% (87/211)
+Resolving deltas:  42% (89/211)
+Resolving deltas:  43% (91/211)
+Resolving deltas:  44% (93/211)
+Resolving deltas:  45% (95/211)
+Resolving deltas:  46% (98/211)
+Resolving deltas:  47% (100/211)
+Resolving deltas:  48% (102/211)
+Resolving deltas:  49% (104/211)
+Resolving deltas:  50% (106/211)
+Resolving deltas:  51% (108/211)
+Resolving deltas:  52% (110/211)
+Resolving deltas:  53% (112/211)
+Resolving deltas:  54% (114/211)
+Resolving deltas:  55% (117/211)
+Resolving deltas:  56% (119/211)
+Resolving deltas:  57% (121/211)
+Resolving deltas:  58% (123/211)
+Resolving deltas:  59% (125/211)
+Resolving deltas:  60% (127/211)
+Resolving deltas:  61% (129/211)
+Resolving deltas:  62% (131/211)
+Resolving deltas:  63% (133/211)
+Resolving deltas:  64% (136/211)
+Resolving deltas:  65% (138/211)
+Resolving deltas:  66% (140/211)
+Resolving deltas:  67% (142/211)
+Resolving deltas:  68% (144/211)
+Resolving deltas:  69% (146/211)
+Resolving deltas:  70% (148/211)
+Resolving deltas:  71% (150/211)
+Resolving deltas:  72% (152/211)
+Resolving deltas:  73% (155/211)
+Resolving deltas:  74% (157/211)
+Resolving deltas:  75% (159/211)
+Resolving deltas:  76% (161/211)
+Resolving deltas:  77% (163/211)
+Resolving deltas:  78% (165/211)
+Resolving deltas:  79% (167/211)
+Resolving deltas:  80% (169/211)
+Resolving deltas:  81% (171/211)
+Resolving deltas:  82% (174/211)
+Resolving deltas:  83% (176/211)
+Resolving deltas:  84% (178/211)
+Resolving deltas:  85% (180/211)
+Resolving deltas:  86% (182/211)
+Resolving deltas:  87% (184/211)
+Resolving deltas:  88% (186/211)
+Resolving deltas:  89% (188/211)
+Resolving deltas:  90% (190/211)
+Resolving deltas:  91% (193/211)
+Resolving deltas:  92% (195/211)
+Resolving deltas:  93% (197/211)
+Resolving deltas:  94% (199/211)
+Resolving deltas:  95% (201/211)
+Resolving deltas:  96% (203/211)
+Resolving deltas:  97% (205/211)
+Resolving deltas:  98% (207/211)
+Resolving deltas:  99% (209/211)
+Resolving deltas: 100% (211/211)
+Resolving deltas: 100% (211/211), done.
+Repositorio em /tmp/tmp.RbFzgx2MT3/elastic-compute-cloud-sitef
+develop
+d0472c52f9cab95a28bbdc2a1067aa0c8917fa66
+Maquinas encontradas:
+sitef-01
+====================================================
+== DEPLOY -> sitef-01
+====================================================
+[WARNING]: Found variable using reserved name: action
+PLAY [[CONTROLLER] Preparar deploy/rollback de uma máquina] ********************
+TASK [Validar se arquivo de status existe] *************************************
+ok: [localhost]
+TASK [Falhar se status da máquina não existe para essa TAG] ********************
+skipping: [localhost]
+TASK [Carregar JSON de status] *************************************************
+ok: [localhost]
+TASK [Falhar se predeploy nao foi sucesso] *************************************
+skipping: [localhost]
+TASK [Carregar YAML da máquina] ************************************************
+ok: [localhost]
+TASK [Definir usuário alvo e chave padrão] *************************************
+ok: [localhost]
+TASK [Montar ssh_common_args efetivo] ******************************************
+ok: [localhost]
+TASK [Definir package a ser usado conforme ACTION] *****************************
+ok: [localhost]
+TASK [Falhar se package nao definido para deploy] ******************************
+skipping: [localhost]
+TASK [Falhar se rollback nao definido] *****************************************
+skipping: [localhost]
+TASK [Carregar YAML do package selecionado] ************************************
+ok: [localhost]
+TASK [Definir script e env_vars] ***********************************************
+ok: [localhost]
+TASK [Registrar host alvo dinamico para deploy/rollback] ***********************
+changed: [localhost]
+PLAY [[TARGET] Executar deploy na máquina] *************************************
+TASK [Criar diretórios base no target (se ainda não existem)] ******************
+ok: [dynamic_deploy_target] => (item=/opt/SoftwareExpress/sitef)
+ok: [dynamic_deploy_target] => (item=/opt/SoftwareExpress/sitef/package/linux)
+ok: [dynamic_deploy_target] => (item=/opt/SoftwareExpress/sitef/scripts)
+ok: [dynamic_deploy_target] => (item=/opt/SoftwareExpress/sitef/scripts/deploy-sitef-0.0.1)
+TASK [Copiar scripts do package para o target] *********************************
+ok: [dynamic_deploy_target]
+TASK [Verificar se existe init.sh] *********************************************
+ok: [dynamic_deploy_target]
+TASK [Falhar se init.sh nao existir] *******************************************
+skipping: [dynamic_deploy_target]
+TASK [Validar que ao menos 1 componente existe no diretório de package] ********
+ok: [dynamic_deploy_target]
+TASK [Falhar se componente esperado não existir] *******************************
+skipping: [dynamic_deploy_target]
+TASK [Executar init.sh do package (deploy)] ************************************
+changed: [dynamic_deploy_target]
+TASK [Exibir stdout do init.sh] ************************************************
+ok: [dynamic_deploy_target] => {
+    "deploy_result.stdout_lines": [
+        "Instalando pacotes...",
+        "Fim da instalacao"
+    ]
+}
+TASK [Falhar se init.sh retornou erro] *****************************************
+skipping: [dynamic_deploy_target]
+PLAY RECAP *********************************************************************
+dynamic_deploy_target      : ok=6    changed=1    unreachable=0    failed=0    skipped=3    rescued=0    ignored=0   
+localhost                  : ok=9    changed=1    unreachable=0    failed=0    skipped=4    rescued=0    ignored=0   
+== Pipeline finalizada com sucesso ==
+Command finished with status SUCCESS
