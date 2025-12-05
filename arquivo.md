@@ -54,12 +54,30 @@
     path: "{{ item }}"
     state: directory
     mode: "0755"
+    owner: root
+    group: root
   loop:
     - "{{ host_base_dir }}"
     - "{{ host_pkg_dir }}"
     - "{{ host_scripts_dir }}"
     - "{{ host_scripts_dir }}/{{ package_cfg.script }}"
   delegate_to: "{{ machine_cfg.host }}"
+
+# (Opcional mas útil) Provar no log que os diretórios existem do ponto de vista do host
+- name: "Stat diretórios base no host {{ machine_cfg.host }}"
+  become: true
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ host_base_dir }}"
+    - "{{ host_pkg_dir }}"
+    - "{{ host_scripts_dir }}"
+    - "{{ host_scripts_dir }}/{{ package_cfg.script }}"
+  delegate_to: "{{ machine_cfg.host }}"
+  register: dirs_stat
+
+- debug:
+    var: dirs_stat
 
 # ----------------------------------------------------------
 # Baixar RPM(s) do Nexus na MÁQUINA ALVO
@@ -144,6 +162,60 @@
   environment: "{{ machine_cfg.env_vars | default({}) }}"
   register: predeploy_result
   ignore_errors: true
+
+# ----------------------------------------------------------
+# PROVA DEFINITIVA DE IDENTIDADE DO HOST + EVIDÊNCIAS NO LOG
+# ----------------------------------------------------------
+- name: "PROVA: criar marcador único no host alvo ({{ machine_name }})"
+  become: true
+  ansible.builtin.copy:
+    dest: "{{ host_base_dir }}/.predeploy_probe_{{ deployment_ref }}_{{ machine_name }}_{{ ansible_date_time.epoch }}"
+    mode: "0644"
+    content: |
+      machine={{ machine_name }}
+      host={{ machine_cfg.host }}
+      package={{ machine_cfg.package }}
+      deployment_ref={{ deployment_ref }}
+      ansible_epoch={{ ansible_date_time.epoch }}
+  delegate_to: "{{ machine_cfg.host }}"
+  register: probe_copy
+
+- debug:
+    var: probe_copy
+
+- name: "PROVA: capturar identidade e listar evidências no host ({{ machine_name }})"
+  become: true
+  ansible.builtin.shell: |
+    echo "=== HOST IDENTIDADE ==="
+    echo "machine_name={{ machine_name }}"
+    echo "machine_cfg.host={{ machine_cfg.host }}"
+    echo "package={{ machine_cfg.package }}"
+    echo "deployment_ref={{ deployment_ref }}"
+    echo "--- hostname ---"
+    hostname
+    echo "--- ips ---"
+    hostname -I || ip a
+    echo
+    echo "=== LISTAGEM BASE ==="
+    ls -ld /opt /opt/SoftwareExpress "{{ host_base_dir }}" || true
+    echo
+    echo "=== LISTAGEM PACKAGE ==="
+    ls -la "{{ host_pkg_dir }}" || true
+    echo
+    echo "=== LISTAGEM SCRIPTS ==="
+    ls -la "{{ host_scripts_dir }}" || true
+    ls -la "{{ host_scripts_dir }}/{{ package_cfg.script }}" || true
+    echo
+    echo "=== PROBES ==="
+    ls -la "{{ host_base_dir }}/.predeploy_probe_*" || true
+    echo
+    echo "=== PARALLEL.TXT ==="
+    cat "{{ host_scripts_dir }}/{{ package_cfg.script }}/parallel.txt" || echo "parallel.txt nao existe"
+  delegate_to: "{{ machine_cfg.host }}"
+  register: probe_ls
+
+- debug:
+    var: probe_ls.stdout_lines
 
 # ----------------------------------------------------------
 # Atualizar status para success ou failed
