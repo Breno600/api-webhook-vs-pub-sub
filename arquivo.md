@@ -6,7 +6,36 @@
 #   - repo_root
 #   - status_dir
 #   - deployment_ref
+#
+# Este arquivo foi ajustado para:
+#   1) Evitar execução "local" acidental no bastion/controller
+#   2) Garantir que delegate realmente execute no host alvo
+#   3) Suportar bastion via ProxyJump opcional
+#
+# Como usar bastion:
+#   - Cenário A (mais comum no seu fluxo):
+#       O pipeline conecta no bastion via JSCH
+#       e roda ansible *de dentro do bastion*.
+#       => NÃO precisa ProxyJump.
+#
+#   - Cenário B:
+#       Você roda ansible de fora da rede privada.
+#       => Defina em algum lugar do play principal ou vars:
+#            bastion_host: "SEU_IP_OU_DNS_DO_BASTION"
+#            bastion_user: "ec2-user"
+#         ou defina machine_cfg.ssh_common_args por máquina.
+#
+# Obs:
+#   Este arquivo tenta respeitar machine/<nome>.yml usando:
+#     machine_cfg.user (opcional)
+#     machine_cfg.env_vars (opcional)
+#     machine_cfg.ssh_common_args (opcional)
+#     machine_cfg.package
+#     machine_cfg.host
 
+# ----------------------------------------------------------
+# Definir caminhos locais de trabalho
+# ----------------------------------------------------------
 - name: "Definir caminhos para {{ machine_name }}"
   ansible.builtin.set_fact:
     machine_file: "{{ repo_root }}/machine/{{ machine_name }}.yml"
@@ -27,6 +56,36 @@
   ansible.builtin.include_vars:
     file: "{{ repo_root }}/package/{{ machine_cfg.package }}.yml"
     name: package_cfg
+
+# ----------------------------------------------------------
+# Calcular SSH args (com suporte a bastion opcional)
+# ----------------------------------------------------------
+- name: "Calcular ssh_common_args para {{ machine_name }}"
+  ansible.builtin.set_fact:
+    target_user: "{{ machine_cfg.user | default('ec2-user') }}"
+    target_ssh_common_args: >-
+      {{
+        machine_cfg.ssh_common_args
+          | default(
+              (bastion_host is defined)
+                | ternary(
+                    '-o ProxyJump=' ~ (bastion_user | default('ec2-user')) ~ '@' ~ bastion_host,
+                    ''
+                  )
+            )
+      }}
+
+# ----------------------------------------------------------
+# Registrar host dinâmico para GARANTIR conexão SSH real
+# Isso evita o problema de "localhost/connection local"
+# ----------------------------------------------------------
+- name: "Registrar host dinâmico para {{ machine_name }}"
+  ansible.builtin.add_host:
+    name: "{{ machine_name }}"
+    ansible_host: "{{ machine_cfg.host }}"
+    ansible_user: "{{ target_user }}"
+    ansible_connection: ssh
+    ansible_ssh_common_args: "{{ target_ssh_common_args }}"
 
 # ----------------------------------------------------------
 # Status inicial (queued)
@@ -61,9 +120,9 @@
     - "{{ host_pkg_dir }}"
     - "{{ host_scripts_dir }}"
     - "{{ host_scripts_dir }}/{{ package_cfg.script }}"
-  delegate_to: "{{ machine_cfg.host }}"
+  delegate_to: "{{ machine_name }}"
 
-# (Opcional mas útil) Provar no log que os diretórios existem do ponto de vista do host
+# (Opcional mas útil) Provar no log que os diretórios existem do ponto de vista do host alvo
 - name: "Stat diretórios base no host {{ machine_cfg.host }}"
   become: true
   ansible.builtin.stat:
@@ -73,7 +132,7 @@
     - "{{ host_pkg_dir }}"
     - "{{ host_scripts_dir }}"
     - "{{ host_scripts_dir }}/{{ package_cfg.script }}"
-  delegate_to: "{{ machine_cfg.host }}"
+  delegate_to: "{{ machine_name }}"
   register: dirs_stat
 
 - debug:
@@ -94,10 +153,9 @@
     url_password: "{{ nexus_password }}"
     force: true
   loop: "{{ package_cfg.components }}"
-  delegate_to: "{{ machine_cfg.host }}"
+  delegate_to: "{{ machine_name }}"
   register: geturl_result
 
-# DEBUG: mostrar saída do get_url
 - debug:
     var: geturl_result
 
@@ -106,7 +164,7 @@
   become: true
   ansible.builtin.stat:
     path: "{{ host_pkg_dir }}/{{ (package_cfg.components[0] | basename) }}"
-  delegate_to: "{{ machine_cfg.host }}"
+  delegate_to: "{{ machine_name }}"
   register: rpm_stat
 
 - debug:
@@ -127,7 +185,7 @@
     src: "{{ repo_root }}/scripts/{{ package_cfg.script }}/"
     dest: "{{ host_scripts_dir }}/{{ package_cfg.script }}/"
     mode: "0755"
-  delegate_to: "{{ machine_cfg.host }}"
+  delegate_to: "{{ machine_name }}"
   register: copy_scripts_result
 
 - debug:
@@ -138,7 +196,7 @@
   become: true
   ansible.builtin.stat:
     path: "{{ host_scripts_dir }}/{{ package_cfg.script }}/init_parallel.sh"
-  delegate_to: "{{ machine_cfg.host }}"
+  delegate_to: "{{ machine_name }}"
   register: init_stat
 
 - debug:
@@ -158,7 +216,7 @@
   ansible.builtin.shell: |
     cd "{{ host_scripts_dir }}/{{ package_cfg.script }}"
     ./init_parallel.sh
-  delegate_to: "{{ machine_cfg.host }}"
+  delegate_to: "{{ machine_name }}"
   environment: "{{ machine_cfg.env_vars | default({}) }}"
   register: predeploy_result
   ignore_errors: true
@@ -177,7 +235,7 @@
       package={{ machine_cfg.package }}
       deployment_ref={{ deployment_ref }}
       ansible_epoch={{ ansible_date_time.epoch }}
-  delegate_to: "{{ machine_cfg.host }}"
+  delegate_to: "{{ machine_name }}"
   register: probe_copy
 
 - debug:
@@ -211,7 +269,7 @@
     echo
     echo "=== PARALLEL.TXT ==="
     cat "{{ host_scripts_dir }}/{{ package_cfg.script }}/parallel.txt" || echo "parallel.txt nao existe"
-  delegate_to: "{{ machine_cfg.host }}"
+  delegate_to: "{{ machine_name }}"
   register: probe_ls
 
 - debug:
