@@ -1,5 +1,34 @@
-#deploy_per_machine
+# deploy_per_machine.yml
+#
+# Responsável por executar o deploy em uma única máquina a partir
+# da lista montada no deploy_from_status.yml.
+#
+# Espera receber:
+# - target_machine (recomendado) OU machine_name
+# - deployment_ref
+# - repo_root
+# - status_dir
+#
+# Saída:
+# - status/<TAG>/deploy-<machine>.json
 
+# -------------------------------------------------------------------
+# Normalização do loop_var para evitar colisão de variável
+# -------------------------------------------------------------------
+- name: "Normalizar variável de máquina"
+  ansible.builtin.set_fact:
+    machine_name: "{{ target_machine | default(machine_name) }}"
+
+- name: "Falhar se machine_name não foi informado"
+  ansible.builtin.assert:
+    that:
+      - machine_name is defined
+      - machine_name | length > 0
+    fail_msg: "machine_name/target_machine não foi definido no include_tasks."
+
+# -------------------------------------------------------------------
+# Caminhos locais do repo e status
+# -------------------------------------------------------------------
 - name: "Definir caminhos para {{ machine_name }}"
   ansible.builtin.set_fact:
     machine_file: "{{ repo_root }}/machine/{{ machine_name }}.yml"
@@ -8,16 +37,49 @@
     host_pkg_dir: "/opt/SoftwareExpress/sitef/package/linux"
     host_scripts_dir: "/opt/SoftwareExpress/sitef/scripts"
 
+# -------------------------------------------------------------------
+# Validar existência do arquivo da máquina
+# -------------------------------------------------------------------
+- name: "Validar arquivo da máquina {{ machine_name }}"
+  ansible.builtin.stat:
+    path: "{{ machine_file }}"
+  register: machine_file_stat
+
+- name: "Falhar se arquivo da máquina não existir"
+  ansible.builtin.fail:
+    msg: "Arquivo da máquina não encontrado: {{ machine_file }}"
+  when: not machine_file_stat.stat.exists
+
+# -------------------------------------------------------------------
+# Carregar configs
+# -------------------------------------------------------------------
 - name: "Carregar config da máquina {{ machine_name }}"
   ansible.builtin.include_vars:
     file: "{{ machine_file }}"
     name: machine_cfg
+
+- name: "Validar package definido para {{ machine_name }}"
+  ansible.builtin.assert:
+    that:
+      - machine_cfg.package is defined
+      - machine_cfg.package | length > 0
+    fail_msg: "machine_cfg.package não definido em {{ machine_file }}"
 
 - name: "Carregar config do pacote {{ machine_cfg.package }}"
   ansible.builtin.include_vars:
     file: "{{ repo_root }}/package/{{ machine_cfg.package }}.yml"
     name: package_cfg
 
+- name: "Validar script definido no pacote {{ machine_cfg.package }}"
+  ansible.builtin.assert:
+    that:
+      - package_cfg.script is defined
+      - package_cfg.script | length > 0
+    fail_msg: "package_cfg.script não definido em {{ repo_root }}/package/{{ machine_cfg.package }}.yml"
+
+# -------------------------------------------------------------------
+# Defaults de conexão
+# -------------------------------------------------------------------
 - name: "Definir usuário alvo padrão para {{ machine_name }}"
   ansible.builtin.set_fact:
     target_user: "{{ machine_cfg.user | default('ec2-user') }}"
@@ -33,6 +95,9 @@
     - (target_ssh_common_args | length) == 0
     - bastion_host is defined
 
+# -------------------------------------------------------------------
+# Registrar host dinâmico
+# -------------------------------------------------------------------
 - name: "Registrar host dinâmico para {{ machine_name }}"
   ansible.builtin.add_host:
     name: "{{ machine_name }}"
@@ -41,6 +106,9 @@
     ansible_connection: ssh
     ansible_ssh_common_args: "{{ target_ssh_common_args }}"
 
+# -------------------------------------------------------------------
+# Criar status inicial
+# -------------------------------------------------------------------
 - name: "Criar status inicial (queued) para {{ machine_name }}"
   ansible.builtin.copy:
     dest: "{{ status_file }}"
@@ -55,7 +123,9 @@
         "timestamp": "{{ ansible_date_time.iso8601 }}"
       }
 
+# -------------------------------------------------------------------
 # Opcional: validar se o predeploy ocorreu antes
+# -------------------------------------------------------------------
 - name: "Verificar se status de predeploy existe"
   ansible.builtin.stat:
     path: "{{ status_dir }}/predeploy-{{ machine_name }}.json"
@@ -66,7 +136,9 @@
     msg: "ATENÇÃO: predeploy-{{ machine_name }}.json não encontrado. Deploy continuará mesmo assim."
   when: not predeploy_status_stat.stat.exists
 
-# Garantir diretório scripts do pacote no host alvo
+# -------------------------------------------------------------------
+# Garantir diretórios no host alvo
+# -------------------------------------------------------------------
 - name: "Garantir diretórios do deploy no host {{ machine_cfg.host }}"
   become: true
   ansible.builtin.file:
@@ -82,10 +154,13 @@
     - "{{ host_scripts_dir }}/{{ package_cfg.script }}"
   delegate_to: "{{ machine_name }}"
 
-# Executar init.sh no host alvo
+# -------------------------------------------------------------------
+# Executar init.sh
+# -------------------------------------------------------------------
 - name: "Executar script de deploy (init.sh) em {{ machine_name }}"
   become: true
   ansible.builtin.shell: |
+    set -e
     cd "{{ host_scripts_dir }}/{{ package_cfg.script }}"
     ./init.sh
   delegate_to: "{{ machine_name }}"
@@ -101,11 +176,13 @@
   ansible.builtin.debug:
     var: deploy_result.stderr_lines
 
-# Ler deploy.txt do host alvo
+# -------------------------------------------------------------------
+# Ler deploy.txt do host alvo (se existir)
+# -------------------------------------------------------------------
 - name: "Ler deploy.txt do host alvo"
   become: true
   ansible.builtin.shell: |
-    cat "{{ host_scripts_dir }}/{{ package_cfg.script }}/deploy.txt" || echo "deploy.txt nao existe"
+    cat "{{ host_scripts_dir }}/{{ package_cfg.script }}/deploy.txt" 2>/dev/null || echo "deploy.txt nao existe"
   delegate_to: "{{ machine_name }}"
   register: deploy_log
   changed_when: false
@@ -114,7 +191,9 @@
   ansible.builtin.debug:
     var: deploy_log.stdout_lines
 
+# -------------------------------------------------------------------
 # Atualizar status final
+# -------------------------------------------------------------------
 - name: "Atualizar status para success de {{ machine_name }}"
   ansible.builtin.copy:
     dest: "{{ status_file }}"
@@ -127,9 +206,10 @@
         "status": "success",
         "deployment_ref": "{{ deployment_ref }}",
         "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "stdout": {{ deploy_result.stdout | to_json }},
-        "stderr": {{ deploy_result.stderr | to_json }},
-        "deploy_log": {{ deploy_log.stdout | to_json }}
+        "rc": {{ deploy_result.rc | default(0) }},
+        "stdout": {{ deploy_result.stdout | default('') | to_json }},
+        "stderr": {{ deploy_result.stderr | default('') | to_json }},
+        "deploy_log": {{ deploy_log.stdout | default('') | to_json }}
       }
   when: deploy_result is succeeded
 
@@ -145,13 +225,16 @@
         "status": "failed",
         "deployment_ref": "{{ deployment_ref }}",
         "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "stdout": {{ deploy_result.stdout | to_json }},
-        "stderr": {{ deploy_result.stderr | to_json }},
-        "deploy_log": {{ deploy_log.stdout | to_json }}
+        "rc": {{ deploy_result.rc | default(1) }},
+        "stdout": {{ deploy_result.stdout | default('') | to_json }},
+        "stderr": {{ deploy_result.stderr | default('') | to_json }},
+        "deploy_log": {{ deploy_log.stdout | default('') | to_json }}
       }
   when: deploy_result is failed
 
+# -------------------------------------------------------------------
 # Se quiser falhar o pipeline quando der erro:
+# -------------------------------------------------------------------
 - name: "Falhar pipeline se init.sh retornou erro"
   ansible.builtin.fail:
     msg: "Deploy falhou em {{ machine_name }} (host {{ machine_cfg.host }}). Verifique deploy.txt e status JSON."
