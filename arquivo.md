@@ -1,17 +1,31 @@
-segue meu script_deploy.py atual.
-
+import os
 import sys
 import backup
 import sitef as sitef_module
 import sitef_packages as sitef_packages_module
 
 sitef = sitef_module.sitef()
-sitef_packages = sitef_packages_module.sitef_packages()
+
+# Caminho correto onde seus pacotes realmente ficam no host
+# Ex esperado: /opt/SoftwareExpress/sitef/package/linux
+pkg_dir = os.path.join(sitef.root_path(), "package", "linux")
+
+# Instancia sitef_packages de forma compatível com versões antigas e novas
+try:
+    # Se você adicionar suporte a esse parâmetro na classe, vai usar aqui
+    sitef_packages = sitef_packages_module.sitef_packages(package_paths=pkg_dir)
+except TypeError:
+    # Fallback para versão antiga da classe
+    sitef_packages = sitef_packages_module.sitef_packages()
+    # Ajuste direto no atributo interno, se existir
+    if hasattr(sitef_packages, "_package_paths"):
+        sitef_packages._package_paths = pkg_dir
 
 print("== Início script_deploy.py ==")
-print(f"Root path  : {sitef.root_path()}")
-print(f"Setup path : {sitef.setup_path()}")
-print(f"Config path: {sitef.config_path()}")
+print(f"Root path        : {sitef.root_path()}")
+print(f"Setup path       : {sitef.setup_path()}")
+print(f"Config path      : {sitef.config_path()}")
+print(f"Package dir (fs) : {pkg_dir}")
 
 print("Verificando presenca do servico sitef...")
 if sitef.service_exists():
