@@ -1,74 +1,101 @@
-# ansible/predeploy_from_execution.yml
-#
-# PIPELINE 1 - PREDEPLOY (PARTE LEVE)
-# - Lê execution/<arquivo>.yml (lista de máquinas)
-# - Para cada máquina chama predeploy_per_machine.yml (em loop)
-# - Cada máquina ganha um JSON em status/<TAG>/predeploy-<machine>.json
+# PIPELINE 2 - DEPLOY (PARTE PESADA)
+# - Lê status/<TAG>/predeploy-*.json
+# - Extrai máquinas aprovadas/ok
+# - Para cada máquina chama deploy_per_machine.yml
+# - Cada máquina ganha um JSON em status/<TAG>/deploy-<machine>.json
 
-- name: "Predeploy a partir do arquivo de execução"
+- name: "Deploy a partir do status do predeploy"
   hosts: localhost
   connection: local
-  gather_facts: true   # preciso de ansible_date_time p/ timestamp
+  gather_facts: true
 
   vars:
     # Vêm da pipeline via -e
-    execution_file_name: "{{ execution_file_name | default('execution/machine_list_dev.yml') }}"
     deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
-
     repo_root: "{{ playbook_dir }}/.."
     status_dir: "{{ repo_root }}/status/{{ deployment_ref }}"
 
-    # Nexus
-    nexus_base_url: "https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev"
-    nexus_user: "{{ nexus_user | default('AS4hZF20') }}"
-    nexus_password: "{{ nexus_password | default('l7WwGfJd_Grmh-5Kn7B__U8nqgdNWh1XhrYtVQQ5I_6k') }}"
+    # Pacote / versão (opcional: pode vir do JSON também)
+    package_name: "{{ package_name | default('sitef-core') }}"
+    package_version: "{{ package_version | default('0.0.2-0') }}"
 
   tasks:
-
     - name: "Mostrar variáveis de entrada"
       ansible.builtin.debug:
         msg:
-          - "execution_file_name = {{ execution_file_name }}"
-          - "deployment_ref     = {{ deployment_ref }}"
-          - "repo_root          = {{ repo_root }}"
-          - "status_dir         = {{ status_dir }}"
+          - "deployment_ref  = {{ deployment_ref }}"
+          - "repo_root       = {{ repo_root }}"
+          - "status_dir      = {{ status_dir }}"
+          - "package_name    = {{ package_name }}"
+          - "package_version = {{ package_version }}"
 
-    - name: "Criar diretório de status da TAG"
-      ansible.builtin.file:
+    - name: "Garantir que o diretório de status exista"
+      ansible.builtin.stat:
         path: "{{ status_dir }}"
-        state: directory
-        mode: "0755"
+      register: status_dir_stat
 
-    # Carrega o arquivo de execução
-    # execution/machine_list_dev.yml
-    # machines:
-    #   - sitef-01
-    #   - sitef-02
-    - name: "Carregar arquivo de execução"
-      ansible.builtin.include_vars:
-        file: "{{ repo_root }}/{{ execution_file_name }}"
-        name: execution_cfg
-
-    - name: "Exibir lista de máquinas"
-      ansible.builtin.debug:
-        var: execution_cfg.machines
-
-    - name: "Falhar se não tiver máquinas no arquivo de execução"
+    - name: "Falhar se status_dir não existir"
       ansible.builtin.fail:
-        msg: "Nenhuma máquina encontrada em execution_cfg.machines"
-      when: >
-        execution_cfg.machines is not defined or
-        execution_cfg.machines | length == 0
+        msg: "Diretório de status não encontrado: {{ status_dir }}. Rode o predeploy primeiro."
+      when: not status_dir_stat.stat.exists
 
-    # ------------------------------------------------------------------
-    # Loop chamando o arquivo de tarefas por máquina
-    # ------------------------------------------------------------------
-    - name: "Executar pré-deploy por máquina"
-      ansible.builtin.include_tasks: predeploy_per_machine.yml
-      loop: "{{ execution_cfg.machines }}"
+    - name: "Listar arquivos de predeploy da TAG"
+      ansible.builtin.find:
+        paths: "{{ status_dir }}"
+        patterns: "predeploy-*.json"
+        file_type: file
+      register: predeploy_files
+
+    - name: "Falhar se não houver predeploy-*.json"
+      ansible.builtin.fail:
+        msg: "Nenhum arquivo predeploy-*.json encontrado em {{ status_dir }}"
+      when: predeploy_files.matched | int == 0
+
+    - name: "Carregar JSONs de predeploy"
+      ansible.builtin.slurp:
+        src: "{{ item.path }}"
+      loop: "{{ predeploy_files.files }}"
+      register: predeploy_slurped
+
+    - name: "Montar lista de predeploys parseados"
+      ansible.builtin.set_fact:
+        predeploy_jsons: "{{ predeploy_jsons | default([]) + [ (item.content | b64decode | from_json) ] }}"
+      loop: "{{ predeploy_slurped.results }}"
+
+    # Esperado que seu JSON tenha algo como:
+    # {
+    #   "machine_name": "sitef-01",
+    #   "status": "success",
+    #   ...
+    # }
+    - name: "Filtrar máquinas com predeploy success"
+      ansible.builtin.set_fact:
+        machines_to_deploy: >-
+          {{
+            predeploy_jsons
+            | selectattr('status', 'defined')
+            | selectattr('status', 'equalto', 'success')
+            | map(attribute='machine_name')
+            | list
+          }}
+
+    - name: "Falhar se nenhuma máquina estiver apta para deploy"
+      ansible.builtin.fail:
+        msg: "Nenhuma máquina com status=success no predeploy para a TAG {{ deployment_ref }}"
+      when: machines_to_deploy | length == 0
+
+    - name: "Exibir máquinas aptas para deploy"
+      ansible.builtin.debug:
+        var: machines_to_deploy
+
+    - name: "Executar deploy por máquina"
+      ansible.builtin.include_tasks: deploy_per_machine.yml
+      loop: "{{ machines_to_deploy }}"
       loop_control:
         loop_var: machine_name
       vars:
-        nexus_base_url: "{{ nexus_base_url }}"
-        nexus_user: "{{ nexus_user }}"
-        nexus_password: "{{ nexus_password }}"
+        deployment_ref: "{{ deployment_ref }}"
+        repo_root: "{{ repo_root }}"
+        status_dir: "{{ status_dir }}"
+        package_name: "{{ package_name }}"
+        package_version: "{{ package_version }}"
