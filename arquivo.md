@@ -1,95 +1,462 @@
-# PIPELINE 2 - DEPLOY (PARTE PESADA)
-# - Lê status/<TAG>/predeploy-*.json
-# - Extrai máquinas aptas
-# - Para cada máquina chama deploy_per_machine.yml
-# - Cada máquina ganha um JSON em status/<TAG>/deploy-<machine>.json
-
-- name: "Deploy a partir do status do predeploy"
-  hosts: localhost
-  connection: local
-  gather_facts: true
-
-  vars:
-    deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
-    repo_root: "{{ playbook_dir }}/.."
-    status_dir: "{{ repo_root }}/status/{{ deployment_ref }}"
-
-  tasks:
-    - name: "Resolver defaults de pacote (sem recursão)"
-      ansible.builtin.set_fact:
-        package_name_eff: "{{ vars.get('package_name', 'sitef-core') }}"
-        package_version_eff: "{{ vars.get('package_version', '0.0.2-0') }}"
-
-    - name: "Mostrar variáveis de entrada"
-      ansible.builtin.debug:
-        msg:
-          - "deployment_ref      = {{ deployment_ref }}"
-          - "repo_root           = {{ repo_root }}"
-          - "status_dir          = {{ status_dir }}"
-          - "package_name_eff    = {{ package_name_eff }}"
-          - "package_version_eff = {{ package_version_eff }}"
-
-    - name: "Garantir que o diretório de status exista"
-      ansible.builtin.stat:
-        path: "{{ status_dir }}"
-      register: status_dir_stat
-
-    - name: "Falhar se status_dir não existir"
-      ansible.builtin.fail:
-        msg: "Diretório de status não encontrado: {{ status_dir }}. Rode o predeploy primeiro."
-      when: not status_dir_stat.stat.exists
-
-    - name: "Listar arquivos de predeploy da TAG"
-      ansible.builtin.find:
-        paths: "{{ status_dir }}"
-        patterns: "predeploy-*.json"
-        file_type: file
-      register: predeploy_files
-
-    - name: "Falhar se não houver predeploy-*.json"
-      ansible.builtin.fail:
-        msg: "Nenhum arquivo predeploy-*.json encontrado em {{ status_dir }}"
-      when: predeploy_files.matched | int == 0
-
-    - name: "Carregar JSONs de predeploy"
-      ansible.builtin.slurp:
-        src: "{{ item.path }}"
-      loop: "{{ predeploy_files.files }}"
-      register: predeploy_slurped
-
-    - name: "Montar lista de predeploys parseados"
-      ansible.builtin.set_fact:
-        predeploy_jsons: "{{ predeploy_jsons | default([]) + [ (item.content | b64decode | from_json) ] }}"
-      loop: "{{ predeploy_slurped.results }}"
-
-    - name: "Filtrar máquinas com predeploy success"
-      ansible.builtin.set_fact:
-        machines_to_deploy: >-
-          {{
-            predeploy_jsons
-            | selectattr('status', 'defined')
-            | selectattr('status', 'equalto', 'success')
-            | map(attribute='machine_name')
-            | list
-          }}
-
-    - name: "Falhar se nenhuma máquina estiver apta para deploy"
-      ansible.builtin.fail:
-        msg: "Nenhuma máquina com status=success no predeploy para a TAG {{ deployment_ref }}"
-      when: machines_to_deploy | length == 0
-
-    - name: "Exibir máquinas aptas para deploy"
-      ansible.builtin.debug:
-        var: machines_to_deploy
-
-    - name: "Executar deploy por máquina"
-      ansible.builtin.include_tasks: deploy_per_machine.yml
-      loop: "{{ machines_to_deploy }}"
-      loop_control:
-        loop_var: machine_name
-      vars:
-        deployment_ref: "{{ deployment_ref }}"
-        repo_root: "{{ repo_root }}"
-        status_dir: "{{ status_dir }}"
-        package_name: "{{ package_name_eff }}"
-        package_version: "{{ package_version_eff }}"
+Exec using JSCH
+Connecting to 10.218.238.144 ....
+Connection to 10.218.238.144 established
+Executing command ...
+export MACHINES=sitef-01
+export MACHINE=sitef-01
+export ACTION=deploy
+export GIT_TAG=DEV000000007
+export STRATEGY=deploy
+== DEPLOY PIPELINE ==
+BRANCH   : develop
+STRATEGY : deploy
+GIT_TAG  : DEV000000007
+MACHINES : sitef-01
+MACHINES_NORMALIZADAS: sitef-01 
+Clonando repo em /tmp/tmp.M4O7xX919N...
+Cloning into '/tmp/tmp.M4O7xX919N/elastic-compute-cloud-sitef'...
+remote: Enumerating objects: 491, done.
+remote: Counting objects:   0% (1/441)
+remote: Counting objects:   1% (5/441)
+remote: Counting objects:   2% (9/441)
+remote: Counting objects:   3% (14/441)
+remote: Counting objects:   4% (18/441)
+remote: Counting objects:   5% (23/441)
+remote: Counting objects:   6% (27/441)
+remote: Counting objects:   7% (31/441)
+remote: Counting objects:   8% (36/441)
+remote: Counting objects:   9% (40/441)
+remote: Counting objects:  10% (45/441)
+remote: Counting objects:  11% (49/441)
+remote: Counting objects:  12% (53/441)
+remote: Counting objects:  13% (58/441)
+remote: Counting objects:  14% (62/441)
+remote: Counting objects:  15% (67/441)
+remote: Counting objects:  16% (71/441)
+remote: Counting objects:  17% (75/441)
+remote: Counting objects:  18% (80/441)
+remote: Counting objects:  19% (84/441)
+remote: Counting objects:  20% (89/441)
+remote: Counting objects:  21% (93/441)
+remote: Counting objects:  22% (98/441)
+remote: Counting objects:  23% (102/441)
+remote: Counting objects:  24% (106/441)
+remote: Counting objects:  25% (111/441)
+remote: Counting objects:  26% (115/441)
+remote: Counting objects:  27% (120/441)
+remote: Counting objects:  28% (124/441)
+remote: Counting objects:  29% (128/441)
+remote: Counting objects:  30% (133/441)
+remote: Counting objects:  31% (137/441)
+remote: Counting objects:  32% (142/441)
+remote: Counting objects:  33% (146/441)
+remote: Counting objects:  34% (150/441)
+remote: Counting objects:  35% (155/441)
+remote: Counting objects:  36% (159/441)
+remote: Counting objects:  37% (164/441)
+remote: Counting objects:  38% (168/441)
+remote: Counting objects:  39% (172/441)
+remote: Counting objects:  40% (177/441)
+remote: Counting objects:  41% (181/441)
+remote: Counting objects:  42% (186/441)
+remote: Counting objects:  43% (190/441)
+remote: Counting objects:  44% (195/441)
+remote: Counting objects:  45% (199/441)
+remote: Counting objects:  46% (203/441)
+remote: Counting objects:  47% (208/441)
+remote: Counting objects:  48% (212/441)
+remote: Counting objects:  49% (217/441)
+remote: Counting objects:  50% (221/441)
+remote: Counting objects:  51% (225/441)
+remote: Counting objects:  52% (230/441)
+remote: Counting objects:  53% (234/441)
+remote: Counting objects:  54% (239/441)
+remote: Counting objects:  55% (243/441)
+remote: Counting objects:  56% (247/441)
+remote: Counting objects:  57% (252/441)
+remote: Counting objects:  58% (256/441)
+remote: Counting objects:  59% (261/441)
+remote: Counting objects:  60% (265/441)
+remote: Counting objects:  61% (270/441)
+remote: Counting objects:  62% (274/441)
+remote: Counting objects:  63% (278/441)
+remote: Counting objects:  64% (283/441)
+remote: Counting objects:  65% (287/441)
+remote: Counting objects:  66% (292/441)
+remote: Counting objects:  67% (296/441)
+remote: Counting objects:  68% (300/441)
+remote: Counting objects:  69% (305/441)
+remote: Counting objects:  70% (309/441)
+remote: Counting objects:  71% (314/441)
+remote: Counting objects:  72% (318/441)
+remote: Counting objects:  73% (322/441)
+remote: Counting objects:  74% (327/441)
+remote: Counting objects:  75% (331/441)
+remote: Counting objects:  76% (336/441)
+remote: Counting objects:  77% (340/441)
+remote: Counting objects:  78% (344/441)
+remote: Counting objects:  79% (349/441)
+remote: Counting objects:  80% (353/441)
+remote: Counting objects:  81% (358/441)
+remote: Counting objects:  82% (362/441)
+remote: Counting objects:  83% (367/441)
+remote: Counting objects:  84% (371/441)
+remote: Counting objects:  85% (375/441)
+remote: Counting objects:  86% (380/441)
+remote: Counting objects:  87% (384/441)
+remote: Counting objects:  88% (389/441)
+remote: Counting objects:  89% (393/441)
+remote: Counting objects:  90% (397/441)
+remote: Counting objects:  91% (402/441)
+remote: Counting objects:  92% (406/441)
+remote: Counting objects:  93% (411/441)
+remote: Counting objects:  94% (415/441)
+remote: Counting objects:  95% (419/441)
+remote: Counting objects:  96% (424/441)
+remote: Counting objects:  97% (428/441)
+remote: Counting objects:  98% (433/441)
+remote: Counting objects:  99% (437/441)
+remote: Counting objects: 100% (441/441)
+remote: Counting objects: 100% (441/441), done.
+remote: Compressing objects:   0% (1/428)
+remote: Compressing objects:   1% (5/428)
+remote: Compressing objects:   2% (9/428)
+remote: Compressing objects:   3% (13/428)
+remote: Compressing objects:   4% (18/428)
+remote: Compressing objects:   5% (22/428)
+remote: Compressing objects:   6% (26/428)
+remote: Compressing objects:   7% (30/428)
+remote: Compressing objects:   8% (35/428)
+remote: Compressing objects:   9% (39/428)
+remote: Compressing objects:  10% (43/428)
+remote: Compressing objects:  11% (48/428)
+remote: Compressing objects:  12% (52/428)
+remote: Compressing objects:  13% (56/428)
+remote: Compressing objects:  14% (60/428)
+remote: Compressing objects:  15% (65/428)
+remote: Compressing objects:  16% (69/428)
+remote: Compressing objects:  17% (73/428)
+remote: Compressing objects:  18% (78/428)
+remote: Compressing objects:  19% (82/428)
+remote: Compressing objects:  20% (86/428)
+remote: Compressing objects:  21% (90/428)
+remote: Compressing objects:  22% (95/428)
+remote: Compressing objects:  23% (99/428)
+remote: Compressing objects:  24% (103/428)
+remote: Compressing objects:  25% (107/428)
+remote: Compressing objects:  26% (112/428)
+remote: Compressing objects:  27% (116/428)
+remote: Compressing objects:  28% (120/428)
+remote: Compressing objects:  29% (125/428)
+remote: Compressing objects:  30% (129/428)
+remote: Compressing objects:  31% (133/428)
+remote: Compressing objects:  32% (137/428)
+remote: Compressing objects:  33% (142/428)
+remote: Compressing objects:  34% (146/428)
+remote: Compressing objects:  35% (150/428)
+remote: Compressing objects:  36% (155/428)
+remote: Compressing objects:  37% (159/428)
+remote: Compressing objects:  38% (163/428)
+remote: Compressing objects:  39% (167/428)
+remote: Compressing objects:  40% (172/428)
+remote: Compressing objects:  41% (176/428)
+remote: Compressing objects:  42% (180/428)
+remote: Compressing objects:  43% (185/428)
+remote: Compressing objects:  44% (189/428)
+remote: Compressing objects:  45% (193/428)
+remote: Compressing objects:  46% (197/428)
+remote: Compressing objects:  47% (202/428)
+remote: Compressing objects:  48% (206/428)
+remote: Compressing objects:  49% (210/428)
+remote: Compressing objects:  50% (214/428)
+remote: Compressing objects:  51% (219/428)
+remote: Compressing objects:  52% (223/428)
+remote: Compressing objects:  53% (227/428)
+remote: Compressing objects:  54% (232/428)
+remote: Compressing objects:  55% (236/428)
+remote: Compressing objects:  56% (240/428)
+remote: Compressing objects:  57% (244/428)
+remote: Compressing objects:  58% (249/428)
+remote: Compressing objects:  59% (253/428)
+remote: Compressing objects:  60% (257/428)
+remote: Compressing objects:  61% (262/428)
+remote: Compressing objects:  62% (266/428)
+remote: Compressing objects:  63% (270/428)
+remote: Compressing objects:  64% (274/428)
+remote: Compressing objects:  65% (279/428)
+remote: Compressing objects:  66% (283/428)
+remote: Compressing objects:  67% (287/428)
+remote: Compressing objects:  68% (292/428)
+remote: Compressing objects:  69% (296/428)
+remote: Compressing objects:  70% (300/428)
+remote: Compressing objects:  71% (304/428)
+remote: Compressing objects:  72% (309/428)
+remote: Compressing objects:  73% (313/428)
+remote: Compressing objects:  74% (317/428)
+remote: Compressing objects:  75% (321/428)
+remote: Compressing objects:  76% (326/428)
+remote: Compressing objects:  77% (330/428)
+remote: Compressing objects:  78% (334/428)
+remote: Compressing objects:  79% (339/428)
+remote: Compressing objects:  80% (343/428)
+remote: Compressing objects:  81% (347/428)
+remote: Compressing objects:  82% (351/428)
+remote: Compressing objects:  83% (356/428)
+remote: Compressing objects:  84% (360/428)
+remote: Compressing objects:  85% (364/428)
+remote: Compressing objects:  86% (369/428)
+remote: Compressing objects:  87% (373/428)
+remote: Compressing objects:  88% (377/428)
+remote: Compressing objects:  89% (381/428)
+remote: Compressing objects:  90% (386/428)
+remote: Compressing objects:  91% (390/428)
+remote: Compressing objects:  92% (394/428)
+remote: Compressing objects:  93% (399/428)
+remote: Compressing objects:  94% (403/428)
+remote: Compressing objects:  95% (407/428)
+remote: Compressing objects:  96% (411/428)
+remote: Compressing objects:  97% (416/428)
+remote: Compressing objects:  98% (420/428)
+remote: Compressing objects:  99% (424/428)
+remote: Compressing objects: 100% (428/428)
+remote: Compressing objects: 100% (428/428), done.
+remote: Total 491 (delta 251), reused 0 (delta 0), pack-reused 50
+Receiving objects:   0% (1/491)
+Receiving objects:   1% (5/491)
+Receiving objects:   2% (10/491)
+Receiving objects:   3% (15/491)
+Receiving objects:   4% (20/491)
+Receiving objects:   5% (25/491)
+Receiving objects:   6% (30/491)
+Receiving objects:   7% (35/491)
+Receiving objects:   8% (40/491)
+Receiving objects:   9% (45/491)
+Receiving objects:  10% (50/491)
+Receiving objects:  11% (55/491)
+Receiving objects:  12% (59/491)
+Receiving objects:  13% (64/491)
+Receiving objects:  14% (69/491)
+Receiving objects:  15% (74/491)
+Receiving objects:  16% (79/491)
+Receiving objects:  17% (84/491)
+Receiving objects:  18% (89/491)
+Receiving objects:  19% (94/491)
+Receiving objects:  20% (99/491)
+Receiving objects:  21% (104/491)
+Receiving objects:  22% (109/491)
+Receiving objects:  23% (113/491)
+Receiving objects:  24% (118/491)
+Receiving objects:  25% (123/491)
+Receiving objects:  26% (128/491)
+Receiving objects:  27% (133/491)
+Receiving objects:  28% (138/491)
+Receiving objects:  29% (143/491)
+Receiving objects:  30% (148/491)
+Receiving objects:  31% (153/491)
+Receiving objects:  32% (158/491)
+Receiving objects:  33% (163/491)
+Receiving objects:  34% (167/491)
+Receiving objects:  35% (172/491)
+Receiving objects:  36% (177/491)
+Receiving objects:  37% (182/491)
+Receiving objects:  38% (187/491)
+Receiving objects:  39% (192/491)
+Receiving objects:  40% (197/491)
+Receiving objects:  41% (202/491)
+Receiving objects:  42% (207/491)
+Receiving objects:  43% (212/491)
+Receiving objects:  44% (217/491)
+Receiving objects:  45% (221/491)
+Receiving objects:  46% (226/491)
+Receiving objects:  47% (231/491)
+Receiving objects:  48% (236/491)
+Receiving objects:  49% (241/491)
+Receiving objects:  50% (246/491)
+Receiving objects:  51% (251/491)
+Receiving objects:  52% (256/491)
+Receiving objects:  53% (261/491)
+Receiving objects:  54% (266/491)
+Receiving objects:  55% (271/491)
+Receiving objects:  56% (275/491)
+Receiving objects:  57% (280/491)
+Receiving objects:  58% (285/491)
+Receiving objects:  59% (290/491)
+Receiving objects:  60% (295/491)
+Receiving objects:  61% (300/491)
+Receiving objects:  62% (305/491)
+Receiving objects:  63% (310/491)
+Receiving objects:  64% (315/491)
+Receiving objects:  65% (320/491)
+Receiving objects:  66% (325/491)
+Receiving objects:  67% (329/491)
+Receiving objects:  68% (334/491)
+Receiving objects:  69% (339/491)
+Receiving objects:  70% (344/491)
+Receiving objects:  71% (349/491)
+Receiving objects:  72% (354/491)
+Receiving objects:  73% (359/491)
+Receiving objects:  74% (364/491)
+Receiving objects:  75% (369/491)
+Receiving objects:  76% (374/491)
+Receiving objects:  77% (379/491)
+Receiving objects:  78% (383/491)
+Receiving objects:  79% (388/491)
+Receiving objects:  80% (393/491)
+Receiving objects:  81% (398/491)
+Receiving objects:  82% (403/491)
+Receiving objects:  83% (408/491)
+Receiving objects:  84% (413/491)
+Receiving objects:  85% (418/491)
+Receiving objects:  86% (423/491)
+Receiving objects:  87% (428/491)
+Receiving objects:  88% (433/491)
+Receiving objects:  89% (437/491)
+Receiving objects:  90% (442/491)
+Receiving objects:  91% (447/491)
+Receiving objects:  92% (452/491)
+Receiving objects:  93% (457/491)
+Receiving objects:  94% (462/491)
+Receiving objects:  95% (467/491)
+Receiving objects:  96% (472/491)
+Receiving objects:  97% (477/491)
+Receiving objects:  98% (482/491)
+Receiving objects:  99% (487/491)
+Receiving objects: 100% (491/491)
+Receiving objects: 100% (491/491), 76.00 KiB | 12.67 MiB/s, done.
+Resolving deltas:   0% (0/270)
+Resolving deltas:   1% (3/270)
+Resolving deltas:   2% (6/270)
+Resolving deltas:   3% (9/270)
+Resolving deltas:   4% (11/270)
+Resolving deltas:   5% (14/270)
+Resolving deltas:   6% (17/270)
+Resolving deltas:   7% (19/270)
+Resolving deltas:   8% (22/270)
+Resolving deltas:   9% (25/270)
+Resolving deltas:  10% (27/270)
+Resolving deltas:  11% (30/270)
+Resolving deltas:  12% (33/270)
+Resolving deltas:  13% (36/270)
+Resolving deltas:  14% (38/270)
+Resolving deltas:  15% (41/270)
+Resolving deltas:  16% (44/270)
+Resolving deltas:  17% (46/270)
+Resolving deltas:  18% (49/270)
+Resolving deltas:  19% (52/270)
+Resolving deltas:  20% (54/270)
+Resolving deltas:  21% (57/270)
+Resolving deltas:  22% (60/270)
+Resolving deltas:  23% (63/270)
+Resolving deltas:  24% (65/270)
+Resolving deltas:  25% (68/270)
+Resolving deltas:  26% (71/270)
+Resolving deltas:  27% (73/270)
+Resolving deltas:  28% (76/270)
+Resolving deltas:  29% (79/270)
+Resolving deltas:  30% (81/270)
+Resolving deltas:  31% (84/270)
+Resolving deltas:  32% (87/270)
+Resolving deltas:  33% (90/270)
+Resolving deltas:  34% (92/270)
+Resolving deltas:  35% (95/270)
+Resolving deltas:  36% (98/270)
+Resolving deltas:  37% (100/270)
+Resolving deltas:  38% (103/270)
+Resolving deltas:  39% (106/270)
+Resolving deltas:  40% (108/270)
+Resolving deltas:  41% (111/270)
+Resolving deltas:  42% (114/270)
+Resolving deltas:  43% (117/270)
+Resolving deltas:  44% (119/270)
+Resolving deltas:  45% (122/270)
+Resolving deltas:  46% (125/270)
+Resolving deltas:  47% (127/270)
+Resolving deltas:  48% (130/270)
+Resolving deltas:  49% (133/270)
+Resolving deltas:  50% (135/270)
+Resolving deltas:  51% (138/270)
+Resolving deltas:  52% (141/270)
+Resolving deltas:  53% (144/270)
+Resolving deltas:  54% (146/270)
+Resolving deltas:  55% (149/270)
+Resolving deltas:  56% (152/270)
+Resolving deltas:  57% (154/270)
+Resolving deltas:  58% (157/270)
+Resolving deltas:  59% (160/270)
+Resolving deltas:  60% (162/270)
+Resolving deltas:  61% (165/270)
+Resolving deltas:  62% (168/270)
+Resolving deltas:  63% (171/270)
+Resolving deltas:  64% (173/270)
+Resolving deltas:  65% (176/270)
+Resolving deltas:  66% (179/270)
+Resolving deltas:  67% (181/270)
+Resolving deltas:  68% (184/270)
+Resolving deltas:  69% (187/270)
+Resolving deltas:  70% (189/270)
+Resolving deltas:  71% (192/270)
+Resolving deltas:  72% (195/270)
+Resolving deltas:  73% (198/270)
+Resolving deltas:  74% (200/270)
+Resolving deltas:  75% (203/270)
+Resolving deltas:  76% (206/270)
+Resolving deltas:  77% (208/270)
+Resolving deltas:  78% (211/270)
+Resolving deltas:  79% (214/270)
+Resolving deltas:  80% (216/270)
+Resolving deltas:  81% (219/270)
+Resolving deltas:  82% (222/270)
+Resolving deltas:  83% (225/270)
+Resolving deltas:  84% (227/270)
+Resolving deltas:  85% (230/270)
+Resolving deltas:  86% (233/270)
+Resolving deltas:  87% (235/270)
+Resolving deltas:  88% (238/270)
+Resolving deltas:  89% (241/270)
+Resolving deltas:  90% (243/270)
+Resolving deltas:  91% (246/270)
+Resolving deltas:  92% (249/270)
+Resolving deltas:  93% (252/270)
+Resolving deltas:  94% (254/270)
+Resolving deltas:  95% (257/270)
+Resolving deltas:  96% (260/270)
+Resolving deltas:  97% (262/270)
+Resolving deltas:  98% (265/270)
+Resolving deltas:  99% (268/270)
+Resolving deltas: 100% (270/270)
+Resolving deltas: 100% (270/270), done.
+====================================================
+== DEPLOY -> sitef-01
+====================================================
+PLAY [Deploy a partir do status do predeploy] **********************************
+TASK [Gathering Facts] *********************************************************
+ok: [localhost]
+TASK [Resolver defaults de pacote (sem recursão)] ******************************
+ok: [localhost]
+TASK [Mostrar variáveis de entrada] ********************************************
+ok: [localhost] => {
+    "msg": [
+        "deployment_ref      = DEV000000007",
+        "repo_root           = /tmp/tmp.M4O7xX919N/elastic-compute-cloud-sitef/ansible/..",
+        "status_dir          = /tmp/tmp.M4O7xX919N/elastic-compute-cloud-sitef/ansible/../status/DEV000000007",
+        "package_name_eff    = sitef-core",
+        "package_version_eff = 0.0.2-0"
+    ]
+}
+TASK [Garantir que o diretório de status exista] *******************************
+ok: [localhost]
+TASK [Falhar se status_dir não existir] ****************************************
+skipping: [localhost]
+TASK [Listar arquivos de predeploy da TAG] *************************************
+ok: [localhost]
+TASK [Falhar se não houver predeploy-*.json] ***********************************
+skipping: [localhost]
+TASK [Carregar JSONs de predeploy] *********************************************
+ok: [localhost] => (item={'path': '/tmp/tmp.M4O7xX919N/elastic-compute-cloud-sitef/status/DEV000000007/predeploy-sitef-01.json', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 3184, 'inode': 2099889, 'dev': 64775, 'nlink': 1, 'atime': 1765220210.131599, 'mtime': 1765220210.0905988, 'ctime': 1765220210.0905988, 'gr_name': 'ec2-user', 'pw_name': 'ec2-user', 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False})
+TASK [Montar lista de predeploys parseados] ************************************
+ok: [localhost] => (item={'content': 'eyJtYWNoaW5lIjogInNpdGVmLTAxIiwgImhvc3QiOiAiMTAwLjk5LjQxLjU4IiwgInBhY2thZ2UiOiAic2l0ZWYtY29yZS0wLjAuMi0wIiwgInJvbGxiYWNrIjogIiIsICJzdGF0dXMiOiAic3VjY2VzcyIsICJkZXBsb3ltZW50X3JlZiI6ICJERVYwMDAwMDAwMDciLCAidGltZXN0YW1wIjogIjIwMjUtMTItMDhUMTg6MTU6NTJaIiwgInN0ZG91dCI6ICIrIGVjaG8gJz09IEluXHUwMGVkY2lvIGluaXRfcGFyYWxsZWwuc2ggPT0nXG49PSBJblx1MDBlZGNpbyBpbml0X3BhcmFsbGVsLnNoID09XG4rIGRhdGVcbk1vbiBEZWMgIDggMDY6MTY6MTMgUE0gVVRDIDIwMjVcbisgc2V0IC14XG4rIGVjaG8gJ0luc3RhbGFjYW8gZGUgZGVwZW5kZW5jaWFzIGRvIHNpc3RlbWEuLi4nXG5JbnN0YWxhY2FvIGRlIGRlcGVuZGVuY2lhcyBkbyBzaXN0ZW1hLi4uXG4rIGRuZiBpbnN0YWxsIC15IC0tbm9kb2NzIHB5dGhvbjMgcHl0aG9uMy1waXBcblVwZGF0aW5nIFN1YnNjcmlwdGlvbiBNYW5hZ2VtZW50IHJlcG9zaXRvcmllcy5cblxuVGhpcyBzeXN0ZW0gaGFzIHJlbGVhc2Ugc2V0IHRvIDkgYW5kIGl0IHJlY2VpdmVzIHVwZGF0ZXMgb25seSBmb3IgdGhpcyByZWxlYXNlLlxuXG5SZWQgSGF0IENvZGVSZWFkeSBMaW51eCBCdWlsZGVyIGZvciBSSEVMIDkgeDg2XyAyLjgga0IvcyB8IDQuNSBrQiAgICAgMDA6MDEgICAgXG5SZWQgSGF0IEVudGVycHJpc2UgTGludXggOSBmb3IgeDg2XzY0IC0gQXBwU3RyZSA0LjEga0IvcyB8IDQuNSBrQiAgICAgMDA6MDEgICAgXG5SZWQgSGF0IFNhdGVsbGl0ZSBDbGllbnQgNiBmb3IgUkhFTCA5IHg4Nl82NCAoUiAzLjQga0IvcyB8IDMuOCBrQiAgICAgMDA6MDEgICAgXG5SZWQgSGF0IEVudGVycHJpc2UgTGludXggOSBmb3IgeDg2XzY0IC0gQmFzZU9TICAzLjcga0IvcyB8IDQuMSBrQiAgICAgMDA6MDEgICAgXG5FUEVMOV9YODYgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAxLjYga0IvcyB8IDIuMyBrQiAgICAgMDA6MDEgICAgXG5QYWNrYWdlIHB5dGhvbjMtMy45LjIzLTIuZWw5Lng4Nl82NCBpcyBhbHJlYWR5IGluc3RhbGxlZC5cblBhY2thZ2UgcHl0aG9uMy1waXAtMjEuMy4xLTEuZWw5Lm5vYXJjaCBpcyBhbHJlYWR5IGluc3RhbGxlZC5cbkRlcGVuZGVuY2llcyByZXNvbHZlZC5cbk5vdGhpbmcgdG8gZG8uXG5Db21wbGV0ZSFcbisgcHl0aG9uMyAtbSB2ZW52IC9vcHQvU29mdHdhcmVFeHByZXNzL3NpdGVmLXNldHVwL3ZlbnZcbisgc291cmNlIC9vcHQvU29mdHdhcmVFeHByZXNzL3NpdGVmLXNldHVwL3ZlbnYvYmluL2FjdGl2YXRlXG4rKyBkZWFjdGl2YXRlIG5vbmRlc3RydWN0aXZlXG4rKyAnWycgLW4gJycgJ10nXG4rKyAnWycgLW4gJycgJ10nXG4rKyAnWycgLW4gL2Jpbi9iYXNoIC1vIC1uICcnICddJ1xuKysgaGFzaCAtclxuKysgJ1snIC1uICcnICddJ1xuKysgdW5zZXQgVklSVFVBTF9FTlZcbisrICdbJyAnIScgbm9uZGVzdHJ1Y3RpdmUgPSBub25kZXN0cnVjdGl2ZSAnXSdcbisrIFZJUlRVQUxfRU5WPS9vcHQvU29mdHdhcmVFeHByZXNzL3NpdGVmLXNldHVwL3ZlbnZcbisrIGV4cG9ydCBWSVJUVUFMX0VOVlxuKysgX09MRF9WSVJUVUFMX1BBVEg9L3NiaW46L2JpbjovdXNyL3NiaW46L3Vzci9iaW5cbisrIFBBVEg9L29wdC9Tb2Z0d2FyZUV4cHJlc3Mvc2l0ZWYtc2V0dXAvdmVudi9iaW46L3NiaW46L2JpbjovdXNyL3NiaW46L3Vzci9iaW5cbisrIGV4cG9ydCBQQVRIXG4rKyAnWycgLW4gJycgJ10nXG4rKyAnWycgLXogJycgJ10nXG4rKyBfT0xEX1ZJUlRVQUxfUFMxPVxuKysgUFMxPScodmVudikgJ1xuKysgZXhwb3J0IFBTMVxuKysgJ1snIC1uIC9iaW4vYmFzaCAtbyAtbiAnJyAnXSdcbisrIGhhc2ggLXJcbisgZWNobyAnSW5zdGFsYWNhbyBkZSBkZXBlbmRlbmNpYXMgZG8gcHl0aG9uLi4uJ1xuSW5zdGFsYWNhbyBkZSBkZXBlbmRlbmNpYXMgZG8gcHl0aG9uLi4uXG4rIHB5dGhvbjMgLXUgc2NyaXB0X3ByZXBhcmUucHlcbkV4ZWN1dGFuZG8gYmFja3VwLi4uXG5GYXplbmRvIGxldmFudGFtZW50byBkZSBhcnF1aXZvcy9wYXN0YXNcblBhdGggZW5jb250cmFkbzogL29wdC9Tb2Z0d2FyZUV4cHJlc3Mvc2l0ZWYvY29uZmlnXG5QcmVwYXJhY2FvIGRvIGJhY2t1cDogL29wdC9Tb2Z0d2FyZUV4cHJlc3Mvc2l0ZWYtc2V0dXAvYmFja3Vwcy9iYWNrdXAtYmVmb3JlLWRlZmF1bHQudGFyLmd6XG5BcGFnYW5kbyBiYWNrdXA6IC9vcHQvU29mdHdhcmVFeHByZXNzL3NpdGVmLXNldHVwL2JhY2t1cHMvYmFja3VwLWJlZm9yZS1kZWZhdWx0LnRhci5nelxuTWV0YWRhZG9zOiB7J3BhY2thZ2UnOiB7J2JhY2t1cCc6IHsnYmVmb3JlX2luc3RhbGxfdmVyc2lvbic6ICdkZWZhdWx0JywgJ2V4ZWN1dGVkX2F0JzogJzIwMjUtMTItMDggMTg6MTY6MjQnfX19XG5CYWNrdXAgZmluYWxpemFkby5cbisgZWNobyAnc2NyaXB0X3ByZXBhcmUucHkgZmluYWxpemFkbyBjb20gcmM9MCdcbnNjcmlwdF9wcmVwYXJlLnB5IGZpbmFsaXphZG8gY29tIHJjPTBcbisgZGVhY3RpdmF0ZVxuKyAnWycgLW4gL3NiaW46L2JpbjovdXNyL3NiaW46L3Vzci9iaW4gJ10nXG4rIFBBVEg9L3NiaW46L2JpbjovdXNyL3NiaW46L3Vzci9iaW5cbisgZXhwb3J0IFBBVEhcbisgdW5zZXQgX09MRF9WSVJUVUFMX1BBVEhcbisgJ1snIC1uICcnICddJ1xuKyAnWycgLW4gL2Jpbi9iYXNoIC1vIC1uICcnICddJ1xuKyBoYXNoIC1yXG4rICdbJyAtbiAnJyAnXSdcbisgdW5zZXQgVklSVFVBTF9FTlZcbisgJ1snICchJyAnJyA9IG5vbmRlc3RydWN0aXZlICddJ1xuKyB1bnNldCAtZiBkZWFjdGl2YXRlXG4rIHNldCAreFxuPT0gRmltIGluaXRfcGFyYWxsZWwuc2ggPT1cbk1vbiBEZWMgIDggMDY6MTY6MjQgUE0gVVRDIDIwMjUiLCAic3RkZXJyIjogIisgc2V0IC1ldW8gcGlwZWZhaWxcbisrKyBkaXJuYW1lIC4vaW5pdF9wYXJhbGxlbC5zaFxuKysgY2QgLlxuKysgcHdkXG4rIFNDUklQVF9ESVI9L29wdC9Tb2Z0d2FyZUV4cHJlc3Mvc2l0ZWYvc2NyaXB0cy9kZXBsb3ktc2l0ZWYtMC4wLjJcbisgTE9HX0ZJTEU9L29wdC9Tb2Z0d2FyZUV4cHJlc3Mvc2l0ZWYvc2NyaXB0cy9kZXBsb3ktc2l0ZWYtMC4wLjIvcGFyYWxsZWwudHh0XG4rIGV4ZWNcbisrIHRlZSAtYSAvb3B0L1NvZnR3YXJlRXhwcmVzcy9zaXRlZi9zY3JpcHRzL2RlcGxveS1zaXRlZi0wLjAuMi9wYXJhbGxlbC50eHQifQ==', 'source': '/tmp/tmp.M4O7xX919N/elastic-compute-cloud-sitef/status/DEV000000007/predeploy-sitef-01.json', 'encoding': 'base64', 'invocation': {'module_args': {'src': '/tmp/tmp.M4O7xX919N/elastic-compute-cloud-sitef/status/DEV000000007/predeploy-sitef-01.json'}}, 'failed': False, 'changed': False, 'item': {'path': '/tmp/tmp.M4O7xX919N/elastic-compute-cloud-sitef/status/DEV000000007/predeploy-sitef-01.json', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 3184, 'inode': 2099889, 'dev': 64775, 'nlink': 1, 'atime': 1765220210.131599, 'mtime': 1765220210.0905988, 'ctime': 1765220210.0905988, 'gr_name': 'ec2-user', 'pw_name': 'ec2-user', 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False}, 'ansible_loop_var': 'item'})
+TASK [Filtrar máquinas com predeploy success] **********************************
+fatal: [localhost]: FAILED! => {"msg": "The task includes an option with an undefined variable. The error was: 'dict object' has no attribute 'machine_name'. 'dict object' has no attribute 'machine_name'\n\nThe error appears to be in '/tmp/tmp.M4O7xX919N/elastic-compute-cloud-sitef/ansible/deploy_from_status.yml': line 65, column 7, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n\n    - name: \"Filtrar máquinas com predeploy success\"\n      ^ here\n"}
+PLAY RECAP *********************************************************************
+localhost                  : ok=7    changed=0    unreachable=0    failed=1    skipped=2    rescued=0    ignored=0   
+Command finished with status FAILURE
