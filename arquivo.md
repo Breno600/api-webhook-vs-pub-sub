@@ -1,101 +1,438 @@
-# PIPELINE 2 - DEPLOY (PARTE PESADA)
-# - Lê status/<TAG>/predeploy-*.json
-# - Extrai máquinas aprovadas/ok
-# - Para cada máquina chama deploy_per_machine.yml
-# - Cada máquina ganha um JSON em status/<TAG>/deploy-<machine>.json
-
-- name: "Deploy a partir do status do predeploy"
-  hosts: localhost
-  connection: local
-  gather_facts: true
-
-  vars:
-    # Vêm da pipeline via -e
-    deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
-    repo_root: "{{ playbook_dir }}/.."
-    status_dir: "{{ repo_root }}/status/{{ deployment_ref }}"
-
-    # Pacote / versão (opcional: pode vir do JSON também)
-    package_name: "{{ package_name | default('sitef-core') }}"
-    package_version: "{{ package_version | default('0.0.2-0') }}"
-
-  tasks:
-    - name: "Mostrar variáveis de entrada"
-      ansible.builtin.debug:
-        msg:
-          - "deployment_ref  = {{ deployment_ref }}"
-          - "repo_root       = {{ repo_root }}"
-          - "status_dir      = {{ status_dir }}"
-          - "package_name    = {{ package_name }}"
-          - "package_version = {{ package_version }}"
-
-    - name: "Garantir que o diretório de status exista"
-      ansible.builtin.stat:
-        path: "{{ status_dir }}"
-      register: status_dir_stat
-
-    - name: "Falhar se status_dir não existir"
-      ansible.builtin.fail:
-        msg: "Diretório de status não encontrado: {{ status_dir }}. Rode o predeploy primeiro."
-      when: not status_dir_stat.stat.exists
-
-    - name: "Listar arquivos de predeploy da TAG"
-      ansible.builtin.find:
-        paths: "{{ status_dir }}"
-        patterns: "predeploy-*.json"
-        file_type: file
-      register: predeploy_files
-
-    - name: "Falhar se não houver predeploy-*.json"
-      ansible.builtin.fail:
-        msg: "Nenhum arquivo predeploy-*.json encontrado em {{ status_dir }}"
-      when: predeploy_files.matched | int == 0
-
-    - name: "Carregar JSONs de predeploy"
-      ansible.builtin.slurp:
-        src: "{{ item.path }}"
-      loop: "{{ predeploy_files.files }}"
-      register: predeploy_slurped
-
-    - name: "Montar lista de predeploys parseados"
-      ansible.builtin.set_fact:
-        predeploy_jsons: "{{ predeploy_jsons | default([]) + [ (item.content | b64decode | from_json) ] }}"
-      loop: "{{ predeploy_slurped.results }}"
-
-    # Esperado que seu JSON tenha algo como:
-    # {
-    #   "machine_name": "sitef-01",
-    #   "status": "success",
-    #   ...
-    # }
-    - name: "Filtrar máquinas com predeploy success"
-      ansible.builtin.set_fact:
-        machines_to_deploy: >-
-          {{
-            predeploy_jsons
-            | selectattr('status', 'defined')
-            | selectattr('status', 'equalto', 'success')
-            | map(attribute='machine_name')
-            | list
-          }}
-
-    - name: "Falhar se nenhuma máquina estiver apta para deploy"
-      ansible.builtin.fail:
-        msg: "Nenhuma máquina com status=success no predeploy para a TAG {{ deployment_ref }}"
-      when: machines_to_deploy | length == 0
-
-    - name: "Exibir máquinas aptas para deploy"
-      ansible.builtin.debug:
-        var: machines_to_deploy
-
-    - name: "Executar deploy por máquina"
-      ansible.builtin.include_tasks: deploy_per_machine.yml
-      loop: "{{ machines_to_deploy }}"
-      loop_control:
-        loop_var: machine_name
-      vars:
-        deployment_ref: "{{ deployment_ref }}"
-        repo_root: "{{ repo_root }}"
-        status_dir: "{{ status_dir }}"
-        package_name: "{{ package_name }}"
-        package_version: "{{ package_version }}"
+Exec using JSCH
+Connecting to 10.218.238.144 ....
+Connection to 10.218.238.144 established
+Executing command ...
+export MACHINES=sitef-01
+export MACHINE=sitef-01
+export ACTION=deploy
+export GIT_TAG=DEV000000007
+export STRATEGY=deploy
+== DEPLOY PIPELINE ==
+BRANCH   : develop
+STRATEGY : deploy
+GIT_TAG  : DEV000000007
+MACHINES : sitef-01
+MACHINES_NORMALIZADAS: sitef-01 
+Clonando repo em /tmp/tmp.FiV30evOLE...
+Cloning into '/tmp/tmp.FiV30evOLE/elastic-compute-cloud-sitef'...
+remote: Enumerating objects: 487, done.
+remote: Counting objects:   0% (1/437)
+remote: Counting objects:   1% (5/437)
+remote: Counting objects:   2% (9/437)
+remote: Counting objects:   3% (14/437)
+remote: Counting objects:   4% (18/437)
+remote: Counting objects:   5% (22/437)
+remote: Counting objects:   6% (27/437)
+remote: Counting objects:   7% (31/437)
+remote: Counting objects:   8% (35/437)
+remote: Counting objects:   9% (40/437)
+remote: Counting objects:  10% (44/437)
+remote: Counting objects:  11% (49/437)
+remote: Counting objects:  12% (53/437)
+remote: Counting objects:  13% (57/437)
+remote: Counting objects:  14% (62/437)
+remote: Counting objects:  15% (66/437)
+remote: Counting objects:  16% (70/437)
+remote: Counting objects:  17% (75/437)
+remote: Counting objects:  18% (79/437)
+remote: Counting objects:  19% (84/437)
+remote: Counting objects:  20% (88/437)
+remote: Counting objects:  21% (92/437)
+remote: Counting objects:  22% (97/437)
+remote: Counting objects:  23% (101/437)
+remote: Counting objects:  24% (105/437)
+remote: Counting objects:  25% (110/437)
+remote: Counting objects:  26% (114/437)
+remote: Counting objects:  27% (118/437)
+remote: Counting objects:  28% (123/437)
+remote: Counting objects:  29% (127/437)
+remote: Counting objects:  30% (132/437)
+remote: Counting objects:  31% (136/437)
+remote: Counting objects:  32% (140/437)
+remote: Counting objects:  33% (145/437)
+remote: Counting objects:  34% (149/437)
+remote: Counting objects:  35% (153/437)
+remote: Counting objects:  36% (158/437)
+remote: Counting objects:  37% (162/437)
+remote: Counting objects:  38% (167/437)
+remote: Counting objects:  39% (171/437)
+remote: Counting objects:  40% (175/437)
+remote: Counting objects:  41% (180/437)
+remote: Counting objects:  42% (184/437)
+remote: Counting objects:  43% (188/437)
+remote: Counting objects:  44% (193/437)
+remote: Counting objects:  45% (197/437)
+remote: Counting objects:  46% (202/437)
+remote: Counting objects:  47% (206/437)
+remote: Counting objects:  48% (210/437)
+remote: Counting objects:  49% (215/437)
+remote: Counting objects:  50% (219/437)
+remote: Counting objects:  51% (223/437)
+remote: Counting objects:  52% (228/437)
+remote: Counting objects:  53% (232/437)
+remote: Counting objects:  54% (236/437)
+remote: Counting objects:  55% (241/437)
+remote: Counting objects:  56% (245/437)
+remote: Counting objects:  57% (250/437)
+remote: Counting objects:  58% (254/437)
+remote: Counting objects:  59% (258/437)
+remote: Counting objects:  60% (263/437)
+remote: Counting objects:  61% (267/437)
+remote: Counting objects:  62% (271/437)
+remote: Counting objects:  63% (276/437)
+remote: Counting objects:  64% (280/437)
+remote: Counting objects:  65% (285/437)
+remote: Counting objects:  66% (289/437)
+remote: Counting objects:  67% (293/437)
+remote: Counting objects:  68% (298/437)
+remote: Counting objects:  69% (302/437)
+remote: Counting objects:  70% (306/437)
+remote: Counting objects:  71% (311/437)
+remote: Counting objects:  72% (315/437)
+remote: Counting objects:  73% (320/437)
+remote: Counting objects:  74% (324/437)
+remote: Counting objects:  75% (328/437)
+remote: Counting objects:  76% (333/437)
+remote: Counting objects:  77% (337/437)
+remote: Counting objects:  78% (341/437)
+remote: Counting objects:  79% (346/437)
+remote: Counting objects:  80% (350/437)
+remote: Counting objects:  81% (354/437)
+remote: Counting objects:  82% (359/437)
+remote: Counting objects:  83% (363/437)
+remote: Counting objects:  84% (368/437)
+remote: Counting objects:  85% (372/437)
+remote: Counting objects:  86% (376/437)
+remote: Counting objects:  87% (381/437)
+remote: Counting objects:  88% (385/437)
+remote: Counting objects:  89% (389/437)
+remote: Counting objects:  90% (394/437)
+remote: Counting objects:  91% (398/437)
+remote: Counting objects:  92% (403/437)
+remote: Counting objects:  93% (407/437)
+remote: Counting objects:  94% (411/437)
+remote: Counting objects:  95% (416/437)
+remote: Counting objects:  96% (420/437)
+remote: Counting objects:  97% (424/437)
+remote: Counting objects:  98% (429/437)
+remote: Counting objects:  99% (433/437)
+remote: Counting objects: 100% (437/437)
+remote: Counting objects: 100% (437/437), done.
+remote: Compressing objects:   0% (1/424)
+remote: Compressing objects:   1% (5/424)
+remote: Compressing objects:   2% (9/424)
+remote: Compressing objects:   3% (13/424)
+remote: Compressing objects:   4% (17/424)
+remote: Compressing objects:   5% (22/424)
+remote: Compressing objects:   6% (26/424)
+remote: Compressing objects:   7% (30/424)
+remote: Compressing objects:   8% (34/424)
+remote: Compressing objects:   9% (39/424)
+remote: Compressing objects:  10% (43/424)
+remote: Compressing objects:  11% (47/424)
+remote: Compressing objects:  12% (51/424)
+remote: Compressing objects:  13% (56/424)
+remote: Compressing objects:  14% (60/424)
+remote: Compressing objects:  15% (64/424)
+remote: Compressing objects:  16% (68/424)
+remote: Compressing objects:  17% (73/424)
+remote: Compressing objects:  18% (77/424)
+remote: Compressing objects:  19% (81/424)
+remote: Compressing objects:  20% (85/424)
+remote: Compressing objects:  21% (90/424)
+remote: Compressing objects:  22% (94/424)
+remote: Compressing objects:  23% (98/424)
+remote: Compressing objects:  24% (102/424)
+remote: Compressing objects:  25% (106/424)
+remote: Compressing objects:  26% (111/424)
+remote: Compressing objects:  27% (115/424)
+remote: Compressing objects:  28% (119/424)
+remote: Compressing objects:  29% (123/424)
+remote: Compressing objects:  30% (128/424)
+remote: Compressing objects:  31% (132/424)
+remote: Compressing objects:  32% (136/424)
+remote: Compressing objects:  33% (140/424)
+remote: Compressing objects:  34% (145/424)
+remote: Compressing objects:  35% (149/424)
+remote: Compressing objects:  36% (153/424)
+remote: Compressing objects:  37% (157/424)
+remote: Compressing objects:  38% (162/424)
+remote: Compressing objects:  39% (166/424)
+remote: Compressing objects:  40% (170/424)
+remote: Compressing objects:  41% (174/424)
+remote: Compressing objects:  42% (179/424)
+remote: Compressing objects:  43% (183/424)
+remote: Compressing objects:  44% (187/424)
+remote: Compressing objects:  45% (191/424)
+remote: Compressing objects:  46% (196/424)
+remote: Compressing objects:  47% (200/424)
+remote: Compressing objects:  48% (204/424)
+remote: Compressing objects:  49% (208/424)
+remote: Compressing objects:  50% (212/424)
+remote: Compressing objects:  51% (217/424)
+remote: Compressing objects:  52% (221/424)
+remote: Compressing objects:  53% (225/424)
+remote: Compressing objects:  54% (229/424)
+remote: Compressing objects:  55% (234/424)
+remote: Compressing objects:  56% (238/424)
+remote: Compressing objects:  57% (242/424)
+remote: Compressing objects:  58% (246/424)
+remote: Compressing objects:  59% (251/424)
+remote: Compressing objects:  60% (255/424)
+remote: Compressing objects:  61% (259/424)
+remote: Compressing objects:  62% (263/424)
+remote: Compressing objects:  63% (268/424)
+remote: Compressing objects:  64% (272/424)
+remote: Compressing objects:  65% (276/424)
+remote: Compressing objects:  66% (280/424)
+remote: Compressing objects:  67% (285/424)
+remote: Compressing objects:  68% (289/424)
+remote: Compressing objects:  69% (293/424)
+remote: Compressing objects:  70% (297/424)
+remote: Compressing objects:  71% (302/424)
+remote: Compressing objects:  72% (306/424)
+remote: Compressing objects:  73% (310/424)
+remote: Compressing objects:  74% (314/424)
+remote: Compressing objects:  75% (318/424)
+remote: Compressing objects:  76% (323/424)
+remote: Compressing objects:  77% (327/424)
+remote: Compressing objects:  78% (331/424)
+remote: Compressing objects:  79% (335/424)
+remote: Compressing objects:  80% (340/424)
+remote: Compressing objects:  81% (344/424)
+remote: Compressing objects:  82% (348/424)
+remote: Compressing objects:  83% (352/424)
+remote: Compressing objects:  84% (357/424)
+remote: Compressing objects:  85% (361/424)
+remote: Compressing objects:  86% (365/424)
+remote: Compressing objects:  87% (369/424)
+remote: Compressing objects:  88% (374/424)
+remote: Compressing objects:  89% (378/424)
+remote: Compressing objects:  90% (382/424)
+remote: Compressing objects:  91% (386/424)
+remote: Compressing objects:  92% (391/424)
+remote: Compressing objects:  93% (395/424)
+remote: Compressing objects:  94% (399/424)
+remote: Compressing objects:  95% (403/424)
+remote: Compressing objects:  96% (408/424)
+remote: Compressing objects:  97% (412/424)
+remote: Compressing objects:  98% (416/424)
+remote: Compressing objects:  99% (420/424)
+remote: Compressing objects: 100% (424/424)
+remote: Compressing objects: 100% (424/424), done.
+remote: Total 487 (delta 243), reused 0 (delta 0), pack-reused 50
+Receiving objects:   0% (1/487)
+Receiving objects:   1% (5/487)
+Receiving objects:   2% (10/487)
+Receiving objects:   3% (15/487)
+Receiving objects:   4% (20/487)
+Receiving objects:   5% (25/487)
+Receiving objects:   6% (30/487)
+Receiving objects:   7% (35/487)
+Receiving objects:   8% (39/487)
+Receiving objects:   9% (44/487)
+Receiving objects:  10% (49/487)
+Receiving objects:  11% (54/487)
+Receiving objects:  12% (59/487)
+Receiving objects:  13% (64/487)
+Receiving objects:  14% (69/487)
+Receiving objects:  15% (74/487)
+Receiving objects:  16% (78/487)
+Receiving objects:  17% (83/487)
+Receiving objects:  18% (88/487)
+Receiving objects:  19% (93/487)
+Receiving objects:  20% (98/487)
+Receiving objects:  21% (103/487)
+Receiving objects:  22% (108/487)
+Receiving objects:  23% (113/487)
+Receiving objects:  24% (117/487)
+Receiving objects:  25% (122/487)
+Receiving objects:  26% (127/487)
+Receiving objects:  27% (132/487)
+Receiving objects:  28% (137/487)
+Receiving objects:  29% (142/487)
+Receiving objects:  30% (147/487)
+Receiving objects:  31% (151/487)
+Receiving objects:  32% (156/487)
+Receiving objects:  33% (161/487)
+Receiving objects:  34% (166/487)
+Receiving objects:  35% (171/487)
+Receiving objects:  36% (176/487)
+Receiving objects:  37% (181/487)
+Receiving objects:  38% (186/487)
+Receiving objects:  39% (190/487)
+Receiving objects:  40% (195/487)
+Receiving objects:  41% (200/487)
+Receiving objects:  42% (205/487)
+Receiving objects:  43% (210/487)
+Receiving objects:  44% (215/487)
+Receiving objects:  45% (220/487)
+Receiving objects:  46% (225/487)
+Receiving objects:  47% (229/487)
+Receiving objects:  48% (234/487)
+Receiving objects:  49% (239/487)
+Receiving objects:  50% (244/487)
+Receiving objects:  51% (249/487)
+Receiving objects:  52% (254/487)
+Receiving objects:  53% (259/487)
+Receiving objects:  54% (263/487)
+Receiving objects:  55% (268/487)
+Receiving objects:  56% (273/487)
+Receiving objects:  57% (278/487)
+Receiving objects:  58% (283/487)
+Receiving objects:  59% (288/487)
+Receiving objects:  60% (293/487)
+Receiving objects:  61% (298/487)
+Receiving objects:  62% (302/487)
+Receiving objects:  63% (307/487)
+Receiving objects:  64% (312/487)
+Receiving objects:  65% (317/487)
+Receiving objects:  66% (322/487)
+Receiving objects:  67% (327/487)
+Receiving objects:  68% (332/487)
+Receiving objects:  69% (337/487)
+Receiving objects:  70% (341/487)
+Receiving objects:  71% (346/487)
+Receiving objects:  72% (351/487)
+Receiving objects:  73% (356/487)
+Receiving objects:  74% (361/487)
+Receiving objects:  75% (366/487)
+Receiving objects:  76% (371/487)
+Receiving objects:  77% (375/487)
+Receiving objects:  78% (380/487)
+Receiving objects:  79% (385/487)
+Receiving objects:  80% (390/487)
+Receiving objects:  81% (395/487)
+Receiving objects:  82% (400/487)
+Receiving objects:  83% (405/487)
+Receiving objects:  84% (410/487)
+Receiving objects:  85% (414/487)
+Receiving objects:  86% (419/487)
+Receiving objects:  87% (424/487)
+Receiving objects:  88% (429/487)
+Receiving objects:  89% (434/487)
+Receiving objects:  90% (439/487)
+Receiving objects:  91% (444/487)
+Receiving objects:  92% (449/487)
+Receiving objects:  93% (453/487)
+Receiving objects:  94% (458/487)
+Receiving objects:  95% (463/487)
+Receiving objects:  96% (468/487)
+Receiving objects:  97% (473/487)
+Receiving objects:  98% (478/487)
+Receiving objects:  99% (483/487)
+Receiving objects: 100% (487/487)
+Receiving objects: 100% (487/487), 75.92 KiB | 15.18 MiB/s, done.
+Resolving deltas:   0% (0/262)
+Resolving deltas:   1% (3/262)
+Resolving deltas:   2% (6/262)
+Resolving deltas:   3% (8/262)
+Resolving deltas:   4% (11/262)
+Resolving deltas:   5% (14/262)
+Resolving deltas:   6% (16/262)
+Resolving deltas:   7% (19/262)
+Resolving deltas:   8% (21/262)
+Resolving deltas:   9% (24/262)
+Resolving deltas:  10% (27/262)
+Resolving deltas:  11% (29/262)
+Resolving deltas:  12% (32/262)
+Resolving deltas:  13% (35/262)
+Resolving deltas:  14% (37/262)
+Resolving deltas:  15% (40/262)
+Resolving deltas:  16% (42/262)
+Resolving deltas:  17% (45/262)
+Resolving deltas:  18% (48/262)
+Resolving deltas:  19% (50/262)
+Resolving deltas:  20% (53/262)
+Resolving deltas:  21% (56/262)
+Resolving deltas:  22% (58/262)
+Resolving deltas:  23% (61/262)
+Resolving deltas:  24% (63/262)
+Resolving deltas:  25% (66/262)
+Resolving deltas:  26% (69/262)
+Resolving deltas:  27% (71/262)
+Resolving deltas:  28% (74/262)
+Resolving deltas:  29% (76/262)
+Resolving deltas:  30% (79/262)
+Resolving deltas:  31% (82/262)
+Resolving deltas:  32% (84/262)
+Resolving deltas:  33% (87/262)
+Resolving deltas:  34% (90/262)
+Resolving deltas:  35% (92/262)
+Resolving deltas:  36% (95/262)
+Resolving deltas:  37% (97/262)
+Resolving deltas:  38% (100/262)
+Resolving deltas:  39% (103/262)
+Resolving deltas:  40% (105/262)
+Resolving deltas:  41% (108/262)
+Resolving deltas:  42% (111/262)
+Resolving deltas:  43% (113/262)
+Resolving deltas:  44% (116/262)
+Resolving deltas:  45% (118/262)
+Resolving deltas:  46% (121/262)
+Resolving deltas:  47% (124/262)
+Resolving deltas:  48% (126/262)
+Resolving deltas:  49% (129/262)
+Resolving deltas:  50% (131/262)
+Resolving deltas:  51% (134/262)
+Resolving deltas:  52% (137/262)
+Resolving deltas:  53% (139/262)
+Resolving deltas:  54% (142/262)
+Resolving deltas:  55% (145/262)
+Resolving deltas:  56% (147/262)
+Resolving deltas:  57% (150/262)
+Resolving deltas:  58% (152/262)
+Resolving deltas:  59% (155/262)
+Resolving deltas:  60% (158/262)
+Resolving deltas:  61% (160/262)
+Resolving deltas:  62% (163/262)
+Resolving deltas:  63% (166/262)
+Resolving deltas:  64% (168/262)
+Resolving deltas:  65% (171/262)
+Resolving deltas:  66% (173/262)
+Resolving deltas:  67% (176/262)
+Resolving deltas:  68% (179/262)
+Resolving deltas:  69% (181/262)
+Resolving deltas:  70% (184/262)
+Resolving deltas:  71% (187/262)
+Resolving deltas:  72% (189/262)
+Resolving deltas:  73% (192/262)
+Resolving deltas:  74% (194/262)
+Resolving deltas:  75% (197/262)
+Resolving deltas:  76% (200/262)
+Resolving deltas:  77% (202/262)
+Resolving deltas:  78% (205/262)
+Resolving deltas:  79% (207/262)
+Resolving deltas:  80% (210/262)
+Resolving deltas:  81% (213/262)
+Resolving deltas:  82% (215/262)
+Resolving deltas:  83% (218/262)
+Resolving deltas:  84% (221/262)
+Resolving deltas:  85% (223/262)
+Resolving deltas:  86% (226/262)
+Resolving deltas:  87% (228/262)
+Resolving deltas:  88% (231/262)
+Resolving deltas:  89% (234/262)
+Resolving deltas:  90% (236/262)
+Resolving deltas:  91% (239/262)
+Resolving deltas:  92% (242/262)
+Resolving deltas:  93% (244/262)
+Resolving deltas:  94% (247/262)
+Resolving deltas:  95% (249/262)
+Resolving deltas:  96% (252/262)
+Resolving deltas:  97% (255/262)
+Resolving deltas:  98% (257/262)
+Resolving deltas:  99% (260/262)
+Resolving deltas: 100% (262/262)
+Resolving deltas: 100% (262/262), done.
+====================================================
+== DEPLOY -> sitef-01
+====================================================
+PLAY [Deploy a partir do status do predeploy] **********************************
+TASK [Gathering Facts] *********************************************************
+ok: [localhost]
+TASK [Mostrar variáveis de entrada] ********************************************
+fatal: [localhost]: FAILED! => {"msg": "An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ package_name | default('sitef-core') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: recursive loop detected in template string: {{ package_name | default('sitef-core') }}. maximum recursion depth exceeded"}
+PLAY RECAP *********************************************************************
+localhost                  : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+Command finished with status FAILURE
