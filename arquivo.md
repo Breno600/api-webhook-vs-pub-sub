@@ -14,11 +14,10 @@
     # Variáveis esperadas via pipeline (-e):
     #  - machine_name (ex: sitef-01)
     #  - deployment_ref (ex: DEV000000001)
-    #  - action (deploy|rollback)
+    #  - deploy_action (deploy|rollback)
     machine_name: "{{ machine_name }}"
-    ansible_connection: local
     deployment_ref: "{{ deployment_ref }}"
-    action: "{{ deploy_action | default('deploy') }}"
+    deploy_action: "{{ deploy_action | default('deploy') }}"
 
     status_file: "{{ repo_root }}/status/{{ deployment_ref }}/predeploy-{{ machine_name }}.json"
     machine_file: "{{ repo_root }}/machine/{{ machine_name }}.yml"
@@ -65,7 +64,7 @@
           -i {{ target_key }}
 
     # ----------------------------------------------------------
-    # Definir package conforme ACTION
+    # Definir package conforme deploy_action
     # ----------------------------------------------------------
     - name: "Definir package a ser usado conforme ACTION"
       ansible.builtin.set_fact:
@@ -80,14 +79,14 @@
       ansible.builtin.fail:
         msg: "Package nao definido para machine={{ machine_name }} em machine/{{ machine_name }}.yml"
       when:
-        - action == "deploy"
+        - deploy_action == "deploy"
         - (selected_package is undefined or selected_package == '')
 
     - name: "Falhar se rollback nao definido"
       ansible.builtin.fail:
         msg: "Rollback nao definido para machine={{ machine_name }} em machine/{{ machine_name }}.yml"
       when:
-        - action == "rollback"
+        - deploy_action == "rollback"
         - (selected_package is undefined or selected_package == '')
 
     - name: "Carregar YAML do package selecionado"
@@ -116,7 +115,7 @@
 
         # Metadados disponíveis no PLAY 2
         machine_name: "{{ machine_name }}"
-        action: "{{ action }}"
+        deploy_action: "{{ deploy_action }}"
         package_name: "{{ selected_package }}"
         package_script: "{{ package_script }}"
         package_components: "{{ package_components }}"
@@ -126,13 +125,16 @@
 # PLAY 2 - TARGET (dynamic_deploy)
 # Copia scripts e executa init.sh do package (deploy ou rollback)
 # =====================================================================
-- name: "[TARGET] Executar {{ hostvars['dynamic_deploy_target'].action | default('deploy') }} na máquina"
+- name: "[TARGET] Executar deploy/rollback na máquina"
   hosts: dynamic_deploy
   become: true
   gather_facts: false
 
   vars:
     repo_root: "{{ playbook_dir | dirname }}"
+
+    # Puxar action do host dinâmico
+    deploy_action: "{{ hostvars[inventory_hostname].deploy_action | default('deploy') }}"
 
     # Alinhado com o predeploy
     remote_base_dir: "/opt/SoftwareExpress/sitef"
@@ -184,7 +186,7 @@
         - (package_components | length) > 0
         - not st_any_rpm.stat.exists
 
-    - name: "Executar init.sh do package ({{ action }})"
+    - name: "Executar init.sh do package ({{ deploy_action }})"
       ansible.builtin.shell: |
         cd "{{ remote_base_dir }}"
         bash "scripts/{{ package_script }}/init.sh"
