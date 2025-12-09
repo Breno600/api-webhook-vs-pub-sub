@@ -3,7 +3,7 @@ Connecting to 10.218.238.144 ....
 Connection to 10.218.238.144 established
 Executing command ...
 export GIT_TAG=DEV000000005
-Cloning into '/tmp/tmp.Ce1KNmHjHF/elastic-compute-cloud-sitef'...
+Cloning into '/tmp/tmp.aE0AFK38JT/elastic-compute-cloud-sitef'...
 remote: Enumerating objects: 554, done.
 remote: Counting objects:   0% (1/504)
 remote: Counting objects:   1% (6/504)
@@ -311,7 +311,7 @@ Receiving objects:  97% (538/554)
 Receiving objects:  98% (543/554)
 Receiving objects:  99% (549/554)
 Receiving objects: 100% (554/554)
-Receiving objects: 100% (554/554), 86.66 KiB | 1.35 MiB/s, done.
+Receiving objects: 100% (554/554), 86.66 KiB | 12.38 MiB/s, done.
 Resolving deltas:   0% (0/317)
 Resolving deltas:   1% (4/317)
 Resolving deltas:   2% (7/317)
@@ -335,7 +335,7 @@ Resolving deltas:  19% (61/317)
 Resolving deltas:  20% (64/317)
 Resolving deltas:  21% (67/317)
 Resolving deltas:  22% (70/317)
-Resolving deltas:  23% (74/317)
+Resolving deltas:  23% (73/317)
 Resolving deltas:  24% (77/317)
 Resolving deltas:  25% (80/317)
 Resolving deltas:  26% (83/317)
@@ -391,7 +391,7 @@ Resolving deltas:  75% (238/317)
 Resolving deltas:  76% (241/317)
 Resolving deltas:  77% (245/317)
 Resolving deltas:  78% (248/317)
-Resolving deltas:  79% (252/317)
+Resolving deltas:  79% (251/317)
 Resolving deltas:  80% (254/317)
 Resolving deltas:  81% (257/317)
 Resolving deltas:  82% (260/317)
@@ -437,8 +437,8 @@ ok: [localhost] => {
     "msg": [
         "execution_file_name = execution/machine_list_dev.yml",
         "deployment_ref     = DEV000000005",
-        "repo_root          = /tmp/tmp.Ce1KNmHjHF/elastic-compute-cloud-sitef/ansible/..",
-        "status_dir         = /tmp/tmp.Ce1KNmHjHF/elastic-compute-cloud-sitef/ansible/../status/DEV000000005"
+        "repo_root          = /tmp/tmp.aE0AFK38JT/elastic-compute-cloud-sitef/ansible/..",
+        "status_dir         = /tmp/tmp.aE0AFK38JT/elastic-compute-cloud-sitef/ansible/../status/DEV000000005"
     ]
 }
 TASK [Criar diretório de status da TAG] ****************************************
@@ -448,7 +448,7 @@ ok: [localhost]
 TASK [Falhar se não tiver máquinas no arquivo de execução] *********************
 skipping: [localhost]
 TASK [Executar pré-deploy por máquina] *****************************************
-included: /tmp/tmp.Ce1KNmHjHF/elastic-compute-cloud-sitef/ansible/predeploy_per_machine.yml for localhost => (item=sitef-01)
+included: /tmp/tmp.aE0AFK38JT/elastic-compute-cloud-sitef/ansible/predeploy_per_machine.yml for localhost => (item=sitef-01)
 TASK [Definir caminhos para sitef-01] ******************************************
 ok: [localhost]
 TASK [Carregar config da máquina sitef-01] *************************************
@@ -466,7 +466,17 @@ changed: [localhost]
 TASK [Criar status inicial (queued) para sitef-01] *****************************
 changed: [localhost]
 TASK [Garantir base do pipeline no host] ***************************************
-The authenticity of host '100.99.25.45 (100.99.25.45)' can't be established.
-ED25519 key fingerprint is SHA256:r35SzZlC6M6EI77sKboBKjSJjIGHyUusUqENoaYVNq8.
-This key is not known by any other names
-Are you sure you want to continue connecting (yes/no/[fingerprint])? 
+changed: [localhost -> sitef-01(100.99.25.45)] => (item=/opt/SoftwareExpress/sitef-pipeline/deploy)
+changed: [localhost -> sitef-01(100.99.25.45)] => (item=/opt/SoftwareExpress/sitef-pipeline/deploy/scripts)
+changed: [localhost -> sitef-01(100.99.25.45)] => (item=/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package)
+changed: [localhost -> sitef-01(100.99.25.45)] => (item=/opt/SoftwareExpress/sitef-pipeline/deploy/package/linux)
+TASK [Limpar pasta de scripts do predeploy] ************************************
+changed: [localhost -> sitef-01(100.99.25.45)]
+TASK [Copiar package.yml para scripts/package/] ********************************
+changed: [localhost -> sitef-01(100.99.25.45)]
+TASK [Baixar componentes do Nexus para a área do pipeline] *********************
+failed: [localhost -> sitef-01(100.99.25.45)] (item=None) => {"censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+fatal: [localhost -> {{ machine_name }}]: FAILED! => {"censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+PLAY RECAP *********************************************************************
+localhost                  : ok=15   changed=6    unreachable=0    failed=1    skipped=2    rescued=0    ignored=0   
+Command finished with status FAILURE
