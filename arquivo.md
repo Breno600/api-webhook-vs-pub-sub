@@ -1,854 +1,466 @@
-# ansible/predeploy_from_execution.yml
-- name: "Predeploy a partir do arquivo de execução"
-  hosts: localhost
-  connection: local
-  gather_facts: true
-
-  vars:
-    execution_file_name: "{{ execution_file_name | default('execution/machine_list_dev.yml') }}"
-    deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
-
-    repo_root: "{{ playbook_dir }}/.."
-    status_dir: "{{ repo_root }}/status/{{ deployment_ref }}"
-
-    # Preferível vir do Harness Secrets
-    nexus_base_url: "{{ nexus_base_url | default('https://nexus.exemplo/repository/raw-dev') }}"
-    nexus_user: "{{ nexus_user | default(lookup('env','NEXUS_USER')) }}"
-    nexus_password: "{{ nexus_password | default(lookup('env','NEXUS_PASSWORD')) }}"
-
-  tasks:
-    - name: "Mostrar variáveis de entrada"
-      debug:
-        msg:
-          - "execution_file_name = {{ execution_file_name }}"
-          - "deployment_ref     = {{ deployment_ref }}"
-          - "repo_root          = {{ repo_root }}"
-          - "status_dir         = {{ status_dir }}"
-
-    - name: "Criar diretório de status da TAG"
-      ansible.builtin.file:
-        path: "{{ status_dir }}"
-        state: directory
-        mode: "0755"
-
-    - name: "Carregar arquivo de execução"
-      ansible.builtin.include_vars:
-        file: "{{ repo_root }}/{{ execution_file_name }}"
-        name: execution_cfg
-
-    - name: "Falhar se não tiver máquinas no arquivo de execução"
-      ansible.builtin.fail:
-        msg: "Nenhuma máquina encontrada em execution_cfg.machines"
-      when: >
-        execution_cfg.machines is not defined or
-        execution_cfg.machines | length == 0
-
-    - name: "Executar pré-deploy por máquina"
-      ansible.builtin.include_tasks: predeploy_per_machine.yml
-      loop: "{{ execution_cfg.machines }}"
-      loop_control:
-        loop_var: machine_name
-
-# ansible/predeploy_per_machine.yml
-- name: "Definir caminhos para {{ machine_name }}"
-  ansible.builtin.set_fact:
-    machine_file: "{{ repo_root }}/machine/{{ machine_name }}.yml"
-    status_file: "{{ status_dir }}/predeploy-{{ machine_name }}.json"
-    local_log_file: "{{ status_dir }}/predeploy-{{ machine_name }}.log"
-
-    pipeline_base: "/opt/SoftwareExpress/sitef-pipeline/deploy"
-    pipeline_pkg_root: "/opt/SoftwareExpress/sitef-pipeline/deploy"
-    pipeline_scripts_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
-    pipeline_scripts_pkg_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package"
-
-- name: "Carregar config da máquina {{ machine_name }}"
-  ansible.builtin.include_vars:
-    file: "{{ machine_file }}"
-    name: machine_cfg
-
-- name: "Carregar config do pacote {{ machine_cfg.package }}"
-  ansible.builtin.include_vars:
-    file: "{{ repo_root }}/package/{{ machine_cfg.package }}.yml"
-    name: package_cfg
-
-- name: "Definir usuário alvo padrão para {{ machine_name }}"
-  ansible.builtin.set_fact:
-    target_user: "{{ machine_cfg.user | default('ec2-user') }}"
-
-- name: "Definir ssh_common_args padrão da máquina (se existir)"
-  ansible.builtin.set_fact:
-    target_ssh_common_args: "{{ machine_cfg.ssh_common_args | default('') }}"
-
-- name: "Aplicar ProxyJump via bastion (quando necessário)"
-  ansible.builtin.set_fact:
-    target_ssh_common_args: "-o ProxyJump={{ bastion_user | default('ec2-user') }}@{{ bastion_host }}"
-  when:
-    - (target_ssh_common_args | length) == 0
-    - bastion_host is defined
-
-- name: "Registrar host dinâmico para {{ machine_name }}"
-  ansible.builtin.add_host:
-    name: "{{ machine_name }}"
-    ansible_host: "{{ machine_cfg.host }}"
-    ansible_user: "{{ target_user }}"
-    ansible_connection: ssh
-    ansible_ssh_common_args: "{{ target_ssh_common_args }}"
-
-- name: "Criar status inicial (queued) para {{ machine_name }}"
-  ansible.builtin.copy:
-    dest: "{{ status_file }}"
-    content: |
-      {
-        "machine": "{{ machine_name }}",
-        "host": "{{ machine_cfg.host }}",
-        "package": "{{ machine_cfg.package }}",
-        "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "queued",
-        "deployment_ref": "{{ deployment_ref }}",
-        "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "log_path": "dev/{{ deployment_ref }}/{{ deployment_ref | lower }}-{{ machine_name }}-predeploy.log"
-      }
-
-- name: "Garantir base do pipeline no host"
-  become: true
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    mode: "0755"
-  loop:
-    - "{{ pipeline_base }}"
-    - "{{ pipeline_scripts_dir }}"
-    - "{{ pipeline_scripts_pkg_dir }}"
-    - "{{ pipeline_pkg_root }}/package/linux"
-  delegate_to: "{{ machine_name }}"
-
-- name: "Limpar pasta de scripts do predeploy"
-  become: true
-  ansible.builtin.shell: |
-    rm -rf "{{ pipeline_scripts_dir }}"/*
-    mkdir -p "{{ pipeline_scripts_dir }}"
-    mkdir -p "{{ pipeline_scripts_pkg_dir }}"
-  delegate_to: "{{ machine_name }}"
-
-- name: "Copiar package.yml para scripts/package/"
-  become: true
-  ansible.builtin.copy:
-    src: "{{ repo_root }}/package/{{ machine_cfg.package }}.yml"
-    dest: "{{ pipeline_scripts_pkg_dir }}/{{ machine_cfg.package }}.yml"
-    mode: "0644"
-  delegate_to: "{{ machine_name }}"
-
-- name: "Baixar componentes do Nexus para a área do pipeline"
-  become: true
-  ansible.builtin.get_url:
-    url: "{{ nexus_base_url }}/{{ item }}"
-    dest: "{{ pipeline_pkg_root }}/{{ item }}"
-    mode: "0644"
-    url_username: "{{ nexus_user }}"
-    url_password: "{{ nexus_password }}"
-    force: true
-  loop: "{{ package_cfg.components }}"
-  delegate_to: "{{ machine_name }}"
-  no_log: true
-
-- name: "Copiar scripts do package para a área do pipeline"
-  become: true
-  ansible.builtin.copy:
-    src: "{{ repo_root }}/scripts/{{ package_cfg.script }}/"
-    dest: "{{ pipeline_scripts_dir }}/"
-    mode: "0755"
-  delegate_to: "{{ machine_name }}"
-
-- name: "Montar env_vars efetivas (package + machine + pipeline base)"
-  ansible.builtin.set_fact:
-    merged_env: >-
-      {{
-        (package_cfg.env_vars | default({}))
-        | combine(machine_cfg.env_vars | default({}), recursive=True)
-        | combine({'SITEF_PIPELINE_BASE': pipeline_base}, recursive=True)
-      }}
-
-- name: "Executar init_parallel.sh no host"
-  become: true
-  ansible.builtin.shell: |
-    cd "{{ pipeline_scripts_dir }}"
-    /bin/bash -x ./init_parallel.sh
-  delegate_to: "{{ machine_name }}"
-  environment: "{{ merged_env }}"
-  register: predeploy_result
-  ignore_errors: true
-
-- name: "Ler parallel.txt do host alvo"
-  become: true
-  ansible.builtin.shell: |
-    cat "{{ pipeline_scripts_dir }}/parallel.txt" 2>/dev/null || echo "parallel.txt nao existe"
-  delegate_to: "{{ machine_name }}"
-  register: parallel_log
-  changed_when: false
-
-# Materializa LOG local no workspace
-- name: "Salvar log local do predeploy no workspace"
-  ansible.builtin.copy:
-    dest: "{{ local_log_file }}"
-    content: "{{ parallel_log.stdout | default('') }}"
-  when: parallel_log is defined
-
-- name: "Atualizar status local predeploy success"
-  ansible.builtin.copy:
-    dest: "{{ status_file }}"
-    content: |
-      {
-        "machine": "{{ machine_name }}",
-        "host": "{{ machine_cfg.host }}",
-        "package": "{{ machine_cfg.package }}",
-        "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "success",
-        "deployment_ref": "{{ deployment_ref }}",
-        "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "tags": [
-          "{{ deployment_ref | lower }}:pre-deploy:ok",
-          "{{ deployment_ref | lower }}:deploy:pending"
-        ],
-        "log_path": "dev/{{ deployment_ref }}/{{ deployment_ref | lower }}-{{ machine_name }}-predeploy.log",
-        "stdout": {{ predeploy_result.stdout | default('') | to_json }},
-        "stderr": {{ predeploy_result.stderr | default('') | to_json }}
-      }
-  when: predeploy_result.rc == 0
-
-- name: "Atualizar status local predeploy failed"
-  ansible.builtin.copy:
-    dest: "{{ status_file }}"
-    content: |
-      {
-        "machine": "{{ machine_name }}",
-        "host": "{{ machine_cfg.host }}",
-        "package": "{{ machine_cfg.package }}",
-        "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "failed",
-        "deployment_ref": "{{ deployment_ref }}",
-        "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "tags": [
-          "{{ deployment_ref | lower }}:pre-deploy:error"
-        ],
-        "log_path": "dev/{{ deployment_ref }}/{{ deployment_ref | lower }}-{{ machine_name }}-predeploy.log",
-        "stdout": {{ predeploy_result.stdout | default('') | to_json }},
-        "stderr": {{ predeploy_result.stderr | default('') | to_json }}
-      }
-  when: predeploy_result.rc != 0
-
-- name: "Falhar pipeline se init_parallel.sh retornou erro"
-  ansible.builtin.fail:
-    msg: "Predeploy falhou em {{ machine_name }} (host {{ machine_cfg.host }})."
-  when: predeploy_result.rc != 0
-
-#ansible/deploy_from_status.yml
-- name: "Deploy a partir do status do predeploy"
-  hosts: localhost
-  connection: local
-  gather_facts: true
-
-  vars:
-    deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
-    repo_root: "{{ playbook_dir }}/.."
-    status_dir: "{{ repo_root }}/status/{{ deployment_ref }}"
-
-  tasks:
-    - name: "Garantir que o diretório de status exista"
-      ansible.builtin.stat:
-        path: "{{ status_dir }}"
-      register: status_dir_stat
-
-    - name: "Falhar se status_dir não existir"
-      ansible.builtin.fail:
-        msg: "Diretório de status não encontrado: {{ status_dir }}. Rode o predeploy primeiro."
-      when: not status_dir_stat.stat.exists
-
-    - name: "Listar arquivos de predeploy da TAG"
-      ansible.builtin.find:
-        paths: "{{ status_dir }}"
-        patterns: "predeploy-*.json"
-        file_type: file
-      register: predeploy_files
-
-    - name: "Falhar se não houver predeploy-*.json"
-      ansible.builtin.fail:
-        msg: "Nenhum arquivo predeploy-*.json encontrado em {{ status_dir }}"
-      when: predeploy_files.matched | int == 0
-
-    - name: "Carregar JSONs de predeploy"
-      ansible.builtin.slurp:
-        src: "{{ item.path }}"
-      loop: "{{ predeploy_files.files }}"
-      register: predeploy_slurped
-
-    - name: "Montar lista de predeploys parseados"
-      ansible.builtin.set_fact:
-        predeploy_jsons: "{{ predeploy_jsons | default([]) + [ (item.content | b64decode | from_json) ] }}"
-      loop: "{{ predeploy_slurped.results }}"
-
-    - name: "Montar lista de máquinas com predeploy success"
-      ansible.builtin.set_fact:
-        machines_to_deploy: "{{ (machines_to_deploy | default([])) + [ item.machine ] }}"
-      loop: "{{ predeploy_jsons }}"
-      when:
-        - item.status is defined
-        - item.status == "success"
-
-    - name: "Falhar se nenhuma máquina estiver apta para deploy"
-      ansible.builtin.fail:
-        msg: "Nenhuma máquina com status=success no predeploy para a TAG {{ deployment_ref }}"
-      when: machines_to_deploy | default([]) | length == 0
-
-    - name: "Executar deploy por máquina"
-      ansible.builtin.include_tasks: deploy_per_machine.yml
-      loop: "{{ machines_to_deploy }}"
-      loop_control:
-        loop_var: target_machine
-
-# ansible/deploy_per_machine.yml
-- name: "Normalizar variável de máquina"
-  ansible.builtin.set_fact:
-    machine_name: "{{ target_machine | default(machine_name) }}"
-
-- name: "Definir caminhos para {{ machine_name }}"
-  ansible.builtin.set_fact:
-    machine_file: "{{ repo_root }}/machine/{{ machine_name }}.yml"
-    status_file: "{{ status_dir }}/deploy-{{ machine_name }}.json"
-    local_log_file: "{{ status_dir }}/deploy-{{ machine_name }}.log"
-
-    pipeline_base: "/opt/SoftwareExpress/sitef-pipeline/deploy"
-    pipeline_scripts_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
-
-- name: "Carregar config da máquina {{ machine_name }}"
-  ansible.builtin.include_vars:
-    file: "{{ machine_file }}"
-    name: machine_cfg
-
-- name: "Carregar config do pacote {{ machine_cfg.package }}"
-  ansible.builtin.include_vars:
-    file: "{{ repo_root }}/package/{{ machine_cfg.package }}.yml"
-    name: package_cfg
-
-- name: "Registrar host dinâmico"
-  ansible.builtin.add_host:
-    name: "{{ machine_name }}"
-    ansible_host: "{{ machine_cfg.host }}"
-    ansible_user: "{{ machine_cfg.user | default('ec2-user') }}"
-    ansible_connection: ssh
-
-- name: "Criar status inicial (queued)"
-  ansible.builtin.copy:
-    dest: "{{ status_file }}"
-    content: |
-      {
-        "machine": "{{ machine_name }}",
-        "host": "{{ machine_cfg.host }}",
-        "package": "{{ machine_cfg.package }}",
-        "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "queued",
-        "deployment_ref": "{{ deployment_ref }}",
-        "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "log_path": "dev/{{ deployment_ref }}/{{ deployment_ref | lower }}-{{ machine_name }}-deploy.log"
-      }
-
-- name: "Montar env_vars efetivas"
-  ansible.builtin.set_fact:
-    merged_env: >-
-      {{
-        (package_cfg.env_vars | default({}))
-        | combine(machine_cfg.env_vars | default({}), recursive=True)
-        | combine({'SITEF_PIPELINE_BASE': pipeline_base}, recursive=True)
-      }}
-
-- name: "Executar init_deploy.sh no host"
-  become: true
-  ansible.builtin.shell: |
-    cd "{{ pipeline_scripts_dir }}"
-    /bin/bash -x ./init_deploy.sh
-  delegate_to: "{{ machine_name }}"
-  environment: "{{ merged_env }}"
-  register: deploy_result
-  ignore_errors: true
-
-- name: "Ler deploy.txt do host alvo"
-  become: true
-  ansible.builtin.shell: |
-    cat "{{ pipeline_scripts_dir }}/deploy.txt" 2>/dev/null || echo "deploy.txt nao existe"
-  delegate_to: "{{ machine_name }}"
-  register: deploy_log
-  changed_when: false
-
-- name: "Salvar log local do deploy no workspace"
-  ansible.builtin.copy:
-    dest: "{{ local_log_file }}"
-    content: "{{ deploy_log.stdout | default('') }}"
-
-- name: "Atualizar status deploy success"
-  ansible.builtin.copy:
-    dest: "{{ status_file }}"
-    content: |
-      {
-        "machine": "{{ machine_name }}",
-        "host": "{{ machine_cfg.host }}",
-        "package": "{{ machine_cfg.package }}",
-        "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "success",
-        "deployment_ref": "{{ deployment_ref }}",
-        "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "tags": [
-          "{{ deployment_ref | lower }}:pre-deploy:ok",
-          "{{ deployment_ref | lower }}:deploy:ok"
-        ],
-        "log_path": "dev/{{ deployment_ref }}/{{ deployment_ref | lower }}-{{ machine_name }}-deploy.log",
-        "stdout": {{ deploy_result.stdout | default('') | to_json }},
-        "stderr": {{ deploy_result.stderr | default('') | to_json }}
-      }
-  when: deploy_result.rc == 0
-
-- name: "Atualizar status deploy failed"
-  ansible.builtin.copy:
-    dest: "{{ status_file }}"
-    content: |
-      {
-        "machine": "{{ machine_name }}",
-        "host": "{{ machine_cfg.host }}",
-        "package": "{{ machine_cfg.package }}",
-        "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "failed",
-        "deployment_ref": "{{ deployment_ref }}",
-        "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "tags": [
-          "{{ deployment_ref | lower }}:pre-deploy:ok",
-          "{{ deployment_ref | lower }}:deploy:error"
-        ],
-        "log_path": "dev/{{ deployment_ref }}/{{ deployment_ref | lower }}-{{ machine_name }}-deploy.log",
-        "stdout": {{ deploy_result.stdout | default('') | to_json }},
-        "stderr": {{ deploy_result.stderr | default('') | to_json }}
-      }
-  when: deploy_result.rc != 0
-
-- name: "Falhar pipeline se init_deploy.sh retornou erro"
-  ansible.builtin.fail:
-    msg: "Deploy falhou em {{ machine_name }} (host {{ machine_cfg.host }})."
-  when: deploy_result.rc != 0
-
-# ansible/rollback_from_status.yml
-- name: "Rollback a partir do status do deploy"
-  hosts: localhost
-  connection: local
-  gather_facts: true
-
-  vars:
-    deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
-    repo_root: "{{ playbook_dir }}/.."
-    status_dir: "{{ repo_root }}/status/{{ deployment_ref }}"
-
-  tasks:
-    - name: "Listar arquivos de deploy da TAG"
-      ansible.builtin.find:
-        paths: "{{ status_dir }}"
-        patterns: "deploy-*.json"
-        file_type: file
-      register: deploy_files
-
-    - name: "Falhar se não houver deploy-*.json"
-      ansible.builtin.fail:
-        msg: "Nenhum arquivo deploy-*.json encontrado em {{ status_dir }}"
-      when: deploy_files.matched | int == 0
-
-    - name: "Carregar JSONs de deploy"
-      ansible.builtin.slurp:
-        src: "{{ item.path }}"
-      loop: "{{ deploy_files.files }}"
-      register: deploy_slurped
-
-    - name: "Montar lista de deploys parseados"
-      ansible.builtin.set_fact:
-        deploy_jsons: "{{ deploy_jsons | default([]) + [ (item.content | b64decode | from_json) ] }}"
-      loop: "{{ deploy_slurped.results }}"
-
-    - name: "Montar lista de máquinas com deploy failed"
-      ansible.builtin.set_fact:
-        machines_to_rollback: "{{ (machines_to_rollback | default([])) + [ item.machine ] }}"
-      loop: "{{ deploy_jsons }}"
-      when:
-        - item.status is defined
-        - item.status == "failed"
-
-    - name: "Falhar se nenhuma máquina estiver apta para rollback"
-      ansible.builtin.fail:
-        msg: "Nenhuma máquina com status=failed no deploy para a TAG {{ deployment_ref }}"
-      when: machines_to_rollback | default([]) | length == 0
-
-    - name: "Executar rollback por máquina"
-      ansible.builtin.include_tasks: rollback_per_machine.yml
-      loop: "{{ machines_to_rollback }}"
-      loop_control:
-        loop_var: target_machine
-
-#ansible/rollback_per_machine.yml
-- name: "Normalizar variável de máquina"
-  ansible.builtin.set_fact:
-    machine_name: "{{ target_machine | default(machine_name) }}"
-
-- name: "Definir caminhos para {{ machine_name }}"
-  ansible.builtin.set_fact:
-    machine_file: "{{ repo_root }}/machine/{{ machine_name }}.yml"
-    rollback_pkg_file: "{{ repo_root }}/package/{{ (lookup('file', machine_file) | from_yaml).rollback }}.yml"
-    status_file: "{{ status_dir }}/rollback-{{ machine_name }}.json"
-    local_log_file: "{{ status_dir }}/rollback-{{ machine_name }}.log"
-
-    pipeline_base: "/opt/SoftwareExpress/sitef-pipeline/rollback"
-    pipeline_pkg_root: "/opt/SoftwareExpress/sitef-pipeline/rollback"
-    pipeline_scripts_dir: "/opt/SoftwareExpress/sitef-pipeline/rollback/scripts"
-    pipeline_scripts_pkg_dir: "/opt/SoftwareExpress/sitef-pipeline/rollback/scripts/package"
-
-- name: "Carregar config da máquina {{ machine_name }}"
-  ansible.builtin.include_vars:
-    file: "{{ machine_file }}"
-    name: machine_cfg
-
-- name: "Carregar config do pacote rollback {{ machine_cfg.rollback }}"
-  ansible.builtin.include_vars:
-    file: "{{ repo_root }}/package/{{ machine_cfg.rollback }}.yml"
-    name: package_cfg
-
-- name: "Registrar host dinâmico"
-  ansible.builtin.add_host:
-    name: "{{ machine_name }}"
-    ansible_host: "{{ machine_cfg.host }}"
-    ansible_user: "{{ machine_cfg.user | default('ec2-user') }}"
-    ansible_connection: ssh
-
-- name: "Criar status inicial (queued)"
-  ansible.builtin.copy:
-    dest: "{{ status_file }}"
-    content: |
-      {
-        "machine": "{{ machine_name }}",
-        "host": "{{ machine_cfg.host }}",
-        "package": "{{ machine_cfg.package }}",
-        "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "queued",
-        "deployment_ref": "{{ deployment_ref }}",
-        "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "log_path": "dev/{{ deployment_ref }}/{{ deployment_ref | lower }}-{{ machine_name }}-rollback.log"
-      }
-
-- name: "Garantir base do pipeline no host"
-  become: true
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    mode: "0755"
-  loop:
-    - "{{ pipeline_base }}"
-    - "{{ pipeline_scripts_dir }}"
-    - "{{ pipeline_scripts_pkg_dir }}"
-    - "{{ pipeline_pkg_root }}/package/linux"
-  delegate_to: "{{ machine_name }}"
-
-- name: "Limpar pasta de scripts do rollback"
-  become: true
-  ansible.builtin.shell: |
-    rm -rf "{{ pipeline_scripts_dir }}"/*
-    mkdir -p "{{ pipeline_scripts_dir }}"
-    mkdir -p "{{ pipeline_scripts_pkg_dir }}"
-  delegate_to: "{{ machine_name }}"
-
-- name: "Copiar package.yml de rollback para scripts/package/"
-  become: true
-  ansible.builtin.copy:
-    src: "{{ repo_root }}/package/{{ machine_cfg.rollback }}.yml"
-    dest: "{{ pipeline_scripts_pkg_dir }}/{{ machine_cfg.rollback }}.yml"
-    mode: "0644"
-  delegate_to: "{{ machine_name }}"
-
-- name: "Baixar componentes do Nexus para a área do rollback"
-  become: true
-  ansible.builtin.get_url:
-    url: "{{ nexus_base_url }}/{{ item }}"
-    dest: "{{ pipeline_pkg_root }}/{{ item }}"
-    mode: "0644"
-    url_username: "{{ nexus_user }}"
-    url_password: "{{ nexus_password }}"
-    force: true
-  loop: "{{ package_cfg.components }}"
-  delegate_to: "{{ machine_name }}"
-  no_log: true
-
-- name: "Copiar scripts do package rollback para a área do pipeline"
-  become: true
-  ansible.builtin.copy:
-    src: "{{ repo_root }}/scripts/{{ package_cfg.script }}/"
-    dest: "{{ pipeline_scripts_dir }}/"
-    mode: "0755"
-  delegate_to: "{{ machine_name }}"
-
-- name: "Montar env_vars efetivas"
-  ansible.builtin.set_fact:
-    merged_env: >-
-      {{
-        (package_cfg.env_vars | default({}))
-        | combine(machine_cfg.env_vars | default({}), recursive=True)
-        | combine({'SITEF_PIPELINE_BASE': pipeline_base}, recursive=True)
-      }}
-
-- name: "Executar init_rollback.sh no host"
-  become: true
-  ansible.builtin.shell: |
-    cd "{{ pipeline_scripts_dir }}"
-    /bin/bash -x ./init_rollback.sh
-  delegate_to: "{{ machine_name }}"
-  environment: "{{ merged_env }}"
-  register: rollback_result
-  ignore_errors: true
-
-- name: "Ler rollback.txt do host alvo"
-  become: true
-  ansible.builtin.shell: |
-    cat "{{ pipeline_scripts_dir }}/rollback.txt" 2>/dev/null || echo "rollback.txt nao existe"
-  delegate_to: "{{ machine_name }}"
-  register: rollback_log
-  changed_when: false
-
-- name: "Salvar log local do rollback no workspace"
-  ansible.builtin.copy:
-    dest: "{{ local_log_file }}"
-    content: "{{ rollback_log.stdout | default('') }}"
-
-- name: "Atualizar status rollback success"
-  ansible.builtin.copy:
-    dest: "{{ status_file }}"
-    content: |
-      {
-        "machine": "{{ machine_name }}",
-        "host": "{{ machine_cfg.host }}",
-        "package": "{{ machine_cfg.package }}",
-        "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "success",
-        "deployment_ref": "{{ deployment_ref }}",
-        "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "tags": [
-          "{{ deployment_ref | lower }}:rollback:ok"
-        ],
-        "log_path": "dev/{{ deployment_ref }}/{{ deployment_ref | lower }}-{{ machine_name }}-rollback.log",
-        "stdout": {{ rollback_result.stdout | default('') | to_json }},
-        "stderr": {{ rollback_result.stderr | default('') | to_json }}
-      }
-  when: rollback_result.rc == 0
-
-- name: "Atualizar status rollback failed"
-  ansible.builtin.copy:
-    dest: "{{ status_file }}"
-    content: |
-      {
-        "machine": "{{ machine_name }}",
-        "host": "{{ machine_cfg.host }}",
-        "package": "{{ machine_cfg.package }}",
-        "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "failed",
-        "deployment_ref": "{{ deployment_ref }}",
-        "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "tags": [
-          "{{ deployment_ref | lower }}:rollback:error"
-        ],
-        "log_path": "dev/{{ deployment_ref }}/{{ deployment_ref | lower }}-{{ machine_name }}-rollback.log",
-        "stdout": {{ rollback_result.stdout | default('') | to_json }},
-        "stderr": {{ rollback_result.stderr | default('') | to_json }}
-      }
-  when: rollback_result.rc != 0
-
-- name: "Falhar pipeline se init_rollback.sh retornou erro"
-  ansible.builtin.fail:
-    msg: "Rollback falhou em {{ machine_name }} (host {{ machine_cfg.host }})."
-  when: rollback_result.rc != 0
-
-# harness/pre-deploy-pipeline-script.sh
-#!/bin/bash
-set -euo pipefail
-
-BRANCH="${BRANCH:-develop}"
-GIT_TAG="${GIT_TAG:?GIT_TAG obrigatório}"
-EXECUTION_FILE_NAME="${EXECUTION_FILE_NAME:-execution/machine_list_dev.yml}"
-
-REPO_URL="${REPO_URL:?REPO_URL obrigatório (use secret)}"
-
-# Nexus via env (secret)
-export NEXUS_USER="${NEXUS_USER:-}"
-export NEXUS_PASSWORD="${NEXUS_PASSWORD:-}"
-export NEXUS_BASE_URL="${NEXUS_BASE_URL:-}"
-
-WORKDIR="$(mktemp -d)"
-git clone -b "${BRANCH}" "${REPO_URL}" "${WORKDIR}/elastic-compute-cloud-sitef"
-cd "${WORKDIR}/elastic-compute-cloud-sitef"
-
-echo "== PIPELINE PREDEPLOY =="
-echo "BRANCH: ${BRANCH}"
-echo "TAG   : ${GIT_TAG}"
-echo "EXEC  : ${EXECUTION_FILE_NAME}"
-
-cd ansible
-
-ansible-playbook predeploy_from_execution.yml \
-  -e "execution_file_name=${EXECUTION_FILE_NAME}" \
-  -e "deployment_ref=${GIT_TAG}" \
-  -e "nexus_base_url=${NEXUS_BASE_URL}" \
-  -e "nexus_user=${NEXUS_USER}" \
-  -e "nexus_password=${NEXUS_PASSWORD}" \
-  --forks 10
-
-cd ..
-
-STATUS_DIR="status/${GIT_TAG}"
-test -d "${STATUS_DIR}"
-
-# Gera arquivos nomeados pro File Store
-# Renomeação leve para ficar no padrão solicitado
-for f in "${STATUS_DIR}"/predeploy-*.json; do
-  m="$(basename "$f" | sed 's/^predeploy-//' | sed 's/\.json$//')"
-  cp "$f" "${STATUS_DIR}/${GIT_TAG,,}-${m}-predeploy.json"
-done
-
-for f in "${STATUS_DIR}"/predeploy-*.log; do
-  m="$(basename "$f" | sed 's/^predeploy-//' | sed 's/\.log$//')"
-  cp "$f" "${STATUS_DIR}/${GIT_TAG,,}-${m}-predeploy.log"
-done
-
-tar -czf "predeploy-${GIT_TAG}.tar.gz" "${STATUS_DIR}"
-
-echo
-echo "== ARTEFATOS PARA UPLOAD NO FILE STORE =="
-echo "1) predeploy-${GIT_TAG}.tar.gz"
-echo "2) ${STATUS_DIR}/${GIT_TAG,,}-<machine>-predeploy.json"
-echo "3) ${STATUS_DIR}/${GIT_TAG,,}-<machine>-predeploy.log"
-echo
-echo "Destino sugerido:"
-echo "dev/${GIT_TAG}/"
-
-# harness/deploy-pipeline-script.sh
-#!/usr/bin/env bash
-set -euo pipefail
-
-BRANCH="${BRANCH:-develop}"
-GIT_TAG="${GIT_TAG:?GIT_TAG obrigatório}"
-MACHINES="${MACHINES:-${MACHINE:-}}"
-STRATEGY="${STRATEGY:-deploy}"
-
-REPO_URL="${REPO_URL:?REPO_URL obrigatório (use secret)}"
-
-export NEXUS_USER="${NEXUS_USER:-}"
-export NEXUS_PASSWORD="${NEXUS_PASSWORD:-}"
-export NEXUS_BASE_URL="${NEXUS_BASE_URL:-}"
-
-if [[ -z "${MACHINES}" ]]; then
-  echo "ERRO: MACHINES/MACHINE vazio"
-  exit 1
-fi
-
-MACHINES_CLEAN=""
-for m in ${MACHINES//,/ }; do
-  m="${m%.yml}"
-  m="${m%.yaml}"
-  MACHINES_CLEAN+="${m} "
-done
-
-WORKDIR="$(mktemp -d)"
-git clone -b "${BRANCH}" "${REPO_URL}" "${WORKDIR}/elastic-compute-cloud-sitef"
-cd "${WORKDIR}/elastic-compute-cloud-sitef"
-
-echo "== PIPELINE DEPLOY =="
-echo "BRANCH   : ${BRANCH}"
-echo "STRATEGY : ${STRATEGY}"
-echo "TAG      : ${GIT_TAG}"
-echo "MACHINES : ${MACHINES_CLEAN}"
-
-for m in ${MACHINES_CLEAN}; do
-  ansible-playbook \
-    -i localhost, \
-    ansible/deploy_from_status.yml \
-    -e "deployment_ref=${GIT_TAG}" \
-    -e "machine_name=${m}" \
-    -e "nexus_base_url=${NEXUS_BASE_URL}" \
-    -e "nexus_user=${NEXUS_USER}" \
-    -e "nexus_password=${NEXUS_PASSWORD}"
-done
-
-STATUS_DIR="status/${GIT_TAG}"
-test -d "${STATUS_DIR}"
-
-for f in "${STATUS_DIR}"/deploy-*.json; do
-  m="$(basename "$f" | sed 's/^deploy-//' | sed 's/\.json$//')"
-  cp "$f" "${STATUS_DIR}/${GIT_TAG,,}-${m}-deploy.json"
-done
-
-for f in "${STATUS_DIR}"/deploy-*.log; do
-  m="$(basename "$f" | sed 's/^deploy-//' | sed 's/\.log$//')"
-  cp "$f" "${STATUS_DIR}/${GIT_TAG,,}-${m}-deploy.log"
-done
-
-tar -czf "deploy-${GIT_TAG}.tar.gz" "${STATUS_DIR}"
-
-echo
-echo "== ARTEFATOS PARA UPLOAD NO FILE STORE =="
-echo "1) deploy-${GIT_TAG}.tar.gz"
-echo "2) ${STATUS_DIR}/${GIT_TAG,,}-<machine>-deploy.json"
-echo "3) ${STATUS_DIR}/${GIT_TAG,,}-<machine>-deploy.log"
-echo
-echo "Destino sugerido:"
-echo "dev/${GIT_TAG}/"
-
-# harness/rollback-pipeline-script.sh
-#!/usr/bin/env bash
-set -euo pipefail
-
-BRANCH="${BRANCH:-develop}"
-GIT_TAG="${GIT_TAG:?GIT_TAG obrigatório}"
-
-REPO_URL="${REPO_URL:?REPO_URL obrigatório (use secret)}"
-
-export NEXUS_USER="${NEXUS_USER:-}"
-export NEXUS_PASSWORD="${NEXUS_PASSWORD:-}"
-export NEXUS_BASE_URL="${NEXUS_BASE_URL:-}"
-
-WORKDIR="$(mktemp -d)"
-git clone -b "${BRANCH}" "${REPO_URL}" "${WORKDIR}/elastic-compute-cloud-sitef"
-cd "${WORKDIR}/elastic-compute-cloud-sitef"
-
-echo "== PIPELINE ROLLBACK =="
-echo "BRANCH: ${BRANCH}"
-echo "TAG   : ${GIT_TAG}"
-
-cd ansible
-
-ansible-playbook rollback_from_status.yml \
-  -e "deployment_ref=${GIT_TAG}" \
-  -e "nexus_base_url=${NEXUS_BASE_URL}" \
-  -e "nexus_user=${NEXUS_USER}" \
-  -e "nexus_password=${NEXUS_PASSWORD}"
-
-cd ..
-
-STATUS_DIR="status/${GIT_TAG}"
-test -d "${STATUS_DIR}"
-
-for f in "${STATUS_DIR}"/rollback-*.json; do
-  m="$(basename "$f" | sed 's/^rollback-//' | sed 's/\.json$//')"
-  cp "$f" "${STATUS_DIR}/${GIT_TAG,,}-${m}-rollback.json"
-done
-
-for f in "${STATUS_DIR}"/rollback-*.log; do
-  m="$(basename "$f" | sed 's/^rollback-//' | sed 's/\.log$//')"
-  cp "$f" "${STATUS_DIR}/${GIT_TAG,,}-${m}-rollback.log"
-done
-
-tar -czf "rollback-${GIT_TAG}.tar.gz" "${STATUS_DIR}"
-
-echo
-echo "== ARTEFATOS PARA UPLOAD NO FILE STORE =="
-echo "1) rollback-${GIT_TAG}.tar.gz"
-echo "2) ${STATUS_DIR}/${GIT_TAG,,}-<machine>-rollback.json"
-echo "3) ${STATUS_DIR}/${GIT_TAG,,}-<machine>-rollback.log"
-echo
-echo "Destino sugerido:"
-echo "dev/${GIT_TAG}/"
+Exec using JSCH
+Connecting to 10.218.238.144 ....
+Connection to 10.218.238.144 established
+Executing command ...
+export GIT_TAG=DEV000000003
+Cloning into '/tmp/tmp.rvq1ZFvTaK/elastic-compute-cloud-sitef'...
+remote: Enumerating objects: 547, done.
+remote: Counting objects:   0% (1/497)
+remote: Counting objects:   1% (5/497)
+remote: Counting objects:   2% (10/497)
+remote: Counting objects:   3% (15/497)
+remote: Counting objects:   4% (20/497)
+remote: Counting objects:   5% (25/497)
+remote: Counting objects:   6% (30/497)
+remote: Counting objects:   7% (35/497)
+remote: Counting objects:   8% (40/497)
+remote: Counting objects:   9% (45/497)
+remote: Counting objects:  10% (50/497)
+remote: Counting objects:  11% (55/497)
+remote: Counting objects:  12% (60/497)
+remote: Counting objects:  13% (65/497)
+remote: Counting objects:  14% (70/497)
+remote: Counting objects:  15% (75/497)
+remote: Counting objects:  16% (80/497)
+remote: Counting objects:  17% (85/497)
+remote: Counting objects:  18% (90/497)
+remote: Counting objects:  19% (95/497)
+remote: Counting objects:  20% (100/497)
+remote: Counting objects:  21% (105/497)
+remote: Counting objects:  22% (110/497)
+remote: Counting objects:  23% (115/497)
+remote: Counting objects:  24% (120/497)
+remote: Counting objects:  25% (125/497)
+remote: Counting objects:  26% (130/497)
+remote: Counting objects:  27% (135/497)
+remote: Counting objects:  28% (140/497)
+remote: Counting objects:  29% (145/497)
+remote: Counting objects:  30% (150/497)
+remote: Counting objects:  31% (155/497)
+remote: Counting objects:  32% (160/497)
+remote: Counting objects:  33% (165/497)
+remote: Counting objects:  34% (169/497)
+remote: Counting objects:  35% (174/497)
+remote: Counting objects:  36% (179/497)
+remote: Counting objects:  37% (184/497)
+remote: Counting objects:  38% (189/497)
+remote: Counting objects:  39% (194/497)
+remote: Counting objects:  40% (199/497)
+remote: Counting objects:  41% (204/497)
+remote: Counting objects:  42% (209/497)
+remote: Counting objects:  43% (214/497)
+remote: Counting objects:  44% (219/497)
+remote: Counting objects:  45% (224/497)
+remote: Counting objects:  46% (229/497)
+remote: Counting objects:  47% (234/497)
+remote: Counting objects:  48% (239/497)
+remote: Counting objects:  49% (244/497)
+remote: Counting objects:  50% (249/497)
+remote: Counting objects:  51% (254/497)
+remote: Counting objects:  52% (259/497)
+remote: Counting objects:  53% (264/497)
+remote: Counting objects:  54% (269/497)
+remote: Counting objects:  55% (274/497)
+remote: Counting objects:  56% (279/497)
+remote: Counting objects:  57% (284/497)
+remote: Counting objects:  58% (289/497)
+remote: Counting objects:  59% (294/497)
+remote: Counting objects:  60% (299/497)
+remote: Counting objects:  61% (304/497)
+remote: Counting objects:  62% (309/497)
+remote: Counting objects:  63% (314/497)
+remote: Counting objects:  64% (319/497)
+remote: Counting objects:  65% (324/497)
+remote: Counting objects:  66% (329/497)
+remote: Counting objects:  67% (333/497)
+remote: Counting objects:  68% (338/497)
+remote: Counting objects:  69% (343/497)
+remote: Counting objects:  70% (348/497)
+remote: Counting objects:  71% (353/497)
+remote: Counting objects:  72% (358/497)
+remote: Counting objects:  73% (363/497)
+remote: Counting objects:  74% (368/497)
+remote: Counting objects:  75% (373/497)
+remote: Counting objects:  76% (378/497)
+remote: Counting objects:  77% (383/497)
+remote: Counting objects:  78% (388/497)
+remote: Counting objects:  79% (393/497)
+remote: Counting objects:  80% (398/497)
+remote: Counting objects:  81% (403/497)
+remote: Counting objects:  82% (408/497)
+remote: Counting objects:  83% (413/497)
+remote: Counting objects:  84% (418/497)
+remote: Counting objects:  85% (423/497)
+remote: Counting objects:  86% (428/497)
+remote: Counting objects:  87% (433/497)
+remote: Counting objects:  88% (438/497)
+remote: Counting objects:  89% (443/497)
+remote: Counting objects:  90% (448/497)
+remote: Counting objects:  91% (453/497)
+remote: Counting objects:  92% (458/497)
+remote: Counting objects:  93% (463/497)
+remote: Counting objects:  94% (468/497)
+remote: Counting objects:  95% (473/497)
+remote: Counting objects:  96% (478/497)
+remote: Counting objects:  97% (483/497)
+remote: Counting objects:  98% (488/497)
+remote: Counting objects:  99% (493/497)
+remote: Counting objects: 100% (497/497)
+remote: Counting objects: 100% (497/497), done.
+remote: Compressing objects:   0% (1/484)
+remote: Compressing objects:   1% (5/484)
+remote: Compressing objects:   2% (10/484)
+remote: Compressing objects:   3% (15/484)
+remote: Compressing objects:   4% (20/484)
+remote: Compressing objects:   5% (25/484)
+remote: Compressing objects:   6% (30/484)
+remote: Compressing objects:   7% (34/484)
+remote: Compressing objects:   8% (39/484)
+remote: Compressing objects:   9% (44/484)
+remote: Compressing objects:  10% (49/484)
+remote: Compressing objects:  11% (54/484)
+remote: Compressing objects:  12% (59/484)
+remote: Compressing objects:  13% (63/484)
+remote: Compressing objects:  14% (68/484)
+remote: Compressing objects:  15% (73/484)
+remote: Compressing objects:  16% (78/484)
+remote: Compressing objects:  17% (83/484)
+remote: Compressing objects:  18% (88/484)
+remote: Compressing objects:  19% (92/484)
+remote: Compressing objects:  20% (97/484)
+remote: Compressing objects:  21% (102/484)
+remote: Compressing objects:  22% (107/484)
+remote: Compressing objects:  23% (112/484)
+remote: Compressing objects:  24% (117/484)
+remote: Compressing objects:  25% (121/484)
+remote: Compressing objects:  26% (126/484)
+remote: Compressing objects:  27% (131/484)
+remote: Compressing objects:  28% (136/484)
+remote: Compressing objects:  29% (141/484)
+remote: Compressing objects:  30% (146/484)
+remote: Compressing objects:  31% (151/484)
+remote: Compressing objects:  32% (155/484)
+remote: Compressing objects:  33% (160/484)
+remote: Compressing objects:  34% (165/484)
+remote: Compressing objects:  35% (170/484)
+remote: Compressing objects:  36% (175/484)
+remote: Compressing objects:  37% (180/484)
+remote: Compressing objects:  38% (184/484)
+remote: Compressing objects:  39% (189/484)
+remote: Compressing objects:  40% (194/484)
+remote: Compressing objects:  41% (199/484)
+remote: Compressing objects:  42% (204/484)
+remote: Compressing objects:  43% (209/484)
+remote: Compressing objects:  44% (213/484)
+remote: Compressing objects:  45% (218/484)
+remote: Compressing objects:  46% (223/484)
+remote: Compressing objects:  47% (228/484)
+remote: Compressing objects:  48% (233/484)
+remote: Compressing objects:  49% (238/484)
+remote: Compressing objects:  50% (242/484)
+remote: Compressing objects:  51% (247/484)
+remote: Compressing objects:  52% (252/484)
+remote: Compressing objects:  53% (257/484)
+remote: Compressing objects:  54% (262/484)
+remote: Compressing objects:  55% (267/484)
+remote: Compressing objects:  56% (272/484)
+remote: Compressing objects:  57% (276/484)
+remote: Compressing objects:  58% (281/484)
+remote: Compressing objects:  59% (286/484)
+remote: Compressing objects:  60% (291/484)
+remote: Compressing objects:  61% (296/484)
+remote: Compressing objects:  62% (301/484)
+remote: Compressing objects:  63% (305/484)
+remote: Compressing objects:  64% (310/484)
+remote: Compressing objects:  65% (315/484)
+remote: Compressing objects:  66% (320/484)
+remote: Compressing objects:  67% (325/484)
+remote: Compressing objects:  68% (330/484)
+remote: Compressing objects:  69% (334/484)
+remote: Compressing objects:  70% (339/484)
+remote: Compressing objects:  71% (344/484)
+remote: Compressing objects:  72% (349/484)
+remote: Compressing objects:  73% (354/484)
+remote: Compressing objects:  74% (359/484)
+remote: Compressing objects:  75% (363/484)
+remote: Compressing objects:  76% (368/484)
+remote: Compressing objects:  77% (373/484)
+remote: Compressing objects:  78% (378/484)
+remote: Compressing objects:  79% (383/484)
+remote: Compressing objects:  80% (388/484)
+remote: Compressing objects:  81% (393/484)
+remote: Compressing objects:  82% (397/484)
+remote: Compressing objects:  83% (402/484)
+remote: Compressing objects:  84% (407/484)
+remote: Compressing objects:  85% (412/484)
+remote: Compressing objects:  86% (417/484)
+remote: Compressing objects:  87% (422/484)
+remote: Compressing objects:  88% (426/484)
+remote: Compressing objects:  89% (431/484)
+remote: Compressing objects:  90% (436/484)
+remote: Compressing objects:  91% (441/484)
+remote: Compressing objects:  92% (446/484)
+remote: Compressing objects:  93% (451/484)
+remote: Compressing objects:  94% (455/484)
+remote: Compressing objects:  95% (460/484)
+remote: Compressing objects:  96% (465/484)
+remote: Compressing objects:  97% (470/484)
+remote: Compressing objects:  98% (475/484)
+remote: Compressing objects:  99% (480/484)
+remote: Compressing objects: 100% (484/484)
+remote: Compressing objects: 100% (484/484), done.
+remote: Total 547 (delta 292), reused 0 (delta 0), pack-reused 50
+Receiving objects:   0% (1/547)
+Receiving objects:   1% (6/547)
+Receiving objects:   2% (11/547)
+Receiving objects:   3% (17/547)
+Receiving objects:   4% (22/547)
+Receiving objects:   5% (28/547)
+Receiving objects:   6% (33/547)
+Receiving objects:   7% (39/547)
+Receiving objects:   8% (44/547)
+Receiving objects:   9% (50/547)
+Receiving objects:  10% (55/547)
+Receiving objects:  11% (61/547)
+Receiving objects:  12% (66/547)
+Receiving objects:  13% (72/547)
+Receiving objects:  14% (77/547)
+Receiving objects:  15% (83/547)
+Receiving objects:  16% (88/547)
+Receiving objects:  17% (93/547)
+Receiving objects:  18% (99/547)
+Receiving objects:  19% (104/547)
+Receiving objects:  20% (110/547)
+Receiving objects:  21% (115/547)
+Receiving objects:  22% (121/547)
+Receiving objects:  23% (126/547)
+Receiving objects:  24% (132/547)
+Receiving objects:  25% (137/547)
+Receiving objects:  26% (143/547)
+Receiving objects:  27% (148/547)
+Receiving objects:  28% (154/547)
+Receiving objects:  29% (159/547)
+Receiving objects:  30% (165/547)
+Receiving objects:  31% (170/547)
+Receiving objects:  32% (176/547)
+Receiving objects:  33% (181/547)
+Receiving objects:  34% (186/547)
+Receiving objects:  35% (192/547)
+Receiving objects:  36% (197/547)
+Receiving objects:  37% (203/547)
+Receiving objects:  38% (208/547)
+Receiving objects:  39% (214/547)
+Receiving objects:  40% (219/547)
+Receiving objects:  41% (225/547)
+Receiving objects:  42% (230/547)
+Receiving objects:  43% (236/547)
+Receiving objects:  44% (241/547)
+Receiving objects:  45% (247/547)
+Receiving objects:  46% (252/547)
+Receiving objects:  47% (258/547)
+Receiving objects:  48% (263/547)
+Receiving objects:  49% (269/547)
+Receiving objects:  50% (274/547)
+Receiving objects:  51% (279/547)
+Receiving objects:  52% (285/547)
+Receiving objects:  53% (290/547)
+Receiving objects:  54% (296/547)
+Receiving objects:  55% (301/547)
+Receiving objects:  56% (307/547)
+Receiving objects:  57% (312/547)
+Receiving objects:  58% (318/547)
+Receiving objects:  59% (323/547)
+Receiving objects:  60% (329/547)
+Receiving objects:  61% (334/547)
+Receiving objects:  62% (340/547)
+Receiving objects:  63% (345/547)
+Receiving objects:  64% (351/547)
+Receiving objects:  65% (356/547)
+Receiving objects:  66% (362/547)
+Receiving objects:  67% (367/547)
+Receiving objects:  68% (372/547)
+Receiving objects:  69% (378/547)
+Receiving objects:  70% (383/547)
+Receiving objects:  71% (389/547)
+Receiving objects:  72% (394/547)
+Receiving objects:  73% (400/547)
+Receiving objects:  74% (405/547)
+Receiving objects:  75% (411/547)
+Receiving objects:  76% (416/547)
+Receiving objects:  77% (422/547)
+Receiving objects:  78% (427/547)
+Receiving objects:  79% (433/547)
+Receiving objects:  80% (438/547)
+Receiving objects:  81% (444/547)
+Receiving objects:  82% (449/547)
+Receiving objects:  83% (455/547)
+Receiving objects:  84% (460/547)
+Receiving objects:  85% (465/547)
+Receiving objects:  86% (471/547)
+Receiving objects:  87% (476/547)
+Receiving objects:  88% (482/547)
+Receiving objects:  89% (487/547)
+Receiving objects:  90% (493/547)
+Receiving objects:  91% (498/547)
+Receiving objects:  92% (504/547)
+Receiving objects:  93% (509/547)
+Receiving objects:  94% (515/547)
+Receiving objects:  95% (520/547)
+Receiving objects:  96% (526/547)
+Receiving objects:  97% (531/547)
+Receiving objects:  98% (537/547)
+Receiving objects:  99% (542/547)
+Receiving objects: 100% (547/547)
+Receiving objects: 100% (547/547), 86.18 KiB | 1.39 MiB/s, done.
+Resolving deltas:   0% (0/311)
+Resolving deltas:   1% (4/311)
+Resolving deltas:   2% (7/311)
+Resolving deltas:   3% (10/311)
+Resolving deltas:   4% (13/311)
+Resolving deltas:   5% (16/311)
+Resolving deltas:   6% (19/311)
+Resolving deltas:   7% (22/311)
+Resolving deltas:   8% (25/311)
+Resolving deltas:   9% (28/311)
+Resolving deltas:  10% (32/311)
+Resolving deltas:  11% (36/311)
+Resolving deltas:  12% (38/311)
+Resolving deltas:  13% (41/311)
+Resolving deltas:  14% (44/311)
+Resolving deltas:  15% (47/311)
+Resolving deltas:  16% (50/311)
+Resolving deltas:  17% (53/311)
+Resolving deltas:  18% (56/311)
+Resolving deltas:  19% (60/311)
+Resolving deltas:  20% (63/311)
+Resolving deltas:  21% (66/311)
+Resolving deltas:  22% (69/311)
+Resolving deltas:  23% (72/311)
+Resolving deltas:  24% (75/311)
+Resolving deltas:  25% (78/311)
+Resolving deltas:  26% (81/311)
+Resolving deltas:  27% (84/311)
+Resolving deltas:  28% (88/311)
+Resolving deltas:  29% (91/311)
+Resolving deltas:  30% (94/311)
+Resolving deltas:  31% (97/311)
+Resolving deltas:  32% (100/311)
+Resolving deltas:  33% (103/311)
+Resolving deltas:  34% (106/311)
+Resolving deltas:  35% (109/311)
+Resolving deltas:  36% (112/311)
+Resolving deltas:  37% (116/311)
+Resolving deltas:  38% (119/311)
+Resolving deltas:  39% (122/311)
+Resolving deltas:  40% (126/311)
+Resolving deltas:  41% (128/311)
+Resolving deltas:  42% (131/311)
+Resolving deltas:  43% (134/311)
+Resolving deltas:  44% (137/311)
+Resolving deltas:  45% (140/311)
+Resolving deltas:  46% (144/311)
+Resolving deltas:  47% (147/311)
+Resolving deltas:  48% (150/311)
+Resolving deltas:  49% (153/311)
+Resolving deltas:  50% (156/311)
+Resolving deltas:  51% (159/311)
+Resolving deltas:  52% (162/311)
+Resolving deltas:  53% (165/311)
+Resolving deltas:  54% (168/311)
+Resolving deltas:  55% (172/311)
+Resolving deltas:  56% (175/311)
+Resolving deltas:  57% (178/311)
+Resolving deltas:  58% (181/311)
+Resolving deltas:  59% (184/311)
+Resolving deltas:  60% (187/311)
+Resolving deltas:  61% (190/311)
+Resolving deltas:  62% (193/311)
+Resolving deltas:  63% (196/311)
+Resolving deltas:  64% (200/311)
+Resolving deltas:  65% (203/311)
+Resolving deltas:  66% (206/311)
+Resolving deltas:  67% (209/311)
+Resolving deltas:  68% (212/311)
+Resolving deltas:  69% (215/311)
+Resolving deltas:  70% (218/311)
+Resolving deltas:  71% (221/311)
+Resolving deltas:  72% (224/311)
+Resolving deltas:  73% (228/311)
+Resolving deltas:  74% (231/311)
+Resolving deltas:  75% (234/311)
+Resolving deltas:  76% (237/311)
+Resolving deltas:  77% (240/311)
+Resolving deltas:  78% (243/311)
+Resolving deltas:  79% (246/311)
+Resolving deltas:  80% (249/311)
+Resolving deltas:  81% (252/311)
+Resolving deltas:  82% (256/311)
+Resolving deltas:  83% (259/311)
+Resolving deltas:  84% (262/311)
+Resolving deltas:  85% (265/311)
+Resolving deltas:  86% (268/311)
+Resolving deltas:  87% (271/311)
+Resolving deltas:  88% (274/311)
+Resolving deltas:  89% (277/311)
+Resolving deltas:  90% (280/311)
+Resolving deltas:  91% (284/311)
+Resolving deltas:  92% (287/311)
+Resolving deltas:  93% (290/311)
+Resolving deltas:  94% (293/311)
+Resolving deltas:  95% (296/311)
+Resolving deltas:  96% (299/311)
+Resolving deltas:  97% (302/311)
+Resolving deltas:  98% (305/311)
+Resolving deltas:  99% (308/311)
+Resolving deltas: 100% (311/311)
+Resolving deltas: 100% (311/311), done.
+Note: switching to 'bf1ec45b590517a2aad8bdb99f0ec49c4339f245'.
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+  git switch -c &lt;new-branch-name>
+Or undo this operation with:
+  git switch -
+Turn off this advice by setting config variable advice.detachedHead to false
+== PIPELINE PREDEPLOY ==
+TAG   : DEV000000003
+EXEC  : execution/machine_list_dev.yml
+[WARNING]: provided hosts list is empty, only localhost is available. Note that
+the implicit localhost does not match 'all'
+PLAY [Predeploy a partir do arquivo de execução] *******************************
+TASK [Gathering Facts] *********************************************************
+ok: [localhost]
+TASK [Mostrar variáveis de entrada] ********************************************
+ok: [localhost] => {
+    "msg": [
+        "execution_file_name = execution/machine_list_dev.yml",
+        "deployment_ref     = DEV000000003",
+        "repo_root          = /tmp/tmp.rvq1ZFvTaK/elastic-compute-cloud-sitef/ansible/..",
+        "status_dir         = /tmp/tmp.rvq1ZFvTaK/elastic-compute-cloud-sitef/ansible/../status/DEV000000003"
+    ]
+}
+TASK [Criar diretório de status da TAG] ****************************************
+changed: [localhost]
+TASK [Carregar arquivo de execução] ********************************************
+ok: [localhost]
+TASK [Exibir lista de máquinas] ************************************************
+ok: [localhost] => {
+    "execution_cfg.machines": [
+        "sitef-01"
+    ]
+}
+TASK [Falhar se não tiver máquinas no arquivo de execução] *********************
+skipping: [localhost]
+TASK [Executar pré-deploy por máquina] *****************************************
+included: /tmp/tmp.rvq1ZFvTaK/elastic-compute-cloud-sitef/ansible/predeploy_per_machine.yml for localhost => (item=sitef-01)
+TASK [Definir caminhos para sitef-01] ******************************************
+ok: [localhost]
+TASK [Carregar config da máquina sitef-01] *************************************
+ok: [localhost]
+TASK [Carregar config do pacote sitef-core-0.0.1-0] ****************************
+fatal: [localhost]: FAILED! => {"ansible_facts": {"package_cfg": {}}, "ansible_included_var_files": [], "changed": false, "message": "Could not find or access '/tmp/tmp.rvq1ZFvTaK/elastic-compute-cloud-sitef/ansible/../package/sitef-core-0.0.1-0.yml' on the Ansible Controller.\nIf you are using a module and expect the file to exist on the remote, see the remote_src option"}
+PLAY RECAP *********************************************************************
+localhost                  : ok=8    changed=1    unreachable=0    failed=1    skipped=1    rescued=0    ignored=0   
+Command finished with status FAILURE
