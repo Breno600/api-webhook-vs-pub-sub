@@ -1,117 +1,3 @@
-
-# =====================================================================================
-# PIPELINE 1 - PREDEPLOY (a partir de um arquivo de execução)
-# =====================================================================================
-
-- name: "Predeploy a partir do arquivo de execução"
-  hosts: localhost
-  connection: local
-  gather_facts: true
-
-  vars:
-    # -------------------------------
-    # Entradas principais
-    # -------------------------------
-    execution_file_name: "{{ execution_file_name | default('execution/machine_list_dev.yml') }}"
-    deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
-
-    # -------------------------------
-    # Paths do repositório
-    # -------------------------------
-    repo_root_resolved: "{{ playbook_dir }}/.."
-    status_dir_resolved: "{{ (playbook_dir ~ '/..') }}/status/{{ deployment_ref }}"
-
-    # -------------------------------
-    # Nexus (ideal vir de secrets do Harness)
-    # -------------------------------
-    nexus_base_url: "{{ nexus_base_url | default('https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev') }}"
-    nexus_user: "{{ nexus_user | default(omit) }}"
-    nexus_password: "{{ nexus_password | default(omit) }}"
-
-  tasks:
-    # ---------------------------------------
-    # Resolver File Store sem recursão
-    # ---------------------------------------
-    - name: "Resolver filestore_env e filestore_base_dir sem recursão"
-      ansible.builtin.set_fact:
-        filestore_env_resolved: >-
-          {{
-            (filestore_env | string | trim)
-              if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
-              else 'dev'
-          }}
-        filestore_base_dir_resolved: >-
-          {{
-            (filestore_base_dir | string | trim)
-              if (filestore_base_dir is defined and (filestore_base_dir | string | trim) | length > 0)
-              else (
-                (
-                  (filestore_env | string | trim)
-                    if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
-                    else 'dev'
-                ) ~ '/' ~ deployment_ref
-              )
-          }}
-
-    # ---------------------------------------
-    # Mostrar variáveis resolvidas (debug)
-    # ---------------------------------------
-    - name: "Mostrar variáveis de entrada e resolvidas"
-      ansible.builtin.debug:
-        msg:
-          - "execution_file_name          = {{ execution_file_name }}"
-          - "deployment_ref               = {{ deployment_ref }}"
-          - "repo_root_resolved           = {{ repo_root_resolved }}"
-          - "status_dir_resolved          = {{ status_dir_resolved }}"
-          - "filestore_env_resolved       = {{ filestore_env_resolved }}"
-          - "filestore_base_dir_resolved  = {{ filestore_base_dir_resolved }}"
-          - "nexus_base_url               = {{ nexus_base_url }}"
-
-    # ---------------------------------------
-    # Criar diretório base de status local
-    # ---------------------------------------
-    - name: "Criar diretório de status da TAG"
-      ansible.builtin.file:
-        path: "{{ status_dir_resolved }}"
-        state: directory
-        mode: "0755"
-
-    # ---------------------------------------
-    # Carregar arquivo de execução
-    # ---------------------------------------
-    - name: "Carregar arquivo de execução"
-      ansible.builtin.include_vars:
-        file: "{{ repo_root_resolved }}/{{ execution_file_name }}"
-        name: execution_cfg
-
-    # ---------------------------------------
-    # Validar se há máquinas
-    # ---------------------------------------
-    - name: "Falhar se não tiver máquinas no arquivo de execução"
-      ansible.builtin.fail:
-        msg: "Nenhuma máquina encontrada em execution_cfg.machines"
-      when: execution_cfg.machines is not defined or execution_cfg.machines | length == 0
-
-    # ---------------------------------------
-    # Executar PREDEPLOY por máquina
-    # ---------------------------------------
-    - name: "Executar pré-deploy por máquina"
-      ansible.builtin.include_tasks: predeploy_per_machine.yml
-      loop: "{{ execution_cfg.machines }}"
-      loop_control:
-        loop_var: machine_name
-      vars:
-        deployment_ref: "{{ deployment_ref }}"
-        repo_root: "{{ repo_root_resolved }}"
-        status_dir: "{{ status_dir_resolved }}"
-
-        nexus_base_url: "{{ nexus_base_url }}"
-        nexus_user: "{{ nexus_user | default('') }}"
-        nexus_password: "{{ nexus_password | default('') }}"
-
-        filestore_env: "{{ filestore_env_resolved }}"
-        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
-
 # =====================================================================================
 # PREDEPLOY POR MÁQUINA
 # Chamado por predeploy_from_execution.yml
@@ -301,7 +187,7 @@
     machine_status_dir: "{{ status_dir }}/{{ current_machine }}"
     machine_status_file: "{{ status_dir }}/{{ current_machine }}/status.json"
 
-    deploy_base_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy"
+    deploy_base_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/components"
     deploy_scripts_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
     deploy_scripts_package_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package"
 
@@ -474,3 +360,245 @@
 #     --log-path    "{{ filestore_log_path }}"
 #   register: harness_upload_result
 #   changed_when: true
+
+
+# =====================================================================================
+# PIPELINE 1 - PREDEPLOY (a partir de um arquivo de execução)
+# =====================================================================================
+
+- name: "Predeploy a partir do arquivo de execução"
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  vars:
+    # -------------------------------
+    # Entradas principais
+    # -------------------------------
+    execution_file_name: "{{ execution_file_name | default('execution/machine_list_dev.yml') }}"
+    deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
+
+    # -------------------------------
+    # Paths do repositório
+    # -------------------------------
+    repo_root_resolved: "{{ playbook_dir }}/.."
+    status_dir_resolved: "{{ (playbook_dir ~ '/..') }}/status/{{ deployment_ref }}"
+
+    # -------------------------------
+    # Nexus (ideal vir de secrets do Harness)
+    # -------------------------------
+    nexus_base_url: "{{ nexus_base_url | default('https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev') }}"
+    nexus_user: "{{ nexus_user | default(omit) }}"
+    nexus_password: "{{ nexus_password | default(omit) }}"
+
+  tasks:
+    # ---------------------------------------
+    # Resolver File Store sem recursão
+    # ---------------------------------------
+    - name: "Resolver filestore_env e filestore_base_dir sem recursão"
+      ansible.builtin.set_fact:
+        filestore_env_resolved: >-
+          {{
+            (filestore_env | string | trim)
+              if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
+              else 'dev'
+          }}
+        filestore_base_dir_resolved: >-
+          {{
+            (filestore_base_dir | string | trim)
+              if (filestore_base_dir is defined and (filestore_base_dir | string | trim) | length > 0)
+              else (
+                (
+                  (filestore_env | string | trim)
+                    if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
+                    else 'dev'
+                ) ~ '/' ~ deployment_ref
+              )
+          }}
+
+    # ---------------------------------------
+    # Mostrar variáveis resolvidas (debug)
+    # ---------------------------------------
+    - name: "Mostrar variáveis de entrada e resolvidas"
+      ansible.builtin.debug:
+        msg:
+          - "execution_file_name          = {{ execution_file_name }}"
+          - "deployment_ref               = {{ deployment_ref }}"
+          - "repo_root_resolved           = {{ repo_root_resolved }}"
+          - "status_dir_resolved          = {{ status_dir_resolved }}"
+          - "filestore_env_resolved       = {{ filestore_env_resolved }}"
+          - "filestore_base_dir_resolved  = {{ filestore_base_dir_resolved }}"
+          - "nexus_base_url               = {{ nexus_base_url }}"
+
+    # ---------------------------------------
+    # Criar diretório base de status local
+    # ---------------------------------------
+    - name: "Criar diretório de status da TAG"
+      ansible.builtin.file:
+        path: "{{ status_dir_resolved }}"
+        state: directory
+        mode: "0755"
+
+    # ---------------------------------------
+    # Carregar arquivo de execução
+    # ---------------------------------------
+    - name: "Carregar arquivo de execução"
+      ansible.builtin.include_vars:
+        file: "{{ repo_root_resolved }}/{{ execution_file_name }}"
+        name: execution_cfg
+
+    # ---------------------------------------
+    # Validar se há máquinas
+    # ---------------------------------------
+    - name: "Falhar se não tiver máquinas no arquivo de execução"
+      ansible.builtin.fail:
+        msg: "Nenhuma máquina encontrada em execution_cfg.machines"
+      when: execution_cfg.machines is not defined or execution_cfg.machines | length == 0
+
+    # ---------------------------------------
+    # Executar PREDEPLOY por máquina
+    # ---------------------------------------
+    - name: "Executar pré-deploy por máquina"
+      ansible.builtin.include_tasks: predeploy_per_machine.yml
+      loop: "{{ execution_cfg.machines }}"
+      loop_control:
+        loop_var: machine_name
+      vars:
+        deployment_ref: "{{ deployment_ref }}"
+        repo_root: "{{ repo_root_resolved }}"
+        status_dir: "{{ status_dir_resolved }}"
+
+        nexus_base_url: "{{ nexus_base_url }}"
+        nexus_user: "{{ nexus_user | default('') }}"
+        nexus_password: "{{ nexus_password | default('') }}"
+
+        filestore_env: "{{ filestore_env_resolved }}"
+        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
+
+
+
+dentro da maquina:
+sh-5.1$ sudo ls -al /opt/SoftwareExpress/sitef-pipeline/
+
+total 0
+
+drwxr-xr-x. 3 root root 20 Dec  9 10:39 .
+
+drwxr-xr-x. 3 root root 28 Dec  9 14:22 ..
+
+drwxr-xr-x. 4 root root 36 Dec  9 10:39 deploy
+
+sh-5.1$ sudo ls -al /opt/SoftwareExpress/sitef-pipeline/deploy/
+
+total 0
+
+drwxr-xr-x. 4 root root 36 Dec  9 10:39 .
+
+drwxr-xr-x. 3 root root 20 Dec  9 10:39 ..
+
+drwxr-xr-x. 3 root root 19 Dec  9 10:39 package
+
+drwxr-xr-x. 3 root root 21 Dec  9 11:01 scripts
+
+sh-5.1$ sudo ls -al /opt/SoftwareExpress/sitef-pipeline/deploy/scripts/
+
+total 0
+
+drwxr-xr-x. 3 root root 21 Dec  9 11:01 .
+
+drwxr-xr-x. 4 root root 36 Dec  9 10:39 ..
+
+drwxr-xr-x. 2 root root 36 Dec  9 11:01 package
+
+sh-5.1$ sudo ls -al /opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package/
+
+total 4
+
+drwxr-xr-x. 2 root root  36 Dec  9 11:01 .
+
+drwxr-xr-x. 3 root root  21 Dec  9 11:01 ..
+
+-rw-r--r--. 1 root root 140 Dec  9 11:01 sitef-core-0.0.2-0.yml
+
+sh-5.1$ sudo ls -al /opt/SoftwareExpress/
+
+total 0
+
+drwxr-xr-x.  3 root root  28 Dec  9 14:22 .
+
+drwxr-xr-x. 10 root root 134 Dec  9 10:39 ..
+
+drwxr-xr-x.  3 root root  20 Dec  9 10:39 sitef-pipeline
+
+sh-5.1$ sudo ls -Ral /opt/SoftwareExpress/
+
+/opt/SoftwareExpress/:
+
+total 0
+
+drwxr-xr-x.  3 root root  28 Dec  9 14:22 .
+
+drwxr-xr-x. 10 root root 134 Dec  9 10:39 ..
+
+drwxr-xr-x.  3 root root  20 Dec  9 10:39 sitef-pipeline
+ 
+/opt/SoftwareExpress/sitef-pipeline:
+
+total 0
+
+drwxr-xr-x. 3 root root 20 Dec  9 10:39 .
+
+drwxr-xr-x. 3 root root 28 Dec  9 14:22 ..
+
+drwxr-xr-x. 4 root root 36 Dec  9 10:39 deploy
+ 
+/opt/SoftwareExpress/sitef-pipeline/deploy:
+
+total 0
+
+drwxr-xr-x. 4 root root 36 Dec  9 10:39 .
+
+drwxr-xr-x. 3 root root 20 Dec  9 10:39 ..
+
+drwxr-xr-x. 3 root root 19 Dec  9 10:39 package
+
+drwxr-xr-x. 3 root root 21 Dec  9 11:01 scripts
+ 
+/opt/SoftwareExpress/sitef-pipeline/deploy/package:
+
+total 0
+
+drwxr-xr-x. 3 root root 19 Dec  9 10:39 .
+
+drwxr-xr-x. 4 root root 36 Dec  9 10:39 ..
+
+drwxr-xr-x. 2 root root  6 Dec  9 10:39 linux
+ 
+/opt/SoftwareExpress/sitef-pipeline/deploy/package/linux:
+
+total 0
+
+drwxr-xr-x. 2 root root  6 Dec  9 10:39 .
+
+drwxr-xr-x. 3 root root 19 Dec  9 10:39 ..
+ 
+/opt/SoftwareExpress/sitef-pipeline/deploy/scripts:
+
+total 0
+
+drwxr-xr-x. 3 root root 21 Dec  9 11:01 .
+
+drwxr-xr-x. 4 root root 36 Dec  9 10:39 ..
+
+drwxr-xr-x. 2 root root 36 Dec  9 11:01 package
+ 
+/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package:
+
+total 4
+
+drwxr-xr-x. 2 root root  36 Dec  9 11:01 .
+
+drwxr-xr-x. 3 root root  21 Dec  9 11:01 ..
+
+-rw-r--r--. 1 root root 140 Dec  9 11:01 sitef-core-0.0.2-0.yml
+ 
