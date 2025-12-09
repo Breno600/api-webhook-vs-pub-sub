@@ -1,237 +1,84 @@
----
-# =====================================================================================
-# PREDEPLOY POR MÁQUINA
-# Incluído pelo predeploy_from_execution.yml
-# =====================================================================================
+-- pipeline
 
-# -----------------------------------------------------------------------------
-# 1) Resolver nome da máquina atual
-# -----------------------------------------------------------------------------
-- name: "Resolver nome da máquina atual"
-  ansible.builtin.set_fact:
-    current_machine: >-
-      {{
-        (machine_name | default(item) | default('')) | string | trim
-      }}
-  when: current_machine is not defined or (current_machine | string | trim) | length == 0
+predeploy:
+- git clone e entra na tag especifica como parametro
+- exportar as variáveis em tempo de execução repo/machine/sitef-01.yml e repo/package/sitef-core-0.0.2-0.yml
+-----
+package.yml
+env_vars:
+  PACKAGE_VERSION: 'sitef-0.0.20'
+-----
+machine.yml
+env_vars:
+  SITEF_ENV: "prod"
+  OUTRA_VAR: "valor"
+-----
+- limpar pasta /opt/SoftwareExpress/sitef-pipeline/deploy/scripts
+- jogar o package para /opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package/
+- fazer o download do nexus dos componentes /opt/SoftwareExpress/sitef-pipeline/deploy/(path do nexus especifico. ex: package/linux/sitef-core-0.0.1-0.rpm)
+- copiar o script para /opt/SoftwareExpress/sitef-pipeline/deploy/scripts/
+- entrar na pasta do scripts e chamar o init_parallel.sh
+- Atualizar ou criar arquivo de status no harness-file-store e subir o log tb
 
-# -----------------------------------------------------------------------------
-# 2) Definir paths base do repositório
-# -----------------------------------------------------------------------------
-- name: "Definir paths base do repositório"
-  ansible.builtin.set_fact:
-    repo_root_safe: "{{ repo_root | default(playbook_dir ~ '/..') }}"
+deploy:
+- exportar as variáveis em tempo de execução repo/machine/sitef-01.yml e repo/package/sitef-core-0.0.2-0.yml
+-----
+package.yml
+env_vars:
+  PACKAGE_VERSION: 'sitef-0.0.20'
+-----
+machine.yml
+env_vars:
+  SITEF_ENV: "prod"
+  OUTRA_VAR: "valor"
+-----
+- entrar na pasta do scripts e chamar o init_deploy.sh  /opt/SoftwareExpress/sitef-pipeline/deploy/scripts
+- Atualizar ou criar arquivo de status no harness-file-store e subir o log tb
 
-# -----------------------------------------------------------------------------
-# 3) Definir diretórios principais do repositório
-# -----------------------------------------------------------------------------
-- name: "Definir execution_dir do repositório"
-  ansible.builtin.set_fact:
-    execution_dir: "{{ repo_root_safe }}/execution"
+rollback
+- exportar as variáveis em tempo de execução repo/machine/sitef-01.yml e repo/package/sitef-core-0.0.2-0.yml
+-----
+package.yml
+env_vars:
+  PACKAGE_VERSION: 'sitef-0.0.20'
+-----
+machine.yml
+env_vars:
+  SITEF_ENV: "prod"
+  OUTRA_VAR: "valor"
+-----
+- limpar a pasta /opt/SoftwareExpress/sitef-pipeline/rollback/scripts
+- jogar o package para /opt/SoftwareExpress/sitef-pipeline/rollback/scripts/package/
+- baixar novamente dos components do nexus para /opt/SoftwareExpress/sitef-pipeline/rollback/
+- copiar o script para /opt/SoftwareExpress/sitef-pipeline/rollback/scripts
+- entrar na pasta do scripts e chamar o init_rollback.sh
+- Atualizar ou criar arquivo de status no harness-file-store e subir o log tb
 
-- name: "Definir machines_dir e packages_dir do repositório"
-  ansible.builtin.set_fact:
-    machines_dir: "{{ execution_dir }}/machines"
-    packages_dir: "{{ repo_root_safe }}/packages"
+harness-file-store:
+dev/DEV000000007/dev000000007-sitef-01-dev.json  -- se der erro na pipeline 01 ent coloca dev000000007:pre-deploy:error, se fazer o rerun da pipeline 01 e ir com sucesso então atualizada a tag de pre-deploy para ok e adiciona a tag dev000000007:deploy:pending e se der certo dev000000007:pre-deploy:ok e dev000000007:deploy:pending, pipeline 02 atualizo apenas o status do deploy dev000000007:deploy:ok se der problema ent dev000000007:deploy:error, se precisar de rollback ent adiciona a tag dev000000007:rollback:status(ok, error)
 
-# -----------------------------------------------------------------------------
-# 4) Candidatos de arquivo de máquina
-# -----------------------------------------------------------------------------
-- name: "Definir candidatos de arquivo da máquina"
-  ansible.builtin.set_fact:
-    candidate_machine_files:
-      - "{{ machines_dir }}/{{ current_machine }}.yml"
-      - "{{ execution_dir }}/{{ current_machine }}.yml"
-      - "{{ repo_root_safe }}/machines/{{ current_machine }}.yml"
-      - "{{ repo_root_safe }}/inventory/machines/{{ current_machine }}.yml"
+{
+    "machine": "sitef-01",
+    "host": "100.99.41.58",
+    "package": "sitef-core-0.0.2-0",
+    "rollback": "",
+    "status": "success",
+    "deployment_ref": "DEV000000007",
+    "timestamp": "2025-12-08T18:15:52Z"
+    "log_path": "dev/DEV000000007/dev000000007-sitef-01-dev.log"
+}
+dev/DEV000000007/dev000000007-sitef-01-dev.log
 
-# -----------------------------------------------------------------------------
-# 5) Verificar quais candidatos existem
-# -----------------------------------------------------------------------------
-- name: "Verificar candidatos de arquivo da máquina"
-  ansible.builtin.stat:
-    path: "{{ item }}"
-  loop: "{{ candidate_machine_files }}"
-  register: machine_candidates_stat
+---- pipeline pre deploy ----
+log
+---- pipeline pre deploy ----
 
-# -----------------------------------------------------------------------------
-# 6) Selecionar o primeiro arquivo existente
-# -----------------------------------------------------------------------------
-- name: "Selecionar machine_file existente"
-  ansible.builtin.set_fact:
-    machine_file: "{{ item.item }}"
-  when:
-    - item.stat.exists
-    - machine_file is not defined
-  loop: "{{ machine_candidates_stat.results }}"
+---- pipeline deploy -----
+log
+---- pipeline deploy -----
 
-# -----------------------------------------------------------------------------
-# 7) Falhar se nenhum candidato existir
-# -----------------------------------------------------------------------------
-- name: "Falhar se arquivo da máquina não existir em nenhum caminho esperado"
-  ansible.builtin.fail:
-    msg: |
-      Arquivo de máquina não encontrado para {{ current_machine }}.
-      Caminhos testados:
-      {{ candidate_machine_files | to_nice_yaml }}
-  when: machine_file is not defined
+dev/DEV000000007/dev000000007-sitef-02-dev.json
+dev/DEV000000007/dev000000007-sitef-02-dev.log
 
-# -----------------------------------------------------------------------------
-# 8) Carregar config da máquina
-# -----------------------------------------------------------------------------
-- name: "Carregar config da máquina {{ current_machine }}"
-  ansible.builtin.include_vars:
-    file: "{{ machine_file }}"
-    name: machine_cfg
-
-# -----------------------------------------------------------------------------
-# 9) Validar package definido
-# -----------------------------------------------------------------------------
-- name: "Validar package definido"
-  ansible.builtin.assert:
-    that:
-      - machine_cfg is defined
-      - machine_cfg.package is defined
-      - (machine_cfg.package | string | trim) | length > 0
-    fail_msg: "machine_cfg.package não definido em {{ machine_file }}"
-
-# -----------------------------------------------------------------------------
-# 10) Carregar config do pacote
-# -----------------------------------------------------------------------------
-- name: "Carregar config do pacote {{ machine_cfg.package }}"
-  ansible.builtin.include_vars:
-    file: "{{ packages_dir }}/{{ machine_cfg.package }}.yml"
-    name: package_cfg
-
-# -----------------------------------------------------------------------------
-# 11) Validações mínimas do pacote
-# -----------------------------------------------------------------------------
-- name: "Validar components do pacote"
-  ansible.builtin.assert:
-    that:
-      - package_cfg is defined
-      - package_cfg.components is defined
-      - package_cfg.components | length > 0
-    fail_msg: "components ausente/vazio no pacote {{ machine_cfg.package }}"
-
-# -----------------------------------------------------------------------------
-# 12) Usuário/SSH defaults
-# -----------------------------------------------------------------------------
-- name: "Definir usuário alvo padrão"
-  ansible.builtin.set_fact:
-    target_user: "{{ machine_cfg.target_user | default('root') }}"
-
-- name: "Definir ssh_common_args padrão"
-  ansible.builtin.set_fact:
-    ssh_common_args: "{{ machine_cfg.ssh_common_args | default('-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null') }}"
-
-- name: "Aplicar ProxyJump via bastion (quando necessário)"
-  ansible.builtin.set_fact:
-    ssh_common_args: >-
-      {{ ssh_common_args }}
-      -o ProxyJump={{ machine_cfg.bastion_user | default(target_user) }}@{{ machine_cfg.bastion_host }}
-  when:
-    - machine_cfg.bastion_host is defined
-    - (machine_cfg.bastion_host | string | trim) | length > 0
-
-# -----------------------------------------------------------------------------
-# 13) Registrar host dinâmico
-# -----------------------------------------------------------------------------
-- name: "Registrar host dinâmico para {{ current_machine }}"
-  ansible.builtin.add_host:
-    name: "{{ current_machine }}"
-    ansible_host: "{{ machine_cfg.ip | default(machine_cfg.ansible_host) }}"
-    ansible_user: "{{ target_user }}"
-    ansible_ssh_common_args: "{{ ssh_common_args }}"
-  changed_when: true
-
-# -----------------------------------------------------------------------------
-# 14) Definir caminhos de status e deploy
-# -----------------------------------------------------------------------------
-- name: "Definir machine_status_dir"
-  ansible.builtin.set_fact:
-    machine_status_dir: "{{ status_dir }}/{{ current_machine }}"
-
-- name: "Definir caminhos de status e deploy"
-  ansible.builtin.set_fact:
-    machine_status_file: "{{ machine_status_dir }}/status.json"
-    deploy_base_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy"
-    deploy_scripts_dir: "{{ deploy_base_dir }}/scripts"
-    deploy_scripts_package_dir: "{{ deploy_scripts_dir }}/package"
-
-# -----------------------------------------------------------------------------
-# 15) Criar status inicial (queued)
-# -----------------------------------------------------------------------------
-- name: "Criar diretório de status da máquina"
-  ansible.builtin.file:
-    path: "{{ machine_status_dir }}"
-    state: directory
-    mode: "0755"
-
-- name: "Escrever status inicial (queued)"
-  ansible.builtin.copy:
-    dest: "{{ machine_status_file }}"
-    mode: "0644"
-    content: |
-      {
-        "machine": "{{ current_machine }}",
-        "package": "{{ machine_cfg.package }}",
-        "status": "queued",
-        "deployment_ref": "{{ deployment_ref | default('') }}",
-        "filestore_env": "{{ filestore_env | default('') }}",
-        "filestore_base_dir": "{{ filestore_base_dir | default('') }}",
-        "nexus_base_url": "{{ nexus_base_url | default('') }}"
-      }
-  changed_when: true
-
-# -----------------------------------------------------------------------------
-# 16) Garantir base do pipeline no host remoto
-# -----------------------------------------------------------------------------
-- name: "Garantir base do pipeline no host"
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    mode: "0755"
-  become: true
-  delegate_to: "{{ current_machine }}"
-  loop:
-    - "{{ deploy_base_dir }}"
-    - "{{ deploy_scripts_dir }}"
-    - "{{ deploy_scripts_package_dir }}"
-
-# -----------------------------------------------------------------------------
-# 17) Limpar pasta de scripts do pacote
-# -----------------------------------------------------------------------------
-- name: "Limpar pasta de scripts do pacote"
-  ansible.builtin.file:
-    path: "{{ deploy_scripts_package_dir }}"
-    state: absent
-  become: true
-  delegate_to: "{{ current_machine }}"
-
-- name: "Recriar pasta de scripts do pacote"
-  ansible.builtin.file:
-    path: "{{ deploy_scripts_package_dir }}"
-    state: directory
-    mode: "0755"
-  become: true
-  delegate_to: "{{ current_machine }}"
-
-# -----------------------------------------------------------------------------
-# 18) Atualizar status para predeploy_ready
-# -----------------------------------------------------------------------------
-- name: "Atualizar status para predeploy_ready"
-  ansible.builtin.copy:
-    dest: "{{ machine_status_file }}"
-    mode: "0644"
-    content: |
-      {
-        "machine": "{{ current_machine }}",
-        "package": "{{ machine_cfg.package }}",
-        "status": "predeploy_ready",
-        "deployment_ref": "{{ deployment_ref | default('') }}",
-        "filestore_env": "{{ filestore_env | default('') }}",
-        "filestore_base_dir": "{{ filestore_base_dir | default('') }}",
-        "nexus_base_url": "{{ nexus_base_url | default('') }}"
-      }
-  changed_when: true
+cat/CAT000000007/
+prd/PRD000000007-(change_id)/sitef-01.json
