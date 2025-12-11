@@ -1,163 +1,474 @@
----
-# PIPELINE 2 - DEPLOY / ROLLBACK
-# - Recebe machine_name (ou lista via loop externo no script do Harness)
-# - Usa TAG (deployment_ref) como referência da execução
-# - Para deploy:
-#     - Reusa área /opt/SoftwareExpress/sitef-pipeline/deploy/scripts preparada no predeploy
-#     - Executa init_deploy.sh
-# - Para rollback:
-#     - Prepara /opt/SoftwareExpress/sitef-pipeline/rollback
-#     - Baixa componentes do Nexus
-#     - Executa init_rollback.sh
-# - Atualiza status em JSON por máquina
-# - Faz upload de JSON + LOG para Harness File Store
+Exec using JSCH
+Connecting to 10.218.238.144 ....
+Connection to 10.218.238.144 established
+Executing command ...
+export MACHINES=sitef-01
+export MACHINE=sitef-01
+export ACTION=rollback
+export GIT_TAG=DEV000000005
+export STRATEGY=rollback
+== DEPLOY PIPELINE ==
+BRANCH   : develop
+STRATEGY : rollback
+GIT_TAG  : DEV000000005
+MACHINES : sitef-01
+MACHINES_NORMALIZADAS: sitef-01 
+Clonando repo em /tmp/tmp.iAgw3QbWmC...
+Cloning into '/tmp/tmp.iAgw3QbWmC/elastic-compute-cloud-sitef'...
+remote: Enumerating objects: 739, done.
+remote: Counting objects:   0% (1/689)
+remote: Counting objects:   1% (7/689)
+remote: Counting objects:   2% (14/689)
+remote: Counting objects:   3% (21/689)
+remote: Counting objects:   4% (28/689)
+remote: Counting objects:   5% (35/689)
+remote: Counting objects:   6% (42/689)
+remote: Counting objects:   7% (49/689)
+remote: Counting objects:   8% (56/689)
+remote: Counting objects:   9% (63/689)
+remote: Counting objects:  10% (69/689)
+remote: Counting objects:  11% (76/689)
+remote: Counting objects:  12% (83/689)
+remote: Counting objects:  13% (90/689)
+remote: Counting objects:  14% (97/689)
+remote: Counting objects:  15% (104/689)
+remote: Counting objects:  16% (111/689)
+remote: Counting objects:  17% (118/689)
+remote: Counting objects:  18% (125/689)
+remote: Counting objects:  19% (131/689)
+remote: Counting objects:  20% (138/689)
+remote: Counting objects:  21% (145/689)
+remote: Counting objects:  22% (152/689)
+remote: Counting objects:  23% (159/689)
+remote: Counting objects:  24% (166/689)
+remote: Counting objects:  25% (173/689)
+remote: Counting objects:  26% (180/689)
+remote: Counting objects:  27% (187/689)
+remote: Counting objects:  28% (193/689)
+remote: Counting objects:  29% (200/689)
+remote: Counting objects:  30% (207/689)
+remote: Counting objects:  31% (214/689)
+remote: Counting objects:  32% (221/689)
+remote: Counting objects:  33% (228/689)
+remote: Counting objects:  34% (235/689)
+remote: Counting objects:  35% (242/689)
+remote: Counting objects:  36% (249/689)
+remote: Counting objects:  37% (255/689)
+remote: Counting objects:  38% (262/689)
+remote: Counting objects:  39% (269/689)
+remote: Counting objects:  40% (276/689)
+remote: Counting objects:  41% (283/689)
+remote: Counting objects:  42% (290/689)
+remote: Counting objects:  43% (297/689)
+remote: Counting objects:  44% (304/689)
+remote: Counting objects:  45% (311/689)
+remote: Counting objects:  46% (317/689)
+remote: Counting objects:  47% (324/689)
+remote: Counting objects:  48% (331/689)
+remote: Counting objects:  49% (338/689)
+remote: Counting objects:  50% (345/689)
+remote: Counting objects:  51% (352/689)
+remote: Counting objects:  52% (359/689)
+remote: Counting objects:  53% (366/689)
+remote: Counting objects:  54% (373/689)
+remote: Counting objects:  55% (379/689)
+remote: Counting objects:  56% (386/689)
+remote: Counting objects:  57% (393/689)
+remote: Counting objects:  58% (400/689)
+remote: Counting objects:  59% (407/689)
+remote: Counting objects:  60% (414/689)
+remote: Counting objects:  61% (421/689)
+remote: Counting objects:  62% (428/689)
+remote: Counting objects:  63% (435/689)
+remote: Counting objects:  64% (441/689)
+remote: Counting objects:  65% (448/689)
+remote: Counting objects:  66% (455/689)
+remote: Counting objects:  67% (462/689)
+remote: Counting objects:  68% (469/689)
+remote: Counting objects:  69% (476/689)
+remote: Counting objects:  70% (483/689)
+remote: Counting objects:  71% (490/689)
+remote: Counting objects:  72% (497/689)
+remote: Counting objects:  73% (503/689)
+remote: Counting objects:  74% (510/689)
+remote: Counting objects:  75% (517/689)
+remote: Counting objects:  76% (524/689)
+remote: Counting objects:  77% (531/689)
+remote: Counting objects:  78% (538/689)
+remote: Counting objects:  79% (545/689)
+remote: Counting objects:  80% (552/689)
+remote: Counting objects:  81% (559/689)
+remote: Counting objects:  82% (565/689)
+remote: Counting objects:  83% (572/689)
+remote: Counting objects:  84% (579/689)
+remote: Counting objects:  85% (586/689)
+remote: Counting objects:  86% (593/689)
+remote: Counting objects:  87% (600/689)
+remote: Counting objects:  88% (607/689)
+remote: Counting objects:  89% (614/689)
+remote: Counting objects:  90% (621/689)
+remote: Counting objects:  91% (627/689)
+remote: Counting objects:  92% (634/689)
+remote: Counting objects:  93% (641/689)
+remote: Counting objects:  94% (648/689)
+remote: Counting objects:  95% (655/689)
+remote: Counting objects:  96% (662/689)
+remote: Counting objects:  97% (669/689)
+remote: Counting objects:  98% (676/689)
+remote: Counting objects:  99% (683/689)
+remote: Counting objects: 100% (689/689)
+remote: Counting objects: 100% (689/689), done.
+remote: Compressing objects:   0% (1/676)
+remote: Compressing objects:   1% (7/676)
+remote: Compressing objects:   2% (14/676)
+remote: Compressing objects:   3% (21/676)
+remote: Compressing objects:   4% (28/676)
+remote: Compressing objects:   5% (34/676)
+remote: Compressing objects:   6% (41/676)
+remote: Compressing objects:   7% (48/676)
+remote: Compressing objects:   8% (55/676)
+remote: Compressing objects:   9% (61/676)
+remote: Compressing objects:  10% (68/676)
+remote: Compressing objects:  11% (75/676)
+remote: Compressing objects:  12% (82/676)
+remote: Compressing objects:  13% (88/676)
+remote: Compressing objects:  14% (95/676)
+remote: Compressing objects:  15% (102/676)
+remote: Compressing objects:  16% (109/676)
+remote: Compressing objects:  17% (115/676)
+remote: Compressing objects:  18% (122/676)
+remote: Compressing objects:  19% (129/676)
+remote: Compressing objects:  20% (136/676)
+remote: Compressing objects:  21% (142/676)
+remote: Compressing objects:  22% (149/676)
+remote: Compressing objects:  23% (156/676)
+remote: Compressing objects:  24% (163/676)
+remote: Compressing objects:  25% (169/676)
+remote: Compressing objects:  26% (176/676)
+remote: Compressing objects:  27% (183/676)
+remote: Compressing objects:  28% (190/676)
+remote: Compressing objects:  29% (197/676)
+remote: Compressing objects:  30% (203/676)
+remote: Compressing objects:  31% (210/676)
+remote: Compressing objects:  32% (217/676)
+remote: Compressing objects:  33% (224/676)
+remote: Compressing objects:  34% (230/676)
+remote: Compressing objects:  35% (237/676)
+remote: Compressing objects:  36% (244/676)
+remote: Compressing objects:  37% (251/676)
+remote: Compressing objects:  38% (257/676)
+remote: Compressing objects:  39% (264/676)
+remote: Compressing objects:  40% (271/676)
+remote: Compressing objects:  41% (278/676)
+remote: Compressing objects:  42% (284/676)
+remote: Compressing objects:  43% (291/676)
+remote: Compressing objects:  44% (298/676)
+remote: Compressing objects:  45% (305/676)
+remote: Compressing objects:  46% (311/676)
+remote: Compressing objects:  47% (318/676)
+remote: Compressing objects:  48% (325/676)
+remote: Compressing objects:  49% (332/676)
+remote: Compressing objects:  50% (338/676)
+remote: Compressing objects:  51% (345/676)
+remote: Compressing objects:  52% (352/676)
+remote: Compressing objects:  53% (359/676)
+remote: Compressing objects:  54% (366/676)
+remote: Compressing objects:  55% (372/676)
+remote: Compressing objects:  56% (379/676)
+remote: Compressing objects:  57% (386/676)
+remote: Compressing objects:  58% (393/676)
+remote: Compressing objects:  59% (399/676)
+remote: Compressing objects:  60% (406/676)
+remote: Compressing objects:  61% (413/676)
+remote: Compressing objects:  62% (420/676)
+remote: Compressing objects:  63% (426/676)
+remote: Compressing objects:  64% (433/676)
+remote: Compressing objects:  65% (440/676)
+remote: Compressing objects:  66% (447/676)
+remote: Compressing objects:  67% (453/676)
+remote: Compressing objects:  68% (460/676)
+remote: Compressing objects:  69% (467/676)
+remote: Compressing objects:  70% (474/676)
+remote: Compressing objects:  71% (480/676)
+remote: Compressing objects:  72% (487/676)
+remote: Compressing objects:  73% (494/676)
+remote: Compressing objects:  74% (501/676)
+remote: Compressing objects:  75% (507/676)
+remote: Compressing objects:  76% (514/676)
+remote: Compressing objects:  77% (521/676)
+remote: Compressing objects:  78% (528/676)
+remote: Compressing objects:  79% (535/676)
+remote: Compressing objects:  80% (541/676)
+remote: Compressing objects:  81% (548/676)
+remote: Compressing objects:  82% (555/676)
+remote: Compressing objects:  83% (562/676)
+remote: Compressing objects:  84% (568/676)
+remote: Compressing objects:  85% (575/676)
+remote: Compressing objects:  86% (582/676)
+remote: Compressing objects:  87% (589/676)
+remote: Compressing objects:  88% (595/676)
+remote: Compressing objects:  89% (602/676)
+remote: Compressing objects:  90% (609/676)
+remote: Compressing objects:  91% (616/676)
+remote: Compressing objects:  92% (622/676)
+remote: Compressing objects:  93% (629/676)
+remote: Compressing objects:  94% (636/676)
+remote: Compressing objects:  95% (643/676)
+remote: Compressing objects:  96% (649/676)
+remote: Compressing objects:  97% (656/676)
+remote: Compressing objects:  98% (663/676)
+remote: Compressing objects:  99% (670/676)
+remote: Compressing objects: 100% (676/676)
+remote: Compressing objects: 100% (676/676), done.
+Receiving objects:   0% (1/739)
+Receiving objects:   1% (8/739)
+Receiving objects:   2% (15/739)
+Receiving objects:   3% (23/739)
+Receiving objects:   4% (30/739)
+Receiving objects:   5% (37/739)
+Receiving objects:   6% (45/739)
+Receiving objects:   7% (52/739)
+Receiving objects:   8% (60/739)
+Receiving objects:   9% (67/739)
+Receiving objects:  10% (74/739)
+Receiving objects:  11% (82/739)
+Receiving objects:  12% (89/739)
+Receiving objects:  13% (97/739)
+Receiving objects:  14% (104/739)
+Receiving objects:  15% (111/739)
+Receiving objects:  16% (119/739)
+Receiving objects:  17% (126/739)
+Receiving objects:  18% (134/739)
+Receiving objects:  19% (141/739)
+Receiving objects:  20% (148/739)
+Receiving objects:  21% (156/739)
+Receiving objects:  22% (163/739)
+Receiving objects:  23% (170/739)
+Receiving objects:  24% (178/739)
+Receiving objects:  25% (185/739)
+Receiving objects:  26% (193/739)
+Receiving objects:  27% (200/739)
+Receiving objects:  28% (207/739)
+Receiving objects:  29% (215/739)
+Receiving objects:  30% (222/739)
+Receiving objects:  31% (230/739)
+Receiving objects:  32% (237/739)
+Receiving objects:  33% (244/739)
+Receiving objects:  34% (252/739)
+Receiving objects:  35% (259/739)
+Receiving objects:  36% (267/739)
+Receiving objects:  37% (274/739)
+Receiving objects:  38% (281/739)
+Receiving objects:  39% (289/739)
+Receiving objects:  40% (296/739)
+Receiving objects:  41% (303/739)
+Receiving objects:  42% (311/739)
+Receiving objects:  43% (318/739)
+Receiving objects:  44% (326/739)
+Receiving objects:  45% (333/739)
+Receiving objects:  46% (340/739)
+Receiving objects:  47% (348/739)
+Receiving objects:  48% (355/739)
+Receiving objects:  49% (363/739)
+Receiving objects:  50% (370/739)
+Receiving objects:  51% (377/739)
+Receiving objects:  52% (385/739)
+Receiving objects:  53% (392/739)
+Receiving objects:  54% (400/739)
+Receiving objects:  55% (407/739)
+Receiving objects:  56% (414/739)
+Receiving objects:  57% (422/739)
+Receiving objects:  58% (429/739)
+Receiving objects:  59% (437/739)
+Receiving objects:  60% (444/739)
+Receiving objects:  61% (451/739)
+Receiving objects:  62% (459/739)
+Receiving objects:  63% (466/739)
+Receiving objects:  64% (473/739)
+Receiving objects:  65% (481/739)
+Receiving objects:  66% (488/739)
+Receiving objects:  67% (496/739)
+Receiving objects:  68% (503/739)
+Receiving objects:  69% (510/739)
+Receiving objects:  70% (518/739)
+Receiving objects:  71% (525/739)
+Receiving objects:  72% (533/739)
+Receiving objects:  73% (540/739)
+Receiving objects:  74% (547/739)
+Receiving objects:  75% (555/739)
+Receiving objects:  76% (562/739)
+Receiving objects:  77% (570/739)
+Receiving objects:  78% (577/739)
+Receiving objects:  79% (584/739)
+Receiving objects:  80% (592/739)
+Receiving objects:  81% (599/739)
+Receiving objects:  82% (606/739)
+remote: Total 739 (delta 450), reused 0 (delta 0), pack-reused 50
+Receiving objects:  83% (614/739)
+Receiving objects:  84% (621/739)
+Receiving objects:  85% (629/739)
+Receiving objects:  86% (636/739)
+Receiving objects:  87% (643/739)
+Receiving objects:  88% (651/739)
+Receiving objects:  89% (658/739)
+Receiving objects:  90% (666/739)
+Receiving objects:  91% (673/739)
+Receiving objects:  92% (680/739)
+Receiving objects:  93% (688/739)
+Receiving objects:  94% (695/739)
+Receiving objects:  95% (703/739)
+Receiving objects:  96% (710/739)
+Receiving objects:  97% (717/739)
+Receiving objects:  98% (725/739)
+Receiving objects:  99% (732/739)
+Receiving objects: 100% (739/739)
+Receiving objects: 100% (739/739), 906.85 KiB | 1.80 MiB/s, done.
+Resolving deltas:   0% (0/469)
+Resolving deltas:   1% (5/469)
+Resolving deltas:   2% (10/469)
+Resolving deltas:   3% (15/469)
+Resolving deltas:   4% (19/469)
+Resolving deltas:   5% (24/469)
+Resolving deltas:   6% (29/469)
+Resolving deltas:   7% (33/469)
+Resolving deltas:   8% (38/469)
+Resolving deltas:   9% (43/469)
+Resolving deltas:  10% (47/469)
+Resolving deltas:  11% (52/469)
+Resolving deltas:  12% (57/469)
+Resolving deltas:  13% (61/469)
+Resolving deltas:  14% (66/469)
+Resolving deltas:  15% (71/469)
+Resolving deltas:  16% (76/469)
+Resolving deltas:  17% (80/469)
+Resolving deltas:  18% (85/469)
+Resolving deltas:  19% (90/469)
+Resolving deltas:  20% (94/469)
+Resolving deltas:  21% (99/469)
+Resolving deltas:  22% (104/469)
+Resolving deltas:  23% (108/469)
+Resolving deltas:  24% (113/469)
+Resolving deltas:  25% (118/469)
+Resolving deltas:  26% (122/469)
+Resolving deltas:  27% (127/469)
+Resolving deltas:  28% (132/469)
+Resolving deltas:  29% (137/469)
+Resolving deltas:  30% (141/469)
+Resolving deltas:  31% (146/469)
+Resolving deltas:  32% (151/469)
+Resolving deltas:  33% (155/469)
+Resolving deltas:  34% (160/469)
+Resolving deltas:  35% (165/469)
+Resolving deltas:  36% (169/469)
+Resolving deltas:  37% (174/469)
+Resolving deltas:  38% (179/469)
+Resolving deltas:  39% (183/469)
+Resolving deltas:  40% (188/469)
+Resolving deltas:  41% (193/469)
+Resolving deltas:  42% (197/469)
+Resolving deltas:  43% (202/469)
+Resolving deltas:  44% (207/469)
+Resolving deltas:  45% (212/469)
+Resolving deltas:  46% (216/469)
+Resolving deltas:  47% (221/469)
+Resolving deltas:  48% (226/469)
+Resolving deltas:  49% (230/469)
+Resolving deltas:  50% (235/469)
+Resolving deltas:  51% (240/469)
+Resolving deltas:  52% (244/469)
+Resolving deltas:  53% (249/469)
+Resolving deltas:  54% (254/469)
+Resolving deltas:  55% (258/469)
+Resolving deltas:  56% (263/469)
+Resolving deltas:  57% (268/469)
+Resolving deltas:  58% (273/469)
+Resolving deltas:  59% (277/469)
+Resolving deltas:  60% (282/469)
+Resolving deltas:  61% (287/469)
+Resolving deltas:  62% (291/469)
+Resolving deltas:  63% (296/469)
+Resolving deltas:  64% (301/469)
+Resolving deltas:  65% (305/469)
+Resolving deltas:  66% (310/469)
+Resolving deltas:  67% (315/469)
+Resolving deltas:  68% (319/469)
+Resolving deltas:  69% (324/469)
+Resolving deltas:  70% (329/469)
+Resolving deltas:  71% (333/469)
+Resolving deltas:  72% (338/469)
+Resolving deltas:  73% (343/469)
+Resolving deltas:  74% (348/469)
+Resolving deltas:  75% (352/469)
+Resolving deltas:  76% (357/469)
+Resolving deltas:  77% (362/469)
+Resolving deltas:  78% (366/469)
+Resolving deltas:  79% (371/469)
+Resolving deltas:  80% (376/469)
+Resolving deltas:  81% (380/469)
+Resolving deltas:  82% (385/469)
+Resolving deltas:  83% (390/469)
+Resolving deltas:  84% (394/469)
+Resolving deltas:  85% (399/469)
+Resolving deltas:  86% (404/469)
+Resolving deltas:  87% (409/469)
+Resolving deltas:  88% (413/469)
+Resolving deltas:  89% (418/469)
+Resolving deltas:  90% (423/469)
+Resolving deltas:  91% (427/469)
+Resolving deltas:  92% (432/469)
+Resolving deltas:  93% (437/469)
+Resolving deltas:  94% (441/469)
+Resolving deltas:  95% (446/469)
+Resolving deltas:  96% (451/469)
+Resolving deltas:  97% (455/469)
+Resolving deltas:  98% (460/469)
+Resolving deltas:  99% (465/469)
+Resolving deltas: 100% (469/469)
+Resolving deltas: 100% (469/469), done.
+====================================================
+== ROLLBACK -> sitef-01
+====================================================
 
-- name: "Deploy/Rollback por máquina"
-  hosts: localhost
-  connection: local
-  gather_facts: true
+PLAY [Deploy/Rollback por máquina] *********************************************
+TASK [Gathering Facts] *********************************************************
+ok: [localhost]
+TASK [Normalizar deploy_action (deploy/rollback)] ******************************
+ok: [localhost]
+TASK [Resolver filestore_env e filestore_base_dir (deploy/rollback)] ***********
+ok: [localhost]
 
-  vars:
-    # TAG da execução (vem do GIT_TAG no Harness)
-    deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
-
-    # Nome lógico da máquina (ex: sitef-01)
-    machine_name: "{{ machine_name | default('') }}"
-
-    # Ação solicitada: deploy ou rollback (vem do STRATEGY/ACTION no Harness)
-    deploy_action: "{{ deploy_action | default('deploy') }}"
-
-    # Paths do repositório
-    repo_root_resolved: "{{ playbook_dir }}/.."
-    status_dir_resolved: "{{ repo_root_resolved }}/status/{{ deployment_ref }}"
-
-    # URL default do Nexus (evita recursão)
-    nexus_base_url_default: "https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev"
-
-  tasks:
-    # -------------------------------------------------------------------
-    # Normalizar deploy_action (deploy/rollback)
-    # -------------------------------------------------------------------
-    - name: "Normalizar deploy_action (deploy/rollback)"
-      ansible.builtin.set_fact:
-        deploy_action_resolved: >-
-          {{
-            (deploy_action | string | lower | trim)
-              if (deploy_action is defined and (deploy_action | string | trim) | length > 0)
-              else 'deploy'
-          }}
-
-    # -------------------------------------------------------------------
-    # Resolver filestore_env e filestore_base_dir sem recursão
-    # -------------------------------------------------------------------
-    - name: "Resolver filestore_env e filestore_base_dir (deploy/rollback)"
-      ansible.builtin.set_fact:
-        filestore_env_resolved: >-
-          {{
-            (filestore_env | string | trim)
-              if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
-              else 'dev'
-          }}
-        filestore_base_dir_resolved: >-
-          {{
-            (filestore_base_dir | string | trim)
-              if (filestore_base_dir is defined and (filestore_base_dir | string | trim) | length > 0)
-              else (
-                (
-                  (filestore_env | string | trim)
-                    if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
-                    else 'dev'
-                ) ~ '/' ~ deployment_ref
-              )
-          }}
-
-    # -------------------------------------------------------------------
-    # Resolver Nexus (base_url, user, password) sem recursão
-    # -------------------------------------------------------------------
-    - name: "Resolver Nexus (base_url, user, password)"
-      ansible.builtin.set_fact:
-        nexus_base_url_resolved: >-
-          {{
-            (nexus_base_url | string | trim)
-              if (nexus_base_url is defined and (nexus_base_url | string | trim) | length > 0)
-              else nexus_base_url_default
-          }}
-        nexus_user_resolved: >-
-          {{
-            (nexus_user | string | trim)
-              if (nexus_user is defined)
-              else ''
-          }}
-        nexus_password_resolved: >-
-          {{
-            (nexus_password | string | trim)
-              if (nexus_password is defined)
-              else ''
-          }}
-
-    # -------------------------------------------------------------------
-    # Debug das principais variáveis de entrada / resolvidas
-    # -------------------------------------------------------------------
-    - name: "Mostrar variáveis de entrada e resolvidas (deploy/rollback)"
-      ansible.builtin.debug:
-        msg:
-          - "deployment_ref               = {{ deployment_ref }}"
-          - "machine_name                 = {{ machine_name }}"
-          - "deploy_action                = {{ deploy_action }}"
-          - "deploy_action_resolved       = {{ deploy_action_resolved }}"
-          - "repo_root_resolved           = {{ repo_root_resolved }}"
-          - "status_dir_resolved          = {{ status_dir_resolved }}"
-          - "nexus_base_url_resolved      = {{ nexus_base_url_resolved }}"
-          - "nexus_user_resolved          = {{ '***' if (nexus_user_resolved | length) > 0 else '(vazio)' }}"
-          - "filestore_env_resolved       = {{ filestore_env_resolved }}"
-          - "filestore_base_dir_resolved  = {{ filestore_base_dir_resolved }}"
-
-    # -------------------------------------------------------------------
-    # Garantir diretório base de status da TAG
-    # -------------------------------------------------------------------
-    - name: "Garantir diretório de status da TAG"
-      ansible.builtin.file:
-        path: "{{ status_dir_resolved }}"
-        state: directory
-        mode: "0755"
-
-    # -------------------------------------------------------------------
-    # Validar machine_name
-    # -------------------------------------------------------------------
-    - name: "Validar machine_name"
-      ansible.builtin.assert:
-        that:
-          - machine_name is defined
-          - (machine_name | string | trim) | length > 0
-        fail_msg: "machine_name não informado"
-
-    # -------------------------------------------------------------------
-    # Branch de DEPLOY
-    # -------------------------------------------------------------------
-    - name: "Incluir deploy por máquina"
-      ansible.builtin.include_tasks: deploy_per_machine.yml
-      when: deploy_action_resolved == 'deploy'
-      vars:
-        deployment_ref: "{{ deployment_ref }}"
-        machine_name: "{{ machine_name | string | trim }}"
-        repo_root: "{{ repo_root_resolved }}"
-        status_dir: "{{ status_dir_resolved }}"
-        filestore_env: "{{ filestore_env_resolved }}"
-        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
-
-    # -------------------------------------------------------------------
-    # Branch de ROLLBACK
-    # -------------------------------------------------------------------
-    - name: "Incluir rollback por máquina"
-      ansible.builtin.include_tasks: rollback_per_machine.yml
-      when: deploy_action_resolved == 'rollback'
-      vars:
-        deployment_ref: "{{ deployment_ref }}"
-        machine_name: "{{ machine_name | string | trim }}"
-        repo_root: "{{ repo_root_resolved }}"
-        status_dir: "{{ status_dir_resolved }}"
-        nexus_base_url: "{{ nexus_base_url_resolved }}"
-        nexus_user: "{{ nexus_user_resolved }}"
-        nexus_password: "{{ nexus_password_resolved }}"
-        filestore_env: "{{ filestore_env_resolved }}"
-        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
+TASK [Resolver Nexus (base_url, user, password)] *******************************
+ok: [localhost]
+TASK [Mostrar variáveis de entrada e resolvidas (deploy/rollback)] *************
+ok: [localhost] => {
+    "msg": [
+        "deployment_ref               = DEV000000005",
+        "machine_name                 = sitef-01",
+        "deploy_action                = rollback",
+        "deploy_action_resolved       = rollback",
+        "repo_root_resolved           = /tmp/tmp.iAgw3QbWmC/elastic-compute-cloud-sitef/ansible/..",
+        "status_dir_resolved          = /tmp/tmp.iAgw3QbWmC/elastic-compute-cloud-sitef/ansible/../status/DEV000000005",
+        "nexus_base_url_resolved      = https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev",
+        "nexus_user_resolved          = (vazio)",
+        "filestore_env_resolved       = dev",
+        "filestore_base_dir_resolved  = dev/DEV000000005"
+    ]
+}
+TASK [Garantir diretório de status da TAG] *************************************
+changed: [localhost]
+TASK [Validar machine_name] ****************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+TASK [Incluir deploy por máquina] **********************************************
+skipping: [localhost]
+TASK [Incluir rollback por máquina] ********************************************
+included: /tmp/tmp.iAgw3QbWmC/elastic-compute-cloud-sitef/ansible/rollback_per_machine.yml for localhost
+TASK [Definir caminhos para sitef-01] ******************************************
+ok: [localhost]
+TASK [Carregar config da máquina] **********************************************
+fatal: [localhost]: FAILED! => {"ansible_facts": {"machine_cfg": {}}, "ansible_included_var_files": [], "changed": false, "message": "Could not find or access '/tmp/tmp.iAgw3QbWmC/elastic-compute-cloud-sitef/ansible/../machine/sitef-01.yml' on the Ansible Controller.\nIf you are using a module and expect the file to exist on the remote, see the remote_src option"}
+PLAY RECAP *********************************************************************
+localhost                  : ok=9    changed=1    unreachable=0    failed=1    skipped=1    rescued=0    ignored=0   
+Command finished with status FAILURE
