@@ -1,441 +1,474 @@
----
-# =====================================================================================
-# PREDEPLOY POR MÁQUINA
-# Chamado por predeploy_from_execution.yml
-#
-# Responsabilidades:
-# - Carregar machine + package
-# - Mesclar env_vars (machine + package)
-# - Preparar diretórios:
-#     /opt/SoftwareExpress/sitef-pipeline/deploy
-#     /opt/SoftwareExpress/sitef-pipeline/deploy/scripts
-#     /opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package
-# - Copiar package.yml para /deploy/scripts/package/
-# - Baixar components do Nexus para /deploy/<path do componente>
-#   (ex: /deploy/package/linux/sitef-core-0.0.2-0.rpm)
-# - Copiar scripts do pacote para /deploy/scripts
-# - Executar init_parallel.sh na máquina alvo com as env_vars
-# - Gravar status.json local com status + log_path
-# =====================================================================================
+Exec using JSCH
+Connecting to 10.218.238.144 ....
+Connection to 10.218.238.144 established
+Executing command ...
+export MACHINES=sitef-01
+export MACHINE=sitef-01
+export ACTION=rollback
+export GIT_TAG=DEV000000005
+export STRATEGY=rollback
+== DEPLOY PIPELINE ==
+BRANCH   : develop
+STRATEGY : rollback
+GIT_TAG  : DEV000000005
+MACHINES : sitef-01
+MACHINES_NORMALIZADAS: sitef-01 
+Clonando repo em /tmp/tmp.iAgw3QbWmC...
+Cloning into '/tmp/tmp.iAgw3QbWmC/elastic-compute-cloud-sitef'...
+remote: Enumerating objects: 739, done.
+remote: Counting objects:   0% (1/689)
+remote: Counting objects:   1% (7/689)
+remote: Counting objects:   2% (14/689)
+remote: Counting objects:   3% (21/689)
+remote: Counting objects:   4% (28/689)
+remote: Counting objects:   5% (35/689)
+remote: Counting objects:   6% (42/689)
+remote: Counting objects:   7% (49/689)
+remote: Counting objects:   8% (56/689)
+remote: Counting objects:   9% (63/689)
+remote: Counting objects:  10% (69/689)
+remote: Counting objects:  11% (76/689)
+remote: Counting objects:  12% (83/689)
+remote: Counting objects:  13% (90/689)
+remote: Counting objects:  14% (97/689)
+remote: Counting objects:  15% (104/689)
+remote: Counting objects:  16% (111/689)
+remote: Counting objects:  17% (118/689)
+remote: Counting objects:  18% (125/689)
+remote: Counting objects:  19% (131/689)
+remote: Counting objects:  20% (138/689)
+remote: Counting objects:  21% (145/689)
+remote: Counting objects:  22% (152/689)
+remote: Counting objects:  23% (159/689)
+remote: Counting objects:  24% (166/689)
+remote: Counting objects:  25% (173/689)
+remote: Counting objects:  26% (180/689)
+remote: Counting objects:  27% (187/689)
+remote: Counting objects:  28% (193/689)
+remote: Counting objects:  29% (200/689)
+remote: Counting objects:  30% (207/689)
+remote: Counting objects:  31% (214/689)
+remote: Counting objects:  32% (221/689)
+remote: Counting objects:  33% (228/689)
+remote: Counting objects:  34% (235/689)
+remote: Counting objects:  35% (242/689)
+remote: Counting objects:  36% (249/689)
+remote: Counting objects:  37% (255/689)
+remote: Counting objects:  38% (262/689)
+remote: Counting objects:  39% (269/689)
+remote: Counting objects:  40% (276/689)
+remote: Counting objects:  41% (283/689)
+remote: Counting objects:  42% (290/689)
+remote: Counting objects:  43% (297/689)
+remote: Counting objects:  44% (304/689)
+remote: Counting objects:  45% (311/689)
+remote: Counting objects:  46% (317/689)
+remote: Counting objects:  47% (324/689)
+remote: Counting objects:  48% (331/689)
+remote: Counting objects:  49% (338/689)
+remote: Counting objects:  50% (345/689)
+remote: Counting objects:  51% (352/689)
+remote: Counting objects:  52% (359/689)
+remote: Counting objects:  53% (366/689)
+remote: Counting objects:  54% (373/689)
+remote: Counting objects:  55% (379/689)
+remote: Counting objects:  56% (386/689)
+remote: Counting objects:  57% (393/689)
+remote: Counting objects:  58% (400/689)
+remote: Counting objects:  59% (407/689)
+remote: Counting objects:  60% (414/689)
+remote: Counting objects:  61% (421/689)
+remote: Counting objects:  62% (428/689)
+remote: Counting objects:  63% (435/689)
+remote: Counting objects:  64% (441/689)
+remote: Counting objects:  65% (448/689)
+remote: Counting objects:  66% (455/689)
+remote: Counting objects:  67% (462/689)
+remote: Counting objects:  68% (469/689)
+remote: Counting objects:  69% (476/689)
+remote: Counting objects:  70% (483/689)
+remote: Counting objects:  71% (490/689)
+remote: Counting objects:  72% (497/689)
+remote: Counting objects:  73% (503/689)
+remote: Counting objects:  74% (510/689)
+remote: Counting objects:  75% (517/689)
+remote: Counting objects:  76% (524/689)
+remote: Counting objects:  77% (531/689)
+remote: Counting objects:  78% (538/689)
+remote: Counting objects:  79% (545/689)
+remote: Counting objects:  80% (552/689)
+remote: Counting objects:  81% (559/689)
+remote: Counting objects:  82% (565/689)
+remote: Counting objects:  83% (572/689)
+remote: Counting objects:  84% (579/689)
+remote: Counting objects:  85% (586/689)
+remote: Counting objects:  86% (593/689)
+remote: Counting objects:  87% (600/689)
+remote: Counting objects:  88% (607/689)
+remote: Counting objects:  89% (614/689)
+remote: Counting objects:  90% (621/689)
+remote: Counting objects:  91% (627/689)
+remote: Counting objects:  92% (634/689)
+remote: Counting objects:  93% (641/689)
+remote: Counting objects:  94% (648/689)
+remote: Counting objects:  95% (655/689)
+remote: Counting objects:  96% (662/689)
+remote: Counting objects:  97% (669/689)
+remote: Counting objects:  98% (676/689)
+remote: Counting objects:  99% (683/689)
+remote: Counting objects: 100% (689/689)
+remote: Counting objects: 100% (689/689), done.
+remote: Compressing objects:   0% (1/676)
+remote: Compressing objects:   1% (7/676)
+remote: Compressing objects:   2% (14/676)
+remote: Compressing objects:   3% (21/676)
+remote: Compressing objects:   4% (28/676)
+remote: Compressing objects:   5% (34/676)
+remote: Compressing objects:   6% (41/676)
+remote: Compressing objects:   7% (48/676)
+remote: Compressing objects:   8% (55/676)
+remote: Compressing objects:   9% (61/676)
+remote: Compressing objects:  10% (68/676)
+remote: Compressing objects:  11% (75/676)
+remote: Compressing objects:  12% (82/676)
+remote: Compressing objects:  13% (88/676)
+remote: Compressing objects:  14% (95/676)
+remote: Compressing objects:  15% (102/676)
+remote: Compressing objects:  16% (109/676)
+remote: Compressing objects:  17% (115/676)
+remote: Compressing objects:  18% (122/676)
+remote: Compressing objects:  19% (129/676)
+remote: Compressing objects:  20% (136/676)
+remote: Compressing objects:  21% (142/676)
+remote: Compressing objects:  22% (149/676)
+remote: Compressing objects:  23% (156/676)
+remote: Compressing objects:  24% (163/676)
+remote: Compressing objects:  25% (169/676)
+remote: Compressing objects:  26% (176/676)
+remote: Compressing objects:  27% (183/676)
+remote: Compressing objects:  28% (190/676)
+remote: Compressing objects:  29% (197/676)
+remote: Compressing objects:  30% (203/676)
+remote: Compressing objects:  31% (210/676)
+remote: Compressing objects:  32% (217/676)
+remote: Compressing objects:  33% (224/676)
+remote: Compressing objects:  34% (230/676)
+remote: Compressing objects:  35% (237/676)
+remote: Compressing objects:  36% (244/676)
+remote: Compressing objects:  37% (251/676)
+remote: Compressing objects:  38% (257/676)
+remote: Compressing objects:  39% (264/676)
+remote: Compressing objects:  40% (271/676)
+remote: Compressing objects:  41% (278/676)
+remote: Compressing objects:  42% (284/676)
+remote: Compressing objects:  43% (291/676)
+remote: Compressing objects:  44% (298/676)
+remote: Compressing objects:  45% (305/676)
+remote: Compressing objects:  46% (311/676)
+remote: Compressing objects:  47% (318/676)
+remote: Compressing objects:  48% (325/676)
+remote: Compressing objects:  49% (332/676)
+remote: Compressing objects:  50% (338/676)
+remote: Compressing objects:  51% (345/676)
+remote: Compressing objects:  52% (352/676)
+remote: Compressing objects:  53% (359/676)
+remote: Compressing objects:  54% (366/676)
+remote: Compressing objects:  55% (372/676)
+remote: Compressing objects:  56% (379/676)
+remote: Compressing objects:  57% (386/676)
+remote: Compressing objects:  58% (393/676)
+remote: Compressing objects:  59% (399/676)
+remote: Compressing objects:  60% (406/676)
+remote: Compressing objects:  61% (413/676)
+remote: Compressing objects:  62% (420/676)
+remote: Compressing objects:  63% (426/676)
+remote: Compressing objects:  64% (433/676)
+remote: Compressing objects:  65% (440/676)
+remote: Compressing objects:  66% (447/676)
+remote: Compressing objects:  67% (453/676)
+remote: Compressing objects:  68% (460/676)
+remote: Compressing objects:  69% (467/676)
+remote: Compressing objects:  70% (474/676)
+remote: Compressing objects:  71% (480/676)
+remote: Compressing objects:  72% (487/676)
+remote: Compressing objects:  73% (494/676)
+remote: Compressing objects:  74% (501/676)
+remote: Compressing objects:  75% (507/676)
+remote: Compressing objects:  76% (514/676)
+remote: Compressing objects:  77% (521/676)
+remote: Compressing objects:  78% (528/676)
+remote: Compressing objects:  79% (535/676)
+remote: Compressing objects:  80% (541/676)
+remote: Compressing objects:  81% (548/676)
+remote: Compressing objects:  82% (555/676)
+remote: Compressing objects:  83% (562/676)
+remote: Compressing objects:  84% (568/676)
+remote: Compressing objects:  85% (575/676)
+remote: Compressing objects:  86% (582/676)
+remote: Compressing objects:  87% (589/676)
+remote: Compressing objects:  88% (595/676)
+remote: Compressing objects:  89% (602/676)
+remote: Compressing objects:  90% (609/676)
+remote: Compressing objects:  91% (616/676)
+remote: Compressing objects:  92% (622/676)
+remote: Compressing objects:  93% (629/676)
+remote: Compressing objects:  94% (636/676)
+remote: Compressing objects:  95% (643/676)
+remote: Compressing objects:  96% (649/676)
+remote: Compressing objects:  97% (656/676)
+remote: Compressing objects:  98% (663/676)
+remote: Compressing objects:  99% (670/676)
+remote: Compressing objects: 100% (676/676)
+remote: Compressing objects: 100% (676/676), done.
+Receiving objects:   0% (1/739)
+Receiving objects:   1% (8/739)
+Receiving objects:   2% (15/739)
+Receiving objects:   3% (23/739)
+Receiving objects:   4% (30/739)
+Receiving objects:   5% (37/739)
+Receiving objects:   6% (45/739)
+Receiving objects:   7% (52/739)
+Receiving objects:   8% (60/739)
+Receiving objects:   9% (67/739)
+Receiving objects:  10% (74/739)
+Receiving objects:  11% (82/739)
+Receiving objects:  12% (89/739)
+Receiving objects:  13% (97/739)
+Receiving objects:  14% (104/739)
+Receiving objects:  15% (111/739)
+Receiving objects:  16% (119/739)
+Receiving objects:  17% (126/739)
+Receiving objects:  18% (134/739)
+Receiving objects:  19% (141/739)
+Receiving objects:  20% (148/739)
+Receiving objects:  21% (156/739)
+Receiving objects:  22% (163/739)
+Receiving objects:  23% (170/739)
+Receiving objects:  24% (178/739)
+Receiving objects:  25% (185/739)
+Receiving objects:  26% (193/739)
+Receiving objects:  27% (200/739)
+Receiving objects:  28% (207/739)
+Receiving objects:  29% (215/739)
+Receiving objects:  30% (222/739)
+Receiving objects:  31% (230/739)
+Receiving objects:  32% (237/739)
+Receiving objects:  33% (244/739)
+Receiving objects:  34% (252/739)
+Receiving objects:  35% (259/739)
+Receiving objects:  36% (267/739)
+Receiving objects:  37% (274/739)
+Receiving objects:  38% (281/739)
+Receiving objects:  39% (289/739)
+Receiving objects:  40% (296/739)
+Receiving objects:  41% (303/739)
+Receiving objects:  42% (311/739)
+Receiving objects:  43% (318/739)
+Receiving objects:  44% (326/739)
+Receiving objects:  45% (333/739)
+Receiving objects:  46% (340/739)
+Receiving objects:  47% (348/739)
+Receiving objects:  48% (355/739)
+Receiving objects:  49% (363/739)
+Receiving objects:  50% (370/739)
+Receiving objects:  51% (377/739)
+Receiving objects:  52% (385/739)
+Receiving objects:  53% (392/739)
+Receiving objects:  54% (400/739)
+Receiving objects:  55% (407/739)
+Receiving objects:  56% (414/739)
+Receiving objects:  57% (422/739)
+Receiving objects:  58% (429/739)
+Receiving objects:  59% (437/739)
+Receiving objects:  60% (444/739)
+Receiving objects:  61% (451/739)
+Receiving objects:  62% (459/739)
+Receiving objects:  63% (466/739)
+Receiving objects:  64% (473/739)
+Receiving objects:  65% (481/739)
+Receiving objects:  66% (488/739)
+Receiving objects:  67% (496/739)
+Receiving objects:  68% (503/739)
+Receiving objects:  69% (510/739)
+Receiving objects:  70% (518/739)
+Receiving objects:  71% (525/739)
+Receiving objects:  72% (533/739)
+Receiving objects:  73% (540/739)
+Receiving objects:  74% (547/739)
+Receiving objects:  75% (555/739)
+Receiving objects:  76% (562/739)
+Receiving objects:  77% (570/739)
+Receiving objects:  78% (577/739)
+Receiving objects:  79% (584/739)
+Receiving objects:  80% (592/739)
+Receiving objects:  81% (599/739)
+Receiving objects:  82% (606/739)
+remote: Total 739 (delta 450), reused 0 (delta 0), pack-reused 50
+Receiving objects:  83% (614/739)
+Receiving objects:  84% (621/739)
+Receiving objects:  85% (629/739)
+Receiving objects:  86% (636/739)
+Receiving objects:  87% (643/739)
+Receiving objects:  88% (651/739)
+Receiving objects:  89% (658/739)
+Receiving objects:  90% (666/739)
+Receiving objects:  91% (673/739)
+Receiving objects:  92% (680/739)
+Receiving objects:  93% (688/739)
+Receiving objects:  94% (695/739)
+Receiving objects:  95% (703/739)
+Receiving objects:  96% (710/739)
+Receiving objects:  97% (717/739)
+Receiving objects:  98% (725/739)
+Receiving objects:  99% (732/739)
+Receiving objects: 100% (739/739)
+Receiving objects: 100% (739/739), 906.85 KiB | 1.80 MiB/s, done.
+Resolving deltas:   0% (0/469)
+Resolving deltas:   1% (5/469)
+Resolving deltas:   2% (10/469)
+Resolving deltas:   3% (15/469)
+Resolving deltas:   4% (19/469)
+Resolving deltas:   5% (24/469)
+Resolving deltas:   6% (29/469)
+Resolving deltas:   7% (33/469)
+Resolving deltas:   8% (38/469)
+Resolving deltas:   9% (43/469)
+Resolving deltas:  10% (47/469)
+Resolving deltas:  11% (52/469)
+Resolving deltas:  12% (57/469)
+Resolving deltas:  13% (61/469)
+Resolving deltas:  14% (66/469)
+Resolving deltas:  15% (71/469)
+Resolving deltas:  16% (76/469)
+Resolving deltas:  17% (80/469)
+Resolving deltas:  18% (85/469)
+Resolving deltas:  19% (90/469)
+Resolving deltas:  20% (94/469)
+Resolving deltas:  21% (99/469)
+Resolving deltas:  22% (104/469)
+Resolving deltas:  23% (108/469)
+Resolving deltas:  24% (113/469)
+Resolving deltas:  25% (118/469)
+Resolving deltas:  26% (122/469)
+Resolving deltas:  27% (127/469)
+Resolving deltas:  28% (132/469)
+Resolving deltas:  29% (137/469)
+Resolving deltas:  30% (141/469)
+Resolving deltas:  31% (146/469)
+Resolving deltas:  32% (151/469)
+Resolving deltas:  33% (155/469)
+Resolving deltas:  34% (160/469)
+Resolving deltas:  35% (165/469)
+Resolving deltas:  36% (169/469)
+Resolving deltas:  37% (174/469)
+Resolving deltas:  38% (179/469)
+Resolving deltas:  39% (183/469)
+Resolving deltas:  40% (188/469)
+Resolving deltas:  41% (193/469)
+Resolving deltas:  42% (197/469)
+Resolving deltas:  43% (202/469)
+Resolving deltas:  44% (207/469)
+Resolving deltas:  45% (212/469)
+Resolving deltas:  46% (216/469)
+Resolving deltas:  47% (221/469)
+Resolving deltas:  48% (226/469)
+Resolving deltas:  49% (230/469)
+Resolving deltas:  50% (235/469)
+Resolving deltas:  51% (240/469)
+Resolving deltas:  52% (244/469)
+Resolving deltas:  53% (249/469)
+Resolving deltas:  54% (254/469)
+Resolving deltas:  55% (258/469)
+Resolving deltas:  56% (263/469)
+Resolving deltas:  57% (268/469)
+Resolving deltas:  58% (273/469)
+Resolving deltas:  59% (277/469)
+Resolving deltas:  60% (282/469)
+Resolving deltas:  61% (287/469)
+Resolving deltas:  62% (291/469)
+Resolving deltas:  63% (296/469)
+Resolving deltas:  64% (301/469)
+Resolving deltas:  65% (305/469)
+Resolving deltas:  66% (310/469)
+Resolving deltas:  67% (315/469)
+Resolving deltas:  68% (319/469)
+Resolving deltas:  69% (324/469)
+Resolving deltas:  70% (329/469)
+Resolving deltas:  71% (333/469)
+Resolving deltas:  72% (338/469)
+Resolving deltas:  73% (343/469)
+Resolving deltas:  74% (348/469)
+Resolving deltas:  75% (352/469)
+Resolving deltas:  76% (357/469)
+Resolving deltas:  77% (362/469)
+Resolving deltas:  78% (366/469)
+Resolving deltas:  79% (371/469)
+Resolving deltas:  80% (376/469)
+Resolving deltas:  81% (380/469)
+Resolving deltas:  82% (385/469)
+Resolving deltas:  83% (390/469)
+Resolving deltas:  84% (394/469)
+Resolving deltas:  85% (399/469)
+Resolving deltas:  86% (404/469)
+Resolving deltas:  87% (409/469)
+Resolving deltas:  88% (413/469)
+Resolving deltas:  89% (418/469)
+Resolving deltas:  90% (423/469)
+Resolving deltas:  91% (427/469)
+Resolving deltas:  92% (432/469)
+Resolving deltas:  93% (437/469)
+Resolving deltas:  94% (441/469)
+Resolving deltas:  95% (446/469)
+Resolving deltas:  96% (451/469)
+Resolving deltas:  97% (455/469)
+Resolving deltas:  98% (460/469)
+Resolving deltas:  99% (465/469)
+Resolving deltas: 100% (469/469)
+Resolving deltas: 100% (469/469), done.
+====================================================
+== ROLLBACK -> sitef-01
+====================================================
 
-# -----------------------------------------------------------------------------
-# 1) Resolver nome da máquina atual
-# -----------------------------------------------------------------------------
-- name: "Resolver nome da máquina atual"
-  ansible.builtin.set_fact:
-    current_machine: >-
-      {{
-        (machine_name | default(item) | default('')) | string | trim
-      }}
+PLAY [Deploy/Rollback por máquina] *********************************************
+TASK [Gathering Facts] *********************************************************
+ok: [localhost]
+TASK [Normalizar deploy_action (deploy/rollback)] ******************************
+ok: [localhost]
+TASK [Resolver filestore_env e filestore_base_dir (deploy/rollback)] ***********
+ok: [localhost]
 
-# -----------------------------------------------------------------------------
-# 2) Definir paths base do repositório
-# -----------------------------------------------------------------------------
-- name: "Definir paths base do repositório"
-  ansible.builtin.set_fact:
-    repo_root_safe: >-
-      {{
-        repo_root
-          | default(repo_root_resolved | default(playbook_dir ~ '/..'))
-      }}
-
-# -----------------------------------------------------------------------------
-# 3) Definir diretórios principais do repositório
-# -----------------------------------------------------------------------------
-- name: "Definir execution_dir do repositório"
-  ansible.builtin.set_fact:
-    execution_dir: "{{ repo_root_safe }}/execution"
-
-- name: "Definir machines_dir, packages_dir e scripts_dir do repositório"
-  ansible.builtin.set_fact:
-    machines_dir: "{{ repo_root_safe }}/machines"
-    packages_dir: "{{ repo_root_safe }}/packages"
-    scripts_root_dir: "{{ repo_root_safe }}/scripts"
-
-# -----------------------------------------------------------------------------
-# 4) Candidatos de arquivo de máquina
-# -----------------------------------------------------------------------------
-- name: "Definir candidatos de arquivo da máquina"
-  ansible.builtin.set_fact:
-    candidate_machine_files:
-      - "{{ execution_dir }}/machines/{{ current_machine }}.yml"
-      - "{{ execution_dir }}/{{ current_machine }}.yml"
-      - "{{ machines_dir }}/{{ current_machine }}.yml"
-      - "{{ repo_root_safe }}/inventory/machines/{{ current_machine }}.yml"
-
-# -----------------------------------------------------------------------------
-# 5) Verificar quais candidatos existem
-# -----------------------------------------------------------------------------
-- name: "Verificar candidatos de arquivo da máquina"
-  ansible.builtin.stat:
-    path: "{{ item }}"
-  loop: "{{ candidate_machine_files }}"
-  register: machine_candidates_stat
-
-# -----------------------------------------------------------------------------
-# 6) Selecionar o primeiro arquivo existente
-# -----------------------------------------------------------------------------
-- name: "Selecionar machine_file existente"
-  ansible.builtin.set_fact:
-    machine_file: "{{ item.item }}"
-  when:
-    - item.stat.exists
-    - machine_file is not defined
-  loop: "{{ machine_candidates_stat.results }}"
-
-# -----------------------------------------------------------------------------
-# 7) Falhar se nenhum candidato existir
-# -----------------------------------------------------------------------------
-- name: "Falhar se arquivo da máquina não existir em nenhum caminho esperado"
-  ansible.builtin.fail:
-    msg: |
-      Arquivo de máquina não encontrado para {{ current_machine }}.
-      Caminhos testados:
-      {{ candidate_machine_files | to_nice_yaml }}
-  when: machine_file is not defined
-
-# -----------------------------------------------------------------------------
-# 8) Carregar config da máquina
-# -----------------------------------------------------------------------------
-- name: "Carregar config da máquina {{ current_machine }}"
-  ansible.builtin.include_vars:
-    file: "{{ machine_file }}"
-    name: machine_cfg
-
-# -----------------------------------------------------------------------------
-# 9) Validar package definido
-# -----------------------------------------------------------------------------
-- name: "Validar package definido"
-  ansible.builtin.assert:
-    that:
-      - machine_cfg is defined
-      - machine_cfg.package is defined
-      - (machine_cfg.package | string | trim) | length > 0
-    fail_msg: "machine_cfg.package não definido em {{ machine_file }}"
-
-# -----------------------------------------------------------------------------
-# 10) Carregar config do pacote
-# -----------------------------------------------------------------------------
-- name: "Carregar config do pacote {{ machine_cfg.package }}"
-  ansible.builtin.include_vars:
-    file: "{{ packages_dir }}/{{ machine_cfg.package }}.yml"
-    name: package_cfg
-
-# -----------------------------------------------------------------------------
-# 11) Validações mínimas do pacote
-# -----------------------------------------------------------------------------
-- name: "Validar components do pacote"
-  ansible.builtin.assert:
-    that:
-      - package_cfg is defined
-      - package_cfg.components is defined
-      - package_cfg.components | length > 0
-    fail_msg: "components ausente/vazio no pacote {{ machine_cfg.package }}"
-
-# -----------------------------------------------------------------------------
-# 12) Calcular env_vars mescladas (machine + package + extras)
-# -----------------------------------------------------------------------------
-- name: "Calcular env_vars mescladas"
-  ansible.builtin.set_fact:
-    merged_env_vars: >-
-      {{
-        (machine_cfg.env_vars | default({}))
-        | combine(package_cfg.env_vars | default({}), recursive=True)
-        | combine({
-            'SITEF_MACHINE': current_machine,
-            'SITEF_HOST': machine_cfg.host | default(machine_cfg.ip | default('')),
-            'DEPLOYMENT_REF': deployment_ref | default(''),
-            'PACKAGE_NAME': machine_cfg.package,
-            'ROLLBACK_PACKAGE': machine_cfg.rollback | default('')
-          }, recursive=True)
-      }}
-
-# -----------------------------------------------------------------------------
-# 13) Usuário/SSH defaults
-# -----------------------------------------------------------------------------
-- name: "Definir usuário alvo padrão"
-  ansible.builtin.set_fact:
-    target_user: "{{ machine_cfg.target_user | default('root') }}"
-
-- name: "Definir ssh_common_args padrão"
-  ansible.builtin.set_fact:
-    ssh_common_args: "{{ machine_cfg.ssh_common_args | default('-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null') }}"
-
-- name: "Aplicar ProxyJump via bastion (quando necessário)"
-  ansible.builtin.set_fact:
-    ssh_common_args: >-
-      {{ ssh_common_args }}
-      -o ProxyJump={{ machine_cfg.bastion_user | default(target_user) }}@{{ machine_cfg.bastion_host }}
-  when:
-    - machine_cfg.bastion_host is defined
-    - (machine_cfg.bastion_host | string | length) > 0
-
-# -----------------------------------------------------------------------------
-# 14) Registrar host dinâmico (forçando conexão SSH)
-# -----------------------------------------------------------------------------
-- name: "Registrar host dinâmico para {{ current_machine }}"
-  ansible.builtin.add_host:
-    name: "{{ current_machine }}"
-    ansible_host: "{{ machine_cfg.host | default(machine_cfg.ip | default(machine_cfg.host | default(''))) }}"
-    ansible_user: "{{ target_user }}"
-    ansible_ssh_common_args: "{{ ssh_common_args }}"
-    ansible_connection: ssh
-  changed_when: true
-
-# -----------------------------------------------------------------------------
-# 14.1) Debug: identificar hostname/IP da máquina alvo
-# -----------------------------------------------------------------------------
-- name: "Mostrar hostname/IP da máquina alvo (debug)"
-  ansible.builtin.shell: "hostname -I && hostname"
-  delegate_to: "{{ current_machine }}"
-  register: target_ident
-  changed_when: false
-
-- name: "Debug target_ident"
-  ansible.builtin.debug:
-    msg:
-      - "current_machine = {{ current_machine }}"
-      - "machine_cfg.host = {{ machine_cfg.host | default('') }}"
-      - "machine_cfg.ip   = {{ machine_cfg.ip | default('') }}"
-      - "hostname/ip alvo:"
-      - "{{ target_ident.stdout_lines }}"
-
-# -----------------------------------------------------------------------------
-# 15) Definir caminhos de status e deploy (BASE = /opt/.../deploy)
-# -----------------------------------------------------------------------------
-- name: "Definir caminhos de status e deploy"
-  ansible.builtin.set_fact:
-    machine_status_dir: "{{ status_dir }}/{{ current_machine }}"
-    machine_status_file: "{{ status_dir }}/{{ current_machine }}/status.json"
-
-    deploy_base_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/components"
-    deploy_scripts_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
-    deploy_scripts_package_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package"
-
-# -----------------------------------------------------------------------------
-# 16) Calcular caminhos de status/log "lógicos"
-# -----------------------------------------------------------------------------
-- name: "Calcular caminhos de status/log"
-  ansible.builtin.set_fact:
-    filestore_log_path: >-
-      {{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ current_machine }}-{{ filestore_env }}.log
-    filestore_status_path: >-
-      {{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ current_machine }}-{{ filestore_env }}.json
-
-# -----------------------------------------------------------------------------
-# 17) Criar diretório de status local e registrar status 'pre-deploy:queued'
-# -----------------------------------------------------------------------------
-- name: "Criar diretório de status da máquina"
-  ansible.builtin.file:
-    path: "{{ machine_status_dir }}"
-    state: directory
-    mode: "0755"
-
-- name: "Escrever status inicial (pre-deploy:queued)"
-  ansible.builtin.copy:
-    dest: "{{ machine_status_file }}"
-    mode: "0644"
-    content: |
-      {
-        "machine": "{{ current_machine }}",
-        "host": "{{ machine_cfg.host | default(machine_cfg.ip | default('')) }}",
-        "package": "{{ machine_cfg.package }}",
-        "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "pre-deploy:queued",
-        "deployment_ref": "{{ deployment_ref | default('') }}",
-        "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "log_path": "{{ filestore_log_path }}"
-      }
-  changed_when: true
-
-# -----------------------------------------------------------------------------
-# 18) Garantir base do pipeline no host remoto
-# -----------------------------------------------------------------------------
-- name: "Garantir base do pipeline no host"
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    mode: "0755"
-  become: true
-  delegate_to: "{{ current_machine }}"
-  loop:
-    - "{{ deploy_base_dir }}"
-    - "{{ deploy_scripts_dir }}"
-    - "{{ deploy_scripts_package_dir }}"
-
-# -----------------------------------------------------------------------------
-# 19) Limpar pasta de scripts do pacote
-# -----------------------------------------------------------------------------
-- name: "Limpar pasta de scripts do pacote"
-  ansible.builtin.file:
-    path: "{{ deploy_scripts_package_dir }}"
-    state: absent
-  become: true
-  delegate_to: "{{ current_machine }}"
-
-- name: "Recriar pasta de scripts do pacote"
-  ansible.builtin.file:
-    path: "{{ deploy_scripts_package_dir }}"
-    state: directory
-    mode: "0755"
-  become: true
-  delegate_to: "{{ current_machine }}"
-
-# -----------------------------------------------------------------------------
-# 20) Copiar package.yml para /deploy/scripts/package/
-# -----------------------------------------------------------------------------
-- name: "Copiar package.yml para o host"
-  ansible.builtin.copy:
-    src: "{{ packages_dir }}/{{ machine_cfg.package }}.yml"
-    dest: "{{ deploy_scripts_package_dir }}/{{ machine_cfg.package }}.yml"
-    mode: "0644"
-  become: true
-  delegate_to: "{{ current_machine }}"
-
-# -----------------------------------------------------------------------------
-# 21) Garantir diretórios dos componentes + baixar do Nexus
-# -----------------------------------------------------------------------------
-- name: "Garantir diretórios dos componentes no host"
-  ansible.builtin.file:
-    path: "{{ deploy_base_dir }}/{{ item | dirname }}"
-    state: directory
-    mode: "0755"
-  loop: "{{ package_cfg.components }}"
-  become: true
-  delegate_to: "{{ current_machine }}"
-
-- name: "Baixar componentes do Nexus"
-  ansible.builtin.get_url:
-    url: "{{ nexus_base_url.rstrip('/') }}/{{ item }}"
-    dest: "{{ deploy_base_dir }}/{{ item }}"
-    mode: "0644"
-    url_username: "{{ nexus_user | default(omit) }}"
-    url_password: "{{ nexus_password | default(omit) }}"
-  loop: "{{ package_cfg.components }}"
-  become: true
-  delegate_to: "{{ current_machine }}"
-
-# -----------------------------------------------------------------------------
-# 22) Copiar scripts do pacote para /deploy/scripts
-# -----------------------------------------------------------------------------
-- name: "Copiar scripts do pacote para o host"
-  ansible.builtin.copy:
-    src: "{{ scripts_root_dir }}/{{ package_cfg.script }}/"
-    dest: "{{ deploy_scripts_dir }}/"
-    mode: "0755"
-  become: true
-  delegate_to: "{{ current_machine }}"
-
-# Debug só para conferência
-- name: "Listar conteúdo de /deploy/scripts (debug)"
-  ansible.builtin.shell: |
-    ls -Ral "{{ deploy_scripts_dir }}" || echo "diretório vazio"
-  become: true
-  delegate_to: "{{ current_machine }}"
-  register: scripts_ls
-  changed_when: false
-
-- name: "Mostrar conteúdo de scripts (debug)"
-  ansible.builtin.debug:
-    var: scripts_ls.stdout_lines
-
-# -----------------------------------------------------------------------------
-# 23) Executar init_parallel.sh na máquina alvo
-# -----------------------------------------------------------------------------
-- name: "Executar init_parallel.sh no host"
-  ansible.builtin.shell: |
-    cd "{{ deploy_scripts_dir }}"
-    ./init_parallel.sh
-  args:
-    executable: /bin/bash
-  environment: "{{ merged_env_vars }}"
-  become: true
-  delegate_to: "{{ current_machine }}"
-  register: init_parallel_result
-  changed_when: true
-
-# -----------------------------------------------------------------------------
-# 24) Atualizar status para pre-deploy:ok ou pre-deploy:error
-# -----------------------------------------------------------------------------
-- name: "Atualizar status após execução do init_parallel.sh"
-  ansible.builtin.copy:
-    dest: "{{ machine_status_file }}"
-    mode: "0644"
-    content: |
-      {
-        "machine": "{{ current_machine }}",
-        "host": "{{ machine_cfg.host | default(machine_cfg.ip | default('')) }}",
-        "package": "{{ machine_cfg.package }}",
-        "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "{{ 'pre-deploy:ok' if init_parallel_result.rc == 0 else 'pre-deploy:error' }}",
-        "deployment_ref": "{{ deployment_ref | default('') }}",
-        "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "log_path": "{{ filestore_log_path }}"
-      }
-  changed_when: true
-
-# -----------------------------------------------------------------------------
-# 25) Falhar play se init_parallel.sh der erro
-# -----------------------------------------------------------------------------
-- name: "Falhar se init_parallel.sh retornou erro"
-  ansible.builtin.fail:
-    msg: "init_parallel.sh falhou na máquina {{ current_machine }} com rc={{ init_parallel_result.rc }}"
-  when: init_parallel_result.rc != 0
-
-
-# machine:
-host: "100.99.57.128"
-
-package: "sitef-core-0.0.1-0"
-rollback: "sitef-core-0.0.2-0-rollback"
-
-env_vars:
-  SITEF_ENV: "prod"
-  OUTRA_VAR: "valor"
-
-tags:
-  - name: sitef-2
-  - environment: aws-dev
-  - aws-account: 942632789850
-
-## package: 
-
-script: deploy-sitef-0.0.2
-
-components:
-  - packages/linux/sitef-core-0.0.1-0.x86_64.rpm
-
-env_vars:
-  PACKAGE_VERSION: "sitef-core-0.0.2-0"
-
-# init_rollback.sh
-#!/bin/bash
-echo "Instalacao de dependencias do sistema..."
-
-# Colocar aqui dependencias de sistema que ser�o necess�rias para a aplica��o e instala��o
-dnf install -y --nodocs python3.12 python3.12-pip
-
-echo "Instalacao de dependencias finalizada."
-
-python3.12 -m venv /opt/SoftwareExpress/sitef-setup/venv
-
-source /opt/SoftwareExpress/sitef-setup/venv/bin/activate
-
-echo "Instalacao de dependencias do python..."
-
-# Colocar aqui dependencias do python que ser�o necess�rias para a aplicacao e instalacao
-# pip3 install <dependencia>
-pip3.12 install --no-index --no-input pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
-
-echo "Instalacao de dependencias do python finalizada."
-
-echo "Instalacao de dependencias finalizada."
-
-python3.12 script_rollback.py
-
-if [ $? -ne 0 ]; then
-  echo "Script finalizou com erro."
-  exit 1
-fi
-
-deactivate
+TASK [Resolver Nexus (base_url, user, password)] *******************************
+ok: [localhost]
+TASK [Mostrar variáveis de entrada e resolvidas (deploy/rollback)] *************
+ok: [localhost] => {
+    "msg": [
+        "deployment_ref               = DEV000000005",
+        "machine_name                 = sitef-01",
+        "deploy_action                = rollback",
+        "deploy_action_resolved       = rollback",
+        "repo_root_resolved           = /tmp/tmp.iAgw3QbWmC/elastic-compute-cloud-sitef/ansible/..",
+        "status_dir_resolved          = /tmp/tmp.iAgw3QbWmC/elastic-compute-cloud-sitef/ansible/../status/DEV000000005",
+        "nexus_base_url_resolved      = https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev",
+        "nexus_user_resolved          = (vazio)",
+        "filestore_env_resolved       = dev",
+        "filestore_base_dir_resolved  = dev/DEV000000005"
+    ]
+}
+TASK [Garantir diretório de status da TAG] *************************************
+changed: [localhost]
+TASK [Validar machine_name] ****************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+TASK [Incluir deploy por máquina] **********************************************
+skipping: [localhost]
+TASK [Incluir rollback por máquina] ********************************************
+included: /tmp/tmp.iAgw3QbWmC/elastic-compute-cloud-sitef/ansible/rollback_per_machine.yml for localhost
+TASK [Definir caminhos para sitef-01] ******************************************
+ok: [localhost]
+TASK [Carregar config da máquina] **********************************************
+fatal: [localhost]: FAILED! => {"ansible_facts": {"machine_cfg": {}}, "ansible_included_var_files": [], "changed": false, "message": "Could not find or access '/tmp/tmp.iAgw3QbWmC/elastic-compute-cloud-sitef/ansible/../machine/sitef-01.yml' on the Ansible Controller.\nIf you are using a module and expect the file to exist on the remote, see the remote_src option"}
+PLAY RECAP *********************************************************************
+localhost                  : ok=9    changed=1    unreachable=0    failed=1    skipped=1    rescued=0    ignored=0   
+Command finished with status FAILURE
