@@ -1,32 +1,46 @@
 ---
-# PIPELINE 2 - DEPLOY
+# PIPELINE 2/3 - DEPLOY & ROLLBACK
 # - Recebe machine_name (ou lista externa via loop no script)
-# - Reusa área /deploy/scripts preparada no predeploy
-# - Executa init_deploy.sh
+# - DEPLOY: Reusa área /deploy/scripts preparada no predeploy e roda init_deploy.sh
+# - ROLLBACK: Prepara /rollback, baixa componentes e roda init_rollback.sh
 # - Atualiza status
 # - Upload JSON + LOG no File Store
 
-- name: "Deploy por máquina"
+- name: "Deploy/Rollback por máquina"
   hosts: localhost
   connection: local
   gather_facts: true
 
   vars:
+    # TAG de implantação / rollback
     deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
+
+    # Nome da máquina (ex: sitef-01)
     machine_name: "{{ machine_name | default('') }}"
+
+    # Ação: deploy | rollback (vem do Harness como deploy_action/STRATEGY)
+    deploy_action: "{{ deploy_action | default('deploy') }}"
 
     # Paths do repo
     repo_root_resolved: "{{ playbook_dir }}/.."
     status_dir_resolved: "{{ repo_root_resolved }}/status/{{ deployment_ref }}"
 
-    # NÃO colocar filestore_env = {{ filestore_env | ... }} aqui
-    # pra evitar recursão. Vamos resolver via set_fact.
+    # Nexus (usado no rollback)
+    nexus_base_url: "{{ nexus_base_url | default('https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev') }}"
+    nexus_user: "{{ nexus_user | default('') }}"
+    nexus_password: "{{ nexus_password | default('') }}"
+
+    # NÃO declarar filestore_env/filestore_base_dir aqui com eles mesmos pra evitar recursão
 
   tasks:
     # -------------------------------------------------------------------
-    # Resolver filestore_env e filestore_base_dir sem recursão
+    # Resolver deploy_action e variáveis de filestore sem recursão
     # -------------------------------------------------------------------
-    - name: "Resolver filestore_env e filestore_base_dir (deploy)"
+    - name: "Normalizar deploy_action (deploy/rollback)"
+      ansible.builtin.set_fact:
+        deploy_action_resolved: "{{ (deploy_action | string | lower | trim) | default('deploy', true) }}"
+
+    - name: "Resolver filestore_env e filestore_base_dir (deploy/rollback)"
       ansible.builtin.set_fact:
         filestore_env_resolved: >-
           {{
@@ -50,13 +64,16 @@
     # -------------------------------------------------------------------
     # Só pra debug
     # -------------------------------------------------------------------
-    - name: "Mostrar variáveis de entrada e resolvidas (deploy)"
+    - name: "Mostrar variáveis de entrada e resolvidas (deploy/rollback)"
       ansible.builtin.debug:
         msg:
           - "deployment_ref               = {{ deployment_ref }}"
           - "machine_name                 = {{ machine_name }}"
+          - "deploy_action                = {{ deploy_action }}"
+          - "deploy_action_resolved       = {{ deploy_action_resolved }}"
           - "repo_root_resolved           = {{ repo_root_resolved }}"
           - "status_dir_resolved          = {{ status_dir_resolved }}"
+          - "nexus_base_url               = {{ nexus_base_url }}"
           - "filestore_env_resolved       = {{ filestore_env_resolved }}"
           - "filestore_base_dir_resolved  = {{ filestore_base_dir_resolved }}"
 
@@ -80,14 +97,32 @@
         fail_msg: "machine_name não informado"
 
     # -------------------------------------------------------------------
-    # Incluir deploy por máquina
+    # DEPLOY
     # -------------------------------------------------------------------
     - name: "Incluir deploy por máquina"
       ansible.builtin.include_tasks: deploy_per_machine.yml
+      when: deploy_action_resolved == 'deploy'
       vars:
         deployment_ref: "{{ deployment_ref }}"
         machine_name: "{{ machine_name | string | trim }}"
         repo_root: "{{ repo_root_resolved }}"
         status_dir: "{{ status_dir_resolved }}"
+        filestore_env: "{{ filestore_env_resolved }}"
+        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
+
+    # -------------------------------------------------------------------
+    # ROLLBACK
+    # -------------------------------------------------------------------
+    - name: "Incluir rollback por máquina"
+      ansible.builtin.include_tasks: rollback_per_machine.yml
+      when: deploy_action_resolved == 'rollback'
+      vars:
+        deployment_ref: "{{ deployment_ref }}"
+        machine_name: "{{ machine_name | string | trim }}"
+        repo_root: "{{ repo_root_resolved }}"
+        status_dir: "{{ status_dir_resolved }}"
+        nexus_base_url: "{{ nexus_base_url }}"
+        nexus_user: "{{ nexus_user }}"
+        nexus_password: "{{ nexus_password }}"
         filestore_env: "{{ filestore_env_resolved }}"
         filestore_base_dir: "{{ filestore_base_dir_resolved }}"
