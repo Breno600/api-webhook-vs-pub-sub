@@ -200,9 +200,7 @@
     msg: "DEPLOY falhou em {{ machine_name }} (host {{ machine_cfg.host }})"
   when: deploy_result.rc != 0
 
-
----
-
+# harness scripts
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -266,7 +264,7 @@ echo
 echo "== Pipeline finalizada com sucesso =="
 
 
-segue fluxo de deploy.
+# fluxo:
 
 deploy:
 - exportar as variáveis em tempo de execução
