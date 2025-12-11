@@ -1,445 +1,272 @@
-Exec using JSCH
-Connecting to 10.218.238.144 ....
-Connection to 10.218.238.144 established
-Executing command ...
-export MACHINES=sitef-01
-export MACHINE=sitef-01
-export ACTION=deploy
-export GIT_TAG=DEV000000005
-export STRATEGY=deploy
-== DEPLOY PIPELINE ==
-BRANCH   : develop
-STRATEGY : deploy
-GIT_TAG  : DEV000000005
-MACHINES : sitef-01
-MACHINES_NORMALIZADAS: sitef-01 
-Clonando repo em /tmp/tmp.WBnOA55ptl...
-Cloning into '/tmp/tmp.WBnOA55ptl/elastic-compute-cloud-sitef'...
-remote: Enumerating objects: 720, done.
-remote: Counting objects:   0% (1/670)
-remote: Counting objects:   1% (7/670)
-remote: Counting objects:   2% (14/670)
-remote: Counting objects:   3% (21/670)
-remote: Counting objects:   4% (27/670)
-remote: Counting objects:   5% (34/670)
-remote: Counting objects:   6% (41/670)
-remote: Counting objects:   7% (47/670)
-remote: Counting objects:   8% (54/670)
-remote: Counting objects:   9% (61/670)
-remote: Counting objects:  10% (67/670)
-remote: Counting objects:  11% (74/670)
-remote: Counting objects:  12% (81/670)
-remote: Counting objects:  13% (88/670)
-remote: Counting objects:  14% (94/670)
-remote: Counting objects:  15% (101/670)
-remote: Counting objects:  16% (108/670)
-remote: Counting objects:  17% (114/670)
-remote: Counting objects:  18% (121/670)
-remote: Counting objects:  19% (128/670)
-remote: Counting objects:  20% (134/670)
-remote: Counting objects:  21% (141/670)
-remote: Counting objects:  22% (148/670)
-remote: Counting objects:  23% (155/670)
-remote: Counting objects:  24% (161/670)
-remote: Counting objects:  25% (168/670)
-remote: Counting objects:  26% (175/670)
-remote: Counting objects:  27% (181/670)
-remote: Counting objects:  28% (188/670)
-remote: Counting objects:  29% (195/670)
-remote: Counting objects:  30% (201/670)
-remote: Counting objects:  31% (208/670)
-remote: Counting objects:  32% (215/670)
-remote: Counting objects:  33% (222/670)
-remote: Counting objects:  34% (228/670)
-remote: Counting objects:  35% (235/670)
-remote: Counting objects:  36% (242/670)
-remote: Counting objects:  37% (248/670)
-remote: Counting objects:  38% (255/670)
-remote: Counting objects:  39% (262/670)
-remote: Counting objects:  40% (268/670)
-remote: Counting objects:  41% (275/670)
-remote: Counting objects:  42% (282/670)
-remote: Counting objects:  43% (289/670)
-remote: Counting objects:  44% (295/670)
-remote: Counting objects:  45% (302/670)
-remote: Counting objects:  46% (309/670)
-remote: Counting objects:  47% (315/670)
-remote: Counting objects:  48% (322/670)
-remote: Counting objects:  49% (329/670)
-remote: Counting objects:  50% (335/670)
-remote: Counting objects:  51% (342/670)
-remote: Counting objects:  52% (349/670)
-remote: Counting objects:  53% (356/670)
-remote: Counting objects:  54% (362/670)
-remote: Counting objects:  55% (369/670)
-remote: Counting objects:  56% (376/670)
-remote: Counting objects:  57% (382/670)
-remote: Counting objects:  58% (389/670)
-remote: Counting objects:  59% (396/670)
-remote: Counting objects:  60% (402/670)
-remote: Counting objects:  61% (409/670)
-remote: Counting objects:  62% (416/670)
-remote: Counting objects:  63% (423/670)
-remote: Counting objects:  64% (429/670)
-remote: Counting objects:  65% (436/670)
-remote: Counting objects:  66% (443/670)
-remote: Counting objects:  67% (449/670)
-remote: Counting objects:  68% (456/670)
-remote: Counting objects:  69% (463/670)
-remote: Counting objects:  70% (469/670)
-remote: Counting objects:  71% (476/670)
-remote: Counting objects:  72% (483/670)
-remote: Counting objects:  73% (490/670)
-remote: Counting objects:  74% (496/670)
-remote: Counting objects:  75% (503/670)
-remote: Counting objects:  76% (510/670)
-remote: Counting objects:  77% (516/670)
-remote: Counting objects:  78% (523/670)
-remote: Counting objects:  79% (530/670)
-remote: Counting objects:  80% (536/670)
-remote: Counting objects:  81% (543/670)
-remote: Counting objects:  82% (550/670)
-remote: Counting objects:  83% (557/670)
-remote: Counting objects:  84% (563/670)
-remote: Counting objects:  85% (570/670)
-remote: Counting objects:  86% (577/670)
-remote: Counting objects:  87% (583/670)
-remote: Counting objects:  88% (590/670)
-remote: Counting objects:  89% (597/670)
-remote: Counting objects:  90% (603/670)
-remote: Counting objects:  91% (610/670)
-remote: Counting objects:  92% (617/670)
-remote: Counting objects:  93% (624/670)
-remote: Counting objects:  94% (630/670)
-remote: Counting objects:  95% (637/670)
-remote: Counting objects:  96% (644/670)
-remote: Counting objects:  97% (650/670)
-remote: Counting objects:  98% (657/670)
-remote: Counting objects:  99% (664/670)
-remote: Counting objects: 100% (670/670)
-remote: Counting objects: 100% (670/670), done.
-remote: Compressing objects:   0% (1/657)
-remote: Compressing objects:   1% (7/657)
-remote: Compressing objects:   2% (14/657)
-remote: Compressing objects:   3% (20/657)
-remote: Compressing objects:   4% (27/657)
-remote: Compressing objects:   5% (33/657)
-remote: Compressing objects:   6% (40/657)
-remote: Compressing objects:   7% (46/657)
-remote: Compressing objects:   8% (53/657)
-remote: Compressing objects:   9% (60/657)
-remote: Compressing objects:  10% (66/657)
-remote: Compressing objects:  11% (73/657)
-remote: Compressing objects:  12% (79/657)
-remote: Compressing objects:  13% (86/657)
-remote: Compressing objects:  14% (92/657)
-remote: Compressing objects:  15% (99/657)
-remote: Compressing objects:  16% (106/657)
-remote: Compressing objects:  17% (112/657)
-remote: Compressing objects:  18% (119/657)
-remote: Compressing objects:  19% (125/657)
-remote: Compressing objects:  20% (132/657)
-remote: Compressing objects:  21% (138/657)
-remote: Compressing objects:  22% (145/657)
-remote: Compressing objects:  23% (152/657)
-remote: Compressing objects:  24% (158/657)
-remote: Compressing objects:  25% (165/657)
-remote: Compressing objects:  26% (171/657)
-remote: Compressing objects:  27% (178/657)
-remote: Compressing objects:  28% (184/657)
-remote: Compressing objects:  29% (191/657)
-remote: Compressing objects:  30% (198/657)
-remote: Compressing objects:  31% (204/657)
-remote: Compressing objects:  32% (211/657)
-remote: Compressing objects:  33% (217/657)
-remote: Compressing objects:  34% (224/657)
-remote: Compressing objects:  35% (230/657)
-remote: Compressing objects:  36% (237/657)
-remote: Compressing objects:  37% (244/657)
-remote: Compressing objects:  38% (250/657)
-remote: Compressing objects:  39% (257/657)
-remote: Compressing objects:  40% (263/657)
-remote: Compressing objects:  41% (270/657)
-remote: Compressing objects:  42% (276/657)
-remote: Compressing objects:  43% (283/657)
-remote: Compressing objects:  44% (290/657)
-remote: Compressing objects:  45% (296/657)
-remote: Compressing objects:  46% (303/657)
-remote: Compressing objects:  47% (309/657)
-remote: Compressing objects:  48% (316/657)
-remote: Compressing objects:  49% (322/657)
-remote: Compressing objects:  50% (329/657)
-remote: Compressing objects:  51% (336/657)
-remote: Compressing objects:  52% (342/657)
-remote: Compressing objects:  53% (349/657)
-remote: Compressing objects:  54% (355/657)
-remote: Compressing objects:  55% (362/657)
-remote: Compressing objects:  56% (368/657)
-remote: Compressing objects:  57% (375/657)
-remote: Compressing objects:  58% (382/657)
-remote: Compressing objects:  59% (388/657)
-remote: Compressing objects:  60% (395/657)
-remote: Compressing objects:  61% (401/657)
-remote: Compressing objects:  62% (408/657)
-remote: Compressing objects:  63% (414/657)
-remote: Compressing objects:  64% (421/657)
-remote: Compressing objects:  65% (428/657)
-remote: Compressing objects:  66% (434/657)
-remote: Compressing objects:  67% (441/657)
-remote: Compressing objects:  68% (447/657)
-remote: Compressing objects:  69% (454/657)
-remote: Compressing objects:  70% (460/657)
-remote: Compressing objects:  71% (467/657)
-remote: Compressing objects:  72% (474/657)
-remote: Compressing objects:  73% (480/657)
-remote: Compressing objects:  74% (487/657)
-remote: Compressing objects:  75% (493/657)
-remote: Compressing objects:  76% (500/657)
-remote: Compressing objects:  77% (506/657)
-remote: Compressing objects:  78% (513/657)
-remote: Compressing objects:  79% (520/657)
-remote: Compressing objects:  80% (526/657)
-remote: Compressing objects:  81% (533/657)
-remote: Compressing objects:  82% (539/657)
-remote: Compressing objects:  83% (546/657)
-remote: Compressing objects:  84% (552/657)
-remote: Compressing objects:  85% (559/657)
-remote: Compressing objects:  86% (566/657)
-remote: Compressing objects:  87% (572/657)
-remote: Compressing objects:  88% (579/657)
-remote: Compressing objects:  89% (585/657)
-remote: Compressing objects:  90% (592/657)
-remote: Compressing objects:  91% (598/657)
-remote: Compressing objects:  92% (605/657)
-remote: Compressing objects:  93% (612/657)
-remote: Compressing objects:  94% (618/657)
-remote: Compressing objects:  95% (625/657)
-remote: Compressing objects:  96% (631/657)
-remote: Compressing objects:  97% (638/657)
-remote: Compressing objects:  98% (644/657)
-remote: Compressing objects:  99% (651/657)
-remote: Compressing objects: 100% (657/657)
-remote: Compressing objects: 100% (657/657), done.
-Receiving objects:   0% (1/720)
-Receiving objects:   1% (8/720)
-Receiving objects:   2% (15/720)
-Receiving objects:   3% (22/720)
-Receiving objects:   4% (29/720)
-Receiving objects:   5% (36/720)
-Receiving objects:   6% (44/720)
-Receiving objects:   7% (51/720)
-Receiving objects:   8% (58/720)
-Receiving objects:   9% (65/720)
-Receiving objects:  10% (72/720)
-Receiving objects:  11% (80/720)
-Receiving objects:  12% (87/720)
-Receiving objects:  13% (94/720)
-Receiving objects:  14% (101/720)
-Receiving objects:  15% (108/720)
-Receiving objects:  16% (116/720)
-Receiving objects:  17% (123/720)
-Receiving objects:  18% (130/720)
-Receiving objects:  19% (137/720)
-Receiving objects:  20% (144/720)
-Receiving objects:  21% (152/720)
-Receiving objects:  22% (159/720)
-Receiving objects:  23% (166/720)
-Receiving objects:  24% (173/720)
-Receiving objects:  25% (180/720)
-Receiving objects:  26% (188/720)
-Receiving objects:  27% (195/720)
-Receiving objects:  28% (202/720)
-Receiving objects:  29% (209/720)
-Receiving objects:  30% (216/720)
-Receiving objects:  31% (224/720)
-Receiving objects:  32% (231/720)
-Receiving objects:  33% (238/720)
-Receiving objects:  34% (245/720)
-Receiving objects:  35% (252/720)
-Receiving objects:  36% (260/720)
-Receiving objects:  37% (267/720)
-Receiving objects:  38% (274/720)
-Receiving objects:  39% (281/720)
-Receiving objects:  40% (288/720)
-Receiving objects:  41% (296/720)
-Receiving objects:  42% (303/720)
-Receiving objects:  43% (310/720)
-Receiving objects:  44% (317/720)
-Receiving objects:  45% (324/720)
-Receiving objects:  46% (332/720)
-Receiving objects:  47% (339/720)
-Receiving objects:  48% (346/720)
-Receiving objects:  49% (353/720)
-Receiving objects:  50% (360/720)
-Receiving objects:  51% (368/720)
-Receiving objects:  52% (375/720)
-Receiving objects:  53% (382/720)
-Receiving objects:  54% (389/720)
-Receiving objects:  55% (396/720)
-Receiving objects:  56% (404/720)
-Receiving objects:  57% (411/720)
-Receiving objects:  58% (418/720)
-Receiving objects:  59% (425/720)
-Receiving objects:  60% (432/720)
-Receiving objects:  61% (440/720)
-Receiving objects:  62% (447/720)
-Receiving objects:  63% (454/720)
-Receiving objects:  64% (461/720)
-Receiving objects:  65% (468/720)
-Receiving objects:  66% (476/720)
-Receiving objects:  67% (483/720)
-Receiving objects:  68% (490/720)
-Receiving objects:  69% (497/720)
-Receiving objects:  70% (504/720)
-Receiving objects:  71% (512/720)
-Receiving objects:  72% (519/720)
-Receiving objects:  73% (526/720)
-Receiving objects:  74% (533/720)
-Receiving objects:  75% (540/720)
-Receiving objects:  76% (548/720)
-Receiving objects:  77% (555/720)
-Receiving objects:  78% (562/720)
-Receiving objects:  79% (569/720)
-Receiving objects:  80% (576/720)
-Receiving objects:  81% (584/720)
-Receiving objects:  82% (591/720)
-remote: Total 720 (delta 431), reused 0 (delta 0), pack-reused 50
-Receiving objects:  83% (598/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  84% (605/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  85% (612/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  86% (620/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  87% (627/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  88% (634/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  89% (641/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  90% (648/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  91% (656/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  92% (663/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  93% (670/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  94% (677/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  95% (684/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  96% (692/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  97% (699/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  98% (706/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects:  99% (713/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects: 100% (720/720), 703.81 KiB | 1.36 MiB/s
-Receiving objects: 100% (720/720), 903.15 KiB | 1.64 MiB/s, done.
-Resolving deltas:   0% (0/450)
-Resolving deltas:   1% (5/450)
-Resolving deltas:   2% (9/450)
-Resolving deltas:   3% (14/450)
-Resolving deltas:   4% (18/450)
-Resolving deltas:   5% (23/450)
-Resolving deltas:   6% (27/450)
-Resolving deltas:   7% (32/450)
-Resolving deltas:   8% (36/450)
-Resolving deltas:   9% (41/450)
-Resolving deltas:  10% (45/450)
-Resolving deltas:  11% (50/450)
-Resolving deltas:  12% (54/450)
-Resolving deltas:  13% (59/450)
-Resolving deltas:  14% (63/450)
-Resolving deltas:  15% (68/450)
-Resolving deltas:  16% (72/450)
-Resolving deltas:  17% (77/450)
-Resolving deltas:  18% (81/450)
-Resolving deltas:  19% (86/450)
-Resolving deltas:  20% (90/450)
-Resolving deltas:  21% (95/450)
-Resolving deltas:  22% (99/450)
-Resolving deltas:  23% (104/450)
-Resolving deltas:  24% (108/450)
-Resolving deltas:  25% (113/450)
-Resolving deltas:  26% (117/450)
-Resolving deltas:  27% (122/450)
-Resolving deltas:  28% (126/450)
-Resolving deltas:  29% (131/450)
-Resolving deltas:  30% (135/450)
-Resolving deltas:  31% (140/450)
-Resolving deltas:  32% (144/450)
-Resolving deltas:  33% (149/450)
-Resolving deltas:  34% (153/450)
-Resolving deltas:  35% (158/450)
-Resolving deltas:  36% (162/450)
-Resolving deltas:  37% (167/450)
-Resolving deltas:  38% (171/450)
-Resolving deltas:  39% (176/450)
-Resolving deltas:  40% (180/450)
-Resolving deltas:  41% (185/450)
-Resolving deltas:  42% (189/450)
-Resolving deltas:  43% (194/450)
-Resolving deltas:  44% (198/450)
-Resolving deltas:  45% (203/450)
-Resolving deltas:  46% (207/450)
-Resolving deltas:  47% (212/450)
-Resolving deltas:  48% (216/450)
-Resolving deltas:  49% (221/450)
-Resolving deltas:  50% (225/450)
-Resolving deltas:  51% (230/450)
-Resolving deltas:  52% (234/450)
-Resolving deltas:  53% (239/450)
-Resolving deltas:  54% (243/450)
-Resolving deltas:  55% (248/450)
-Resolving deltas:  56% (252/450)
-Resolving deltas:  57% (257/450)
-Resolving deltas:  58% (261/450)
-Resolving deltas:  59% (266/450)
-Resolving deltas:  60% (270/450)
-Resolving deltas:  61% (275/450)
-Resolving deltas:  62% (279/450)
-Resolving deltas:  63% (284/450)
-Resolving deltas:  64% (288/450)
-Resolving deltas:  65% (293/450)
-Resolving deltas:  66% (297/450)
-Resolving deltas:  67% (302/450)
-Resolving deltas:  68% (306/450)
-Resolving deltas:  69% (311/450)
-Resolving deltas:  70% (316/450)
-Resolving deltas:  71% (320/450)
-Resolving deltas:  72% (324/450)
-Resolving deltas:  73% (329/450)
-Resolving deltas:  74% (333/450)
-Resolving deltas:  75% (338/450)
-Resolving deltas:  76% (342/450)
-Resolving deltas:  77% (347/450)
-Resolving deltas:  78% (351/450)
-Resolving deltas:  79% (357/450)
-Resolving deltas:  80% (360/450)
-Resolving deltas:  81% (365/450)
-Resolving deltas:  82% (369/450)
-Resolving deltas:  83% (374/450)
-Resolving deltas:  84% (378/450)
-Resolving deltas:  85% (383/450)
-Resolving deltas:  86% (387/450)
-Resolving deltas:  87% (392/450)
-Resolving deltas:  88% (396/450)
-Resolving deltas:  89% (401/450)
-Resolving deltas:  90% (405/450)
-Resolving deltas:  91% (410/450)
-Resolving deltas:  92% (414/450)
-Resolving deltas:  93% (419/450)
-Resolving deltas:  94% (423/450)
-Resolving deltas:  95% (428/450)
-Resolving deltas:  96% (432/450)
-Resolving deltas:  97% (437/450)
-Resolving deltas:  98% (441/450)
-Resolving deltas:  99% (446/450)
-Resolving deltas: 100% (450/450)
-Resolving deltas: 100% (450/450), done.
-====================================================
-== DEPLOY -> sitef-01
-====================================================
-PLAY [Deploy por máquina] ******************************************************
-TASK [Gathering Facts] *********************************************************
-ok: [localhost]
-TASK [Validar machine_name] ****************************************************
-ok: [localhost] => {
-    "changed": false,
-    "msg": "All assertions passed"
-}
-TASK [Garantir diretório de status da TAG] *************************************
-changed: [localhost]
-TASK [Mostrar variáveis de entrada e resolvidas (deploy)] **********************
-fatal: [localhost]: FAILED! => {"msg": "An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ filestore_env | default('dev') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: recursive loop detected in template string: {{ filestore_env | default('dev') }}. maximum recursion depth exceeded"}
-PLAY RECAP *********************************************************************
-localhost                  : ok=3    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
-Command finished with status FAILURE
+---
+# PIPELINE 2 - DEPLOY
+# - Recebe machine_name (ou lista externa via loop no script)
+# - Reusa área /deploy/scripts preparada no predeploy
+# - Executa init_deploy.sh
+# - Atualiza status
+# - Upload JSON + LOG no File Store
+
+- name: "Deploy por máquina"
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  vars:
+    deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
+    machine_name: "{{ machine_name | default('') }}"
+
+    # Paths do repo
+    repo_root_resolved: "{{ playbook_dir }}/.."
+    status_dir_resolved: "{{ repo_root_resolved }}/status/{{ deployment_ref }}"
+
+    # NÃO colocar filestore_env = {{ filestore_env | ... }} aqui
+    # pra evitar recursão. Vamos resolver via set_fact.
+
+  tasks:
+    # -------------------------------------------------------------------
+    # Resolver filestore_env e filestore_base_dir sem recursão
+    # -------------------------------------------------------------------
+    - name: "Resolver filestore_env e filestore_base_dir (deploy)"
+      ansible.builtin.set_fact:
+        filestore_env_resolved: >-
+          {{
+            (filestore_env | string | trim)
+              if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
+              else 'dev'
+          }}
+        filestore_base_dir_resolved: >-
+          {{
+            (filestore_base_dir | string | trim)
+              if (filestore_base_dir is defined and (filestore_base_dir | string | trim) | length > 0)
+              else (
+                (
+                  (filestore_env | string | trim)
+                    if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
+                    else 'dev'
+                ) ~ '/' ~ deployment_ref
+              )
+          }}
+
+    # -------------------------------------------------------------------
+    # Só pra debug
+    # -------------------------------------------------------------------
+    - name: "Mostrar variáveis de entrada e resolvidas (deploy)"
+      ansible.builtin.debug:
+        msg:
+          - "deployment_ref               = {{ deployment_ref }}"
+          - "machine_name                 = {{ machine_name }}"
+          - "repo_root_resolved           = {{ repo_root_resolved }}"
+          - "status_dir_resolved          = {{ status_dir_resolved }}"
+          - "filestore_env_resolved       = {{ filestore_env_resolved }}"
+          - "filestore_base_dir_resolved  = {{ filestore_base_dir_resolved }}"
+
+    # -------------------------------------------------------------------
+    # Garantir diretório base de status
+    # -------------------------------------------------------------------
+    - name: "Garantir diretório de status da TAG"
+      ansible.builtin.file:
+        path: "{{ status_dir_resolved }}"
+        state: directory
+        mode: "0755"
+
+    # -------------------------------------------------------------------
+    # Validar machine_name
+    # -------------------------------------------------------------------
+    - name: "Validar machine_name"
+      ansible.builtin.assert:
+        that:
+          - machine_name is defined
+          - (machine_name | string | trim) | length > 0
+        fail_msg: "machine_name não informado"
+
+    # -------------------------------------------------------------------
+    # Incluir deploy por máquina
+    # -------------------------------------------------------------------
+    - name: "Incluir deploy por máquina"
+      ansible.builtin.include_tasks: deploy_per_machine.yml
+      vars:
+        deployment_ref: "{{ deployment_ref }}"
+        machine_name: "{{ machine_name | string | trim }}"
+        repo_root: "{{ repo_root_resolved }}"
+        status_dir: "{{ status_dir_resolved }}"
+        filestore_env: "{{ filestore_env_resolved }}"
+        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
+
+
+## ansible/deploy_per_machine.yml
+
+---
+# Tarefas por máquina - DEPLOY
+
+- name: "Definir caminhos para {{ machine_name }}"
+  ansible.builtin.set_fact:
+    machine_file: "{{ repo_root }}/machines/{{ machine_name }}.yml"
+    status_file: "{{ status_dir }}/deploy-{{ machine_name }}.json"
+
+    host_deploy_scripts: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
+
+- name: "Carregar config da máquina"
+  ansible.builtin.include_vars:
+    file: "{{ machine_file }}"
+    name: machine_cfg
+
+- name: "Carregar config do pacote"
+  ansible.builtin.include_vars:
+    file: "{{ repo_root }}/packages/{{ machine_cfg.package }}.yml"
+    name: package_cfg
+
+- name: "Definir usuário alvo padrão"
+  ansible.builtin.set_fact:
+    target_user: "{{ machine_cfg.user | default('ec2-user') }}"
+
+- name: "Definir ssh_common_args padrão"
+  ansible.builtin.set_fact:
+    target_ssh_common_args: >-
+      {{
+        machine_cfg.ssh_common_args
+          | default('-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null')
+      }}
+
+- name: "Registrar host dinâmico"
+  ansible.builtin.add_host:
+    name: "{{ machine_name }}"
+    ansible_host: "{{ machine_cfg.host }}"
+    ansible_user: "{{ target_user }}"
+    ansible_connection: ssh
+    ansible_ssh_common_args: "{{ target_ssh_common_args }}"
+
+# Monta env final = env do pacote + env da máquina
+# Exemplo:
+#   package.yml -> env_vars: { PACKAGE_VERSION: 'sitef-0.0.20' }
+#   machine.yml -> env_vars: { SITEF_ENV: 'prod', OUTRA_VAR: 'valor' }
+# Resultado vai ser passado pro init_deploy.sh
+- name: "Montar env final"
+  ansible.builtin.set_fact:
+    effective_env: >-
+      {{
+        (package_cfg.env_vars | default({}))
+        | combine(machine_cfg.env_vars | default({}), recursive=True)
+      }}
+
+- name: "Criar status inicial (queued)"
+  ansible.builtin.copy:
+    dest: "{{ status_file }}"
+    mode: "0644"
+    content: |
+      {
+        "machine": "{{ machine_name }}",
+        "host": "{{ machine_cfg.host }}",
+        "package": "{{ machine_cfg.package }}",
+        "rollback": "{{ machine_cfg.rollback | default('') }}",
+        "status": "queued",
+        "stage": "deploy",
+        "deployment_ref": "{{ deployment_ref }}",
+        "timestamp": "{{ ansible_date_time.iso8601 }}",
+        "log_path": "{{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ machine_name }}-{{ filestore_env }}.log"
+      }
+
+- name: "Verificar init_deploy.sh"
+  become: true
+  ansible.builtin.stat:
+    path: "{{ host_deploy_scripts }}/init_deploy.sh"
+  delegate_to: "{{ machine_name }}"
+  register: deploy_script_stat
+
+- name: "Falhar se init_deploy.sh não existir"
+  ansible.builtin.fail:
+    msg: "init_deploy.sh não encontrado em {{ host_deploy_scripts }}. Rode o predeploy antes."
+  when: not deploy_script_stat.stat.exists
+
+- name: "Executar init_deploy.sh"
+  become: true
+  ansible.builtin.shell: |
+    set -e
+    cd "{{ host_deploy_scripts }}"
+    /bin/bash -x ./init_deploy.sh
+  delegate_to: "{{ machine_name }}"
+  environment: "{{ effective_env }}"
+  register: deploy_result
+  ignore_errors: true
+
+- name: "Ler deploy.txt do host"
+  become: true
+  ansible.builtin.shell: |
+    cat "{{ host_deploy_scripts }}/deploy.txt" 2>/dev/null || echo "deploy.txt nao existe"
+  delegate_to: "{{ machine_name }}"
+  register: deploy_log
+  changed_when: false
+
+- name: "Atualizar status para success"
+  ansible.builtin.copy:
+    dest: "{{ status_file }}"
+    mode: "0644"
+    content: |
+      {
+        "machine": "{{ machine_name }}",
+        "host": "{{ machine_cfg.host }}",
+        "package": "{{ machine_cfg.package }}",
+        "rollback": "{{ machine_cfg.rollback | default('') }}",
+        "status": "success",
+        "stage": "deploy",
+        "deployment_ref": "{{ deployment_ref }}",
+        "timestamp": "{{ ansible_date_time.iso8601 }}",
+        "rc": {{ deploy_result.rc | default(0) }},
+        "stdout": {{ deploy_result.stdout | default('') | to_json }},
+        "stderr": {{ deploy_result.stderr | default('') | to_json }},
+        "script_log": {{ deploy_log.stdout | default('') | to_json }},
+        "log_path": "{{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ machine_name }}-{{ filestore_env }}.log"
+      }
+  when: deploy_result.rc == 0
+
+- name: "Atualizar status para failed"
+  ansible.builtin.copy:
+    dest: "{{ status_file }}"
+    mode: "0644"
+    content: |
+      {
+        "machine": "{{ machine_name }}",
+        "host": "{{ machine_cfg.host }}",
+        "package": "{{ machine_cfg.package }}",
+        "rollback": "{{ machine_cfg.rollback | default('') }}",
+        "status": "failed",
+        "stage": "deploy",
+        "deployment_ref": "{{ deployment_ref }}",
+        "timestamp": "{{ ansible_date_time.iso8601 }}",
+        "rc": {{ deploy_result.rc | default(1) }},
+        "stdout": {{ deploy_result.stdout | default('') | to_json }},
+        "stderr": {{ deploy_result.stderr | default('') | to_json }},
+        "script_log": {{ deploy_log.stdout | default('') | to_json }},
+        "log_path": "{{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ machine_name }}-{{ filestore_env }}.log"
+      }
+  when: deploy_result.rc != 0
+
+- name: "Upload status JSON para Harness File Store"
+  ansible.builtin.shell: |
+    "{{ repo_root }}/harness/upload_filestore.sh" \
+      "{{ status_file }}" \
+      "{{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ machine_name }}-{{ filestore_env }}.json"
+  changed_when: false
+  failed_when: false
+
+- name: "Upload log do deploy para Harness File Store"
+  ansible.builtin.shell: |
+    "{{ repo_root }}/harness/upload_filestore.sh" \
+      "-" \
+      "{{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ machine_name }}-{{ filestore_env }}.log" \
+      <<'EOF'
+    ---- pipeline deploy ----
+    {{ deploy_result.stdout | default('') }}
+    {{ deploy_result.stderr | default('') }}
+    ---- deploy.txt ----
+    {{ deploy_log.stdout | default('') }}
+    ---- pipeline deploy ----
+    EOF
+  args:
+    executable: /bin/bash
+  changed_when: false
+  failed_when: false
+
+- name: "Falhar pipeline se init_deploy.sh retornou erro"
+  ansible.builtin.fail:
+    msg: "DEPLOY falhou em {{ machine_name }} (host {{ machine_cfg.host }})"
+  when: deploy_result.rc != 0
