@@ -1,29 +1,26 @@
-## Create file 
-curl -v --request POST \
-  'https://harness.onefiserv.net/ng/api/file-store?accountIdentifier=fgDto6qoTT6ctfZS9eWbEw&orgIdentifier=Fiserv&projectIdentifier=sitef' \
-  -H 'x-api-key: pat.fgDto6qoTT6ctfZS9eWbEw.693f147c43bfca2e849b46f4.WtMpaUZG5pxwDZcIkzl0' \
-  -F 'name=curl-breno' \
-  -F 'type=FILE' \
-  -F 'parentIdentifier=Root' \
-  -F 'identifier=curltest' \
-  -F 'tags=[{"key":"env","value":"testeee"}]' \
-  -F 'content=@local'
-
-## Create a folder 
-curl -v --request POST \
-  'https://harness.onefiserv.net/ng/api/file-store?accountIdentifier=fgDto6qoTT6ctfZS9eWbEw&orgIdentifier=Fiserv&projectIdentifier=sitef' \
-  -H 'x-api-key: pat.fgDto6qoTT6ctfZS9eWbEw.693f147c43bfca2e849b46f4.WtMpaUZG5pxwDZcIkzl0' \
-  -F 'name=meu-folder' \
-  -F 'type=FOLDER' \
-  -F 'parentIdentifier=Root' \
-  -F 'identifier=meufolder' \
-  -F 'tags=[{"key":"env","value":"testeee"}]' 
-
-## Create a subfolder 
-curl -v --request POST \
-  'https://harness.onefiserv.net/ng/api/file-store?accountIdentifier=fgDto6qoTT6ctfZS9eWbEw&orgIdentifier=Fiserv&projectIdentifier=sitef' \
-  -H 'x-api-key: pat.fgDto6qoTT6ctfZS9eWbEw.693f147c43bfca2e849b46f4.WtMpaUZG5pxwDZcIkzl0' \
-  -F 'name=templates' \
-  -F 'type=FOLDER' \
-  -F 'parentIdentifier=meufolder' \
-  -F 'identifier=templates'
+harness-file-store:
+dev/DEV000000007/dev000000007-sitef-01-dev.json  -- se der erro na pipeline 01 ent coloca dev000000007:pre-deploy:error, se fazer o rerun da pipeline 01 e ir com sucesso então atualizada a tag de pre-deploy para ok e adiciona a tag dev000000007:deploy:pending e se der certo dev000000007:pre-deploy:ok e dev000000007:deploy:pending, pipeline 02 atualizo apenas o status do deploy dev000000007:deploy:ok se der problema ent dev000000007:deploy:error, se precisar de rollback ent adiciona a tag dev000000007:rollback:status(ok, error)
+ 
+{
+    "machine": "sitef-01",
+    "host": "100.99.41.58",
+    "package": "sitef-core-0.0.2-0",
+    "rollback": "",
+    "status": "success",
+    "deployment_ref": "DEV000000007",
+    "timestamp": "2025-12-08T18:15:52Z"
+    "log_path": "dev/DEV000000007/dev000000007-sitef-01-dev.log"
+}
+dev/DEV000000007/dev000000007-sitef-01-dev.log
+ 
+---- pipeline pre deploy ----
+log
+---- pipeline pre deploy ----
+ 
+---- pipeline deploy -----
+log
+---- pipeline deploy -----
+ 
+dev/DEV000000007/dev000000007-sitef-02-dev.json
+dev/DEV000000007/dev000000007-sitef-02-dev.log
+ 
