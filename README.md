@@ -1,38 +1,175 @@
+# =====================================================================================
+# PIPELINE 1 - PREDEPLOY (a partir do arquivo de execução)
+# =====================================================================================
+
+- name: "Predeploy a partir do arquivo de execução"
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  vars:
+    # -------------------------------
+    # Entradas principais
+    # -------------------------------
+    execution_file_name: "{{ execution_file_name | default('execution/machine_list_dev.yml') }}"
+    deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
+
+    # -------------------------------
+    # Paths do repositório
+    # -------------------------------
+    repo_root_resolved: "{{ playbook_dir }}/.."
+    status_dir_resolved: "{{ (playbook_dir ~ '/..') }}/status/{{ deployment_ref }}"
+
+    # -------------------------------
+    # Nexus (ideal vir de secrets do Harness)
+    # -------------------------------
+    nexus_base_url: "{{ nexus_base_url | default('https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev') }}"
+    nexus_user: "{{ nexus_user | default(omit) }}"
+    nexus_password: "{{ nexus_password | default(omit) }}"
+
+  tasks:
+    # ---------------------------------------
+    # Resolver File Store sem recursão
+    # ---------------------------------------
+    - name: "Resolver filestore_env e filestore_base_dir sem recursão"
+      ansible.builtin.set_fact:
+        filestore_env_resolved: >-
+          {{
+            (filestore_env | string | trim)
+              if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
+              else 'dev'
+          }}
+        filestore_base_dir_resolved: >-
+          {{
+            (filestore_base_dir | string | trim)
+              if (filestore_base_dir is defined and (filestore_base_dir | string | trim) | length > 0)
+              else (
+                (
+                  (filestore_env | string | trim)
+                    if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
+                    else 'dev'
+                ) ~ '/' ~ deployment_ref
+              )
+          }}
+
+    # ---------------------------------------
+    # Mostrar variáveis resolvidas (debug)
+    # ---------------------------------------
+    - name: "Mostrar variáveis de entrada e resolvidas"
+      ansible.builtin.debug:
+        msg:
+          - "execution_file_name          = {{ execution_file_name }}"
+          - "deployment_ref               = {{ deployment_ref }}"
+          - "repo_root_resolved           = {{ repo_root_resolved }}"
+          - "status_dir_resolved          = {{ status_dir_resolved }}"
+          - "filestore_env_resolved       = {{ filestore_env_resolved }}"
+          - "filestore_base_dir_resolved  = {{ filestore_base_dir_resolved }}"
+          - "nexus_base_url               = {{ nexus_base_url }}"
+
+    # ---------------------------------------
+    # Criar diretório base de status local
+    # ---------------------------------------
+    - name: "Criar diretório de status da TAG"
+      ansible.builtin.file:
+        path: "{{ status_dir_resolved }}"
+        state: directory
+        mode: "0755"
+
+    # ---------------------------------------
+    # Carregar arquivo de execução
+    # ---------------------------------------
+    - name: "Carregar arquivo de execução"
+      ansible.builtin.include_vars:
+        file: "{{ repo_root_resolved }}/{{ execution_file_name }}"
+        name: execution_cfg
+
+    # ---------------------------------------
+    # Validar se há máquinas
+    # ---------------------------------------
+    - name: "Falhar se não tiver máquinas no arquivo de execução"
+      ansible.builtin.fail:
+        msg: "Nenhuma máquina encontrada em execution_cfg.machines"
+      when: execution_cfg.machines is not defined or execution_cfg.machines | length == 0
+
+    # ---------------------------------------
+    # Executar PREDEPLOY por máquina
+    # ---------------------------------------
+    - name: "Executar pré-deploy por máquina"
+      ansible.builtin.include_tasks: predeploy_per_machine.yml
+      loop: "{{ execution_cfg.machines }}"
+      loop_control:
+        loop_var: machine_name
+      vars:
+        deployment_ref: "{{ deployment_ref }}"
+        repo_root: "{{ repo_root_resolved }}"
+        status_dir: "{{ status_dir_resolved }}"
+
+        nexus_base_url: "{{ nexus_base_url }}"
+        nexus_user: "{{ nexus_user | default('') }}"
+        nexus_password: "{{ nexus_password | default('') }}"
+
+        filestore_env: "{{ filestore_env_resolved }}"
+        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
+
+
 ---
 # =====================================================================================
-# DEPLOY POR MÁQUINA
-# Chamado por deploy_from_status.yml
+# PREDEPLOY POR MÁQUINA
+# Chamado por predeploy_from_execution.yml
 #
 # Responsabilidades:
-# - Localizar arquivo da máquina (com fallback)
-# - Carregar machine_cfg + package_cfg
-# - Preparar env final
-# - Executar init_deploy.sh
-# - Ler deploy.txt
-# - Gerar status JSON + log padronizado
-# - Upload JSON + LOG no Harness File Store (via Ansible)
-# - Falhar pipeline se deploy falhou
+# - Carregar machine + package
+# - Mesclar env_vars (machine + package)
+# - Preparar diretórios:
+#     /opt/SoftwareExpress/sitef-pipeline/deploy
+#     /opt/SoftwareExpress/sitef-pipeline/deploy/scripts
+#     /opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package
+# - Copiar package.yml para /deploy/scripts/package/
+# - Baixar components do Nexus para /deploy/<path do componente>
+#   (ex: /deploy/package/linux/sitef-core-0.0.2-0.rpm)
+# - Copiar scripts do pacote para /deploy/scripts
+# - Executar init_parallel.sh na máquina alvo com as env_vars
+# - Gravar status.json local com status + log_path
 # =====================================================================================
 
 # -----------------------------------------------------------------------------
-# 1) Definir paths e defaults
+# 1) Resolver nome da máquina atual
 # -----------------------------------------------------------------------------
-- name: "Definir caminhos para {{ machine_name }}"
+- name: "Resolver nome da máquina atual"
   ansible.builtin.set_fact:
-    repo_root_safe: "{{ repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..')) }}"
-    current_machine: "{{ (machine_name | string | trim) }}"
-    host_deploy_scripts: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
+    current_machine: >-
+      {{
+        (machine_name | default(item) | default('')) | string | trim
+      }}
 
-- name: "Definir diretórios principais do repositório (deploy)"
+# -----------------------------------------------------------------------------
+# 2) Definir paths base do repositório
+# -----------------------------------------------------------------------------
+- name: "Definir paths base do repositório"
+  ansible.builtin.set_fact:
+    repo_root_safe: >-
+      {{
+        repo_root
+          | default(repo_root_resolved | default(playbook_dir ~ '/..'))
+      }}
+
+# -----------------------------------------------------------------------------
+# 3) Definir diretórios principais do repositório
+# -----------------------------------------------------------------------------
+- name: "Definir execution_dir do repositório"
   ansible.builtin.set_fact:
     execution_dir: "{{ repo_root_safe }}/execution"
+
+- name: "Definir machines_dir, packages_dir e scripts_dir do repositório"
+  ansible.builtin.set_fact:
     machines_dir: "{{ repo_root_safe }}/machines"
     packages_dir: "{{ repo_root_safe }}/packages"
+    scripts_root_dir: "{{ repo_root_safe }}/scripts"
 
 # -----------------------------------------------------------------------------
-# 2) Candidatos de arquivo de máquina (mesma estratégia do predeploy/rollback)
+# 4) Candidatos de arquivo de máquina
 # -----------------------------------------------------------------------------
-- name: "Definir candidatos de arquivo da máquina (deploy)"
+- name: "Definir candidatos de arquivo da máquina"
   ansible.builtin.set_fact:
     candidate_machine_files:
       - "{{ execution_dir }}/machines/{{ current_machine }}.yml"
@@ -40,13 +177,19 @@
       - "{{ machines_dir }}/{{ current_machine }}.yml"
       - "{{ repo_root_safe }}/inventory/machines/{{ current_machine }}.yml"
 
-- name: "Verificar quais candidatos existem (deploy)"
+# -----------------------------------------------------------------------------
+# 5) Verificar quais candidatos existem
+# -----------------------------------------------------------------------------
+- name: "Verificar candidatos de arquivo da máquina"
   ansible.builtin.stat:
     path: "{{ item }}"
   loop: "{{ candidate_machine_files }}"
   register: machine_candidates_stat
 
-- name: "Selecionar machine_file existente (deploy)"
+# -----------------------------------------------------------------------------
+# 6) Selecionar o primeiro arquivo existente
+# -----------------------------------------------------------------------------
+- name: "Selecionar machine_file existente"
   ansible.builtin.set_fact:
     machine_file: "{{ item.item }}"
   when:
@@ -54,23 +197,29 @@
     - machine_file is not defined
   loop: "{{ machine_candidates_stat.results }}"
 
-- name: "Falhar se arquivo da máquina não existir (deploy)"
+# -----------------------------------------------------------------------------
+# 7) Falhar se nenhum candidato existir
+# -----------------------------------------------------------------------------
+- name: "Falhar se arquivo da máquina não existir em nenhum caminho esperado"
   ansible.builtin.fail:
     msg: |
-      [deploy] Arquivo de máquina não encontrado para {{ current_machine }}.
+      Arquivo de máquina não encontrado para {{ current_machine }}.
       Caminhos testados:
       {{ candidate_machine_files | to_nice_yaml }}
   when: machine_file is not defined
 
 # -----------------------------------------------------------------------------
-# 3) Carregar machine_cfg + package_cfg
+# 8) Carregar config da máquina
 # -----------------------------------------------------------------------------
-- name: "Carregar config da máquina (deploy) {{ current_machine }}"
+- name: "Carregar config da máquina {{ current_machine }}"
   ansible.builtin.include_vars:
     file: "{{ machine_file }}"
     name: machine_cfg
 
-- name: "Validar package definido (deploy)"
+# -----------------------------------------------------------------------------
+# 9) Validar package definido
+# -----------------------------------------------------------------------------
+- name: "Validar package definido"
   ansible.builtin.assert:
     that:
       - machine_cfg is defined
@@ -78,89 +227,135 @@
       - (machine_cfg.package | string | trim) | length > 0
     fail_msg: "machine_cfg.package não definido em {{ machine_file }}"
 
-- name: "Carregar config do pacote (deploy) {{ machine_cfg.package }}"
+# -----------------------------------------------------------------------------
+# 10) Carregar config do pacote
+# -----------------------------------------------------------------------------
+- name: "Carregar config do pacote {{ machine_cfg.package }}"
   ansible.builtin.include_vars:
     file: "{{ packages_dir }}/{{ machine_cfg.package }}.yml"
     name: package_cfg
 
 # -----------------------------------------------------------------------------
-# 4) SSH e host dinâmico
+# 11) Validações mínimas do pacote
 # -----------------------------------------------------------------------------
-- name: "Definir usuário alvo padrão (deploy)"
-  ansible.builtin.set_fact:
-    target_user: "{{ machine_cfg.user | default(machine_cfg.target_user | default('ec2-user')) }}"
+- name: "Validar components do pacote"
+  ansible.builtin.assert:
+    that:
+      - package_cfg is defined
+      - package_cfg.components is defined
+      - package_cfg.components | length > 0
+    fail_msg: "components ausente/vazio no pacote {{ machine_cfg.package }}"
 
-- name: "Definir ssh_common_args padrão (deploy)"
+# -----------------------------------------------------------------------------
+# 12) Calcular env_vars mescladas (machine + package + extras)
+# -----------------------------------------------------------------------------
+- name: "Calcular env_vars mescladas"
   ansible.builtin.set_fact:
-    target_ssh_common_args: >-
+    merged_env_vars: >-
       {{
-        machine_cfg.ssh_common_args
-          | default('-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null')
+        (machine_cfg.env_vars | default({}))
+        | combine(package_cfg.env_vars | default({}), recursive=True)
+        | combine({
+            'SITEF_MACHINE': current_machine,
+            'SITEF_HOST': machine_cfg.host | default(machine_cfg.ip | default('')),
+            'DEPLOYMENT_REF': deployment_ref | default(''),
+            'PACKAGE_NAME': machine_cfg.package,
+            'ROLLBACK_PACKAGE': machine_cfg.rollback | default('')
+          }, recursive=True)
       }}
 
-- name: "Aplicar ProxyJump via bastion (quando necessário) (deploy)"
+# -----------------------------------------------------------------------------
+# 13) Usuário/SSH defaults
+# -----------------------------------------------------------------------------
+- name: "Definir usuário alvo padrão"
   ansible.builtin.set_fact:
-    target_ssh_common_args: >-
-      {{ target_ssh_common_args }}
+    target_user: "{{ machine_cfg.target_user | default('root') }}"
+
+- name: "Definir ssh_common_args padrão"
+  ansible.builtin.set_fact:
+    ssh_common_args: "{{ machine_cfg.ssh_common_args | default('-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null') }}"
+
+- name: "Aplicar ProxyJump via bastion (quando necessário)"
+  ansible.builtin.set_fact:
+    ssh_common_args: >-
+      {{ ssh_common_args }}
       -o ProxyJump={{ machine_cfg.bastion_user | default(target_user) }}@{{ machine_cfg.bastion_host }}
   when:
     - machine_cfg.bastion_host is defined
     - (machine_cfg.bastion_host | string | length) > 0
 
-- name: "Registrar host dinâmico (deploy)"
+# -----------------------------------------------------------------------------
+# 14) Registrar host dinâmico (forçando conexão SSH)
+# -----------------------------------------------------------------------------
+- name: "Registrar host dinâmico para {{ current_machine }}"
   ansible.builtin.add_host:
     name: "{{ current_machine }}"
-    ansible_host: "{{ machine_cfg.host | default(machine_cfg.ip | default('')) }}"
+    ansible_host: "{{ machine_cfg.host | default(machine_cfg.ip | default(machine_cfg.host | default(''))) }}"
     ansible_user: "{{ target_user }}"
+    ansible_ssh_common_args: "{{ ssh_common_args }}"
     ansible_connection: ssh
-    ansible_ssh_common_args: "{{ target_ssh_common_args }}"
   changed_when: true
 
 # -----------------------------------------------------------------------------
-# 5) Montar env final (pacote + máquina + extras)
+# 14.1) Debug: identificar hostname/IP da máquina alvo
 # -----------------------------------------------------------------------------
-- name: "Montar env final (deploy)"
-  ansible.builtin.set_fact:
-    effective_env: >-
-      {{
-        (package_cfg.env_vars | default({}))
-        | combine(machine_cfg.env_vars | default({}), recursive=True)
-        | combine({
-            'SITEF_MACHINE': current_machine,
-            'SITEF_HOST': (machine_cfg.host | default(machine_cfg.ip | default(''))),
-            'DEPLOYMENT_REF': (deployment_ref | default('')),
-            'PACKAGE_NAME': (machine_cfg.package | default('')),
-            'ROLLBACK_PACKAGE': (machine_cfg.rollback | default(''))
-          }, recursive=True)
-      }}
+- name: "Mostrar hostname/IP da máquina alvo (debug)"
+  ansible.builtin.shell: "hostname -I && hostname"
+  delegate_to: "{{ current_machine }}"
+  register: target_ident
+  changed_when: false
+
+- name: "Debug target_ident"
+  ansible.builtin.debug:
+    msg:
+      - "current_machine = {{ current_machine }}"
+      - "machine_cfg.host = {{ machine_cfg.host | default('') }}"
+      - "machine_cfg.ip   = {{ machine_cfg.ip | default('') }}"
+      - "hostname/ip alvo:"
+      - "{{ target_ident.stdout_lines }}"
 
 # -----------------------------------------------------------------------------
-# 6) Status file local (controller) e paths lógicos do filestore
+# 15) Definir caminhos de status e deploy (BASE = /opt/.../deploy)
 # -----------------------------------------------------------------------------
-- name: "Definir arquivos de status local (deploy)"
+- name: "Definir caminhos de status e deploy"
   ansible.builtin.set_fact:
-    status_file: "{{ status_dir }}/{{ current_machine }}/status.json"
     machine_status_dir: "{{ status_dir }}/{{ current_machine }}"
-    filestore_json_path: "{{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ current_machine }}-{{ filestore_env }}.json"
-    filestore_log_path: "{{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ current_machine }}-{{ filestore_env }}.log"
+    machine_status_file: "{{ status_dir }}/{{ current_machine }}/status.json"
 
-- name: "Garantir diretório de status da máquina (deploy)"
+    deploy_base_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/components"
+    deploy_scripts_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
+    deploy_scripts_package_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package"
+
+# -----------------------------------------------------------------------------
+# 16) Calcular caminhos de status/log "lógicos"
+# -----------------------------------------------------------------------------
+- name: "Calcular caminhos de status/log"
+  ansible.builtin.set_fact:
+    filestore_log_path: >-
+      {{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ current_machine }}-{{ filestore_env }}.log
+    filestore_status_path: >-
+      {{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ current_machine }}-{{ filestore_env }}.json
+
+# -----------------------------------------------------------------------------
+# 17) Criar diretório de status local e registrar status 'pre-deploy:queued'
+# -----------------------------------------------------------------------------
+- name: "Criar diretório de status da máquina"
   ansible.builtin.file:
     path: "{{ machine_status_dir }}"
     state: directory
     mode: "0755"
 
-- name: "Escrever status inicial (deploy:queued)"
+- name: "Escrever status inicial (pre-deploy:queued)"
   ansible.builtin.copy:
-    dest: "{{ status_file }}"
+    dest: "{{ machine_status_file }}"
     mode: "0644"
     content: |
       {
         "machine": "{{ current_machine }}",
         "host": "{{ machine_cfg.host | default(machine_cfg.ip | default('')) }}",
-        "package": "{{ machine_cfg.package | default('') }}",
+        "package": "{{ machine_cfg.package }}",
         "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "deploy:queued",
+        "status": "pre-deploy:queued",
         "deployment_ref": "{{ deployment_ref | default('') }}",
         "timestamp": "{{ ansible_date_time.iso8601 }}",
         "log_path": "{{ filestore_log_path }}"
@@ -168,110 +363,165 @@
   changed_when: true
 
 # -----------------------------------------------------------------------------
-# 7) Verificar script e executar deploy (com captura de stdout/stderr)
+# 18) Garantir base do pipeline no host remoto
 # -----------------------------------------------------------------------------
-- name: "Verificar init_deploy.sh no host"
+- name: "Garantir base do pipeline no host"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
   become: true
-  ansible.builtin.stat:
-    path: "{{ host_deploy_scripts }}/init_deploy.sh"
   delegate_to: "{{ current_machine }}"
-  register: deploy_script_stat
+  loop:
+    - "{{ deploy_base_dir }}"
+    - "{{ deploy_scripts_dir }}"
+    - "{{ deploy_scripts_package_dir }}"
 
-- name: "Falhar se init_deploy.sh não existir"
-  ansible.builtin.fail:
-    msg: "init_deploy.sh não encontrado em {{ host_deploy_scripts }}. Rode o predeploy antes."
-  when: not deploy_script_stat.stat.exists
-
-# Rodar mesmo se der erro pra gente conseguir subir log/JSON e só depois falhar pipeline
-- name: "Executar init_deploy.sh no host"
+# -----------------------------------------------------------------------------
+# 19) Limpar pasta de scripts do pacote
+# -----------------------------------------------------------------------------
+- name: "Limpar pasta de scripts do pacote"
+  ansible.builtin.file:
+    path: "{{ deploy_scripts_package_dir }}"
+    state: absent
   become: true
+  delegate_to: "{{ current_machine }}"
+
+- name: "Recriar pasta de scripts do pacote"
+  ansible.builtin.file:
+    path: "{{ deploy_scripts_package_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+  delegate_to: "{{ current_machine }}"
+
+# -----------------------------------------------------------------------------
+# 20) Copiar package.yml para /deploy/scripts/package/
+# -----------------------------------------------------------------------------
+- name: "Copiar package.yml para o host"
+  ansible.builtin.copy:
+    src: "{{ packages_dir }}/{{ machine_cfg.package }}.yml"
+    dest: "{{ deploy_scripts_package_dir }}/{{ machine_cfg.package }}.yml"
+    mode: "0644"
+  become: true
+  delegate_to: "{{ current_machine }}"
+
+# -----------------------------------------------------------------------------
+# 21) Garantir diretórios dos componentes + baixar do Nexus
+# -----------------------------------------------------------------------------
+- name: "Garantir diretórios dos componentes no host"
+  ansible.builtin.file:
+    path: "{{ deploy_base_dir }}/{{ item | dirname }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ package_cfg.components }}"
+  become: true
+  delegate_to: "{{ current_machine }}"
+
+- name: "Baixar componentes do Nexus"
+  ansible.builtin.get_url:
+    url: "{{ nexus_base_url.rstrip('/') }}/{{ item }}"
+    dest: "{{ deploy_base_dir }}/{{ item }}"
+    mode: "0644"
+    url_username: "{{ nexus_user | default(omit) }}"
+    url_password: "{{ nexus_password | default(omit) }}"
+  loop: "{{ package_cfg.components }}"
+  become: true
+  delegate_to: "{{ current_machine }}"
+
+# -----------------------------------------------------------------------------
+# 22) Copiar scripts do pacote para /deploy/scripts
+# -----------------------------------------------------------------------------
+- name: "Copiar scripts do pacote para o host"
+  ansible.builtin.copy:
+    src: "{{ scripts_root_dir }}/{{ package_cfg.script }}/"
+    dest: "{{ deploy_scripts_dir }}/"
+    mode: "0755"
+  become: true
+  delegate_to: "{{ current_machine }}"
+
+# Debug só para conferência
+- name: "Listar conteúdo de /deploy/scripts (debug)"
   ansible.builtin.shell: |
-    cd "{{ host_deploy_scripts }}"
-    /bin/bash -x ./init_deploy.sh
-  args:
-    executable: /bin/bash
-  delegate_to: "{{ current_machine }}"
-  environment: "{{ effective_env }}"
-  register: deploy_result
-  ignore_errors: true
-  changed_when: true
-
-- name: "Ler deploy.txt do host (se existir)"
+    ls -Ral "{{ deploy_scripts_dir }}" || echo "diretório vazio"
   become: true
-  ansible.builtin.shell: |
-    cat "{{ host_deploy_scripts }}/deploy.txt" 2>/dev/null || echo "deploy.txt nao existe"
-  args:
-    executable: /bin/bash
   delegate_to: "{{ current_machine }}"
-  register: deploy_txt
+  register: scripts_ls
   changed_when: false
-  failed_when: false
+
+- name: "Mostrar conteúdo de scripts (debug)"
+  ansible.builtin.debug:
+    var: scripts_ls.stdout_lines
 
 # -----------------------------------------------------------------------------
-# 8) Montar log padronizado (igual predeploy/rollback)
+# 23) Executar init_parallel.sh na máquina alvo
 # -----------------------------------------------------------------------------
-- name: "Montar conteúdo do log do DEPLOY"
-  ansible.builtin.set_fact:
-    deploy_log_content: |
-      ---- pipeline deploy ----
-      deployment_ref={{ deployment_ref | default('') }}
-      machine={{ current_machine }}
-      host={{ machine_cfg.host | default(machine_cfg.ip | default('')) }}
-      stage=deploy
-      rc={{ deploy_result.rc | default('') }}
+- name: "Executar init_parallel.sh no host (com log + stdout)"
+  ansible.builtin.shell: |
+    set -o pipefail
+    cd "{{ deploy_scripts_dir }}"
+    /usr/bin/stdbuf -oL -eL /bin/bash -x ./init_parallel.sh 2>&1 | tee -a "{{ deploy_scripts_dir }}/init_parallel.log"
+    exit ${PIPESTATUS[0]}
+  args:
+    executable: /bin/bash
+  environment: "{{ merged_env_vars }}"
+  become: true
+  delegate_to: "{{ current_machine }}"
+  register: init_parallel_result
+  changed_when: true
 
-      ---- stdout ----
-      {{ deploy_result.stdout | default('') }}
+- name: "Mostrar últimas linhas do log do predeploy (sempre)"
+  ansible.builtin.shell: |
+    LOG="/opt/SoftwareExpress/sitef-pipeline/deploy/logs/{{ deployment_ref | lower }}-{{ current_machine }}-{{ filestore_env }}.log"
+    echo "===== tail -n 200 $LOG ====="
+    tail -n 200 "$LOG" 2>/dev/null || echo "log não encontrado"
+  become: true
+  delegate_to: "{{ current_machine }}"
+  register: predeploy_tail
+  changed_when: false
 
-      ---- stderr ----
-      {{ deploy_result.stderr | default('') }}
-
-      ---- deploy.txt ----
-      {{ deploy_txt.stdout | default('') }}
-      ---- pipeline deploy ----
+- name: "DEBUG predeploy tail"
+  ansible.builtin.debug:
+    var: predeploy_tail.stdout_lines
 
 # -----------------------------------------------------------------------------
-# 9) Atualizar status final (deploy:ok / deploy:error)
+# 24) Atualizar status para pre-deploy:ok ou pre-deploy:error
 # -----------------------------------------------------------------------------
-- name: "Atualizar status após execução do init_deploy.sh"
+- name: "Atualizar status após execução do init_parallel.sh"
   ansible.builtin.copy:
-    dest: "{{ status_file }}"
+    dest: "{{ machine_status_file }}"
     mode: "0644"
     content: |
       {
         "machine": "{{ current_machine }}",
         "host": "{{ machine_cfg.host | default(machine_cfg.ip | default('')) }}",
-        "package": "{{ machine_cfg.package | default('') }}",
+        "package": "{{ machine_cfg.package }}",
         "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "{{ 'deploy:ok' if (deploy_result.rc | default(1)) == 0 else 'deploy:error' }}",
+        "status": "{{ 'pre-deploy:ok' if init_parallel_result.rc == 0 else 'pre-deploy:error' }}",
         "deployment_ref": "{{ deployment_ref | default('') }}",
         "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "rc": {{ deploy_result.rc | default(1) }},
         "log_path": "{{ filestore_log_path }}"
       }
   changed_when: true
 
 # -----------------------------------------------------------------------------
-# 10) Upload JSON + LOG para Harness File Store (via Ansible)
+# 25) Falhar play se init_parallel.sh der erro
 # -----------------------------------------------------------------------------
-- name: "Upload JSON + LOG do DEPLOY para Harness File Store (via Ansible)"
+- name: "Falhar se init_parallel.sh retornou erro"
+  ansible.builtin.fail:
+    msg: "init_parallel.sh falhou na máquina {{ current_machine }} com rc={{ init_parallel_result.rc }}"
+  when: init_parallel_result.rc != 0
+
+- name: "Upload File Store (predeploy)"
   ansible.builtin.include_tasks: harness_filestore_upload.yml
   vars:
     current_machine: "{{ current_machine }}"
-    machine_status_file: "{{ status_file }}"
-    log_content: "{{ deploy_log_content }}"
-
-    # tag no padrão: dev000000007:deploy:ok | dev000000007:deploy:error
-    status_tag_value: >-
-      {{ (deployment_ref | lower) ~ ':deploy:' ~ ('ok' if (deploy_result.rc | default(1)) == 0 else 'error') }}
-
-    # (opcional) se quiser adicionar outras tags, usa essa lista
-    extra_tags: []
-
-# -----------------------------------------------------------------------------
-# 11) Falhar pipeline se deploy retornou erro (depois do upload)
-# -----------------------------------------------------------------------------
-- name: "Falhar pipeline se init_deploy.sh retornou erro"
-  ansible.builtin.fail:
-    msg: "DEPLOY falhou em {{ current_machine }} (host {{ machine_cfg.host | default(machine_cfg.ip | default('')) }})"
-  when: (deploy_result.rc | default(1)) != 0
+    machine_status_file: "{{ machine_status_file }}"
+    log_content: |
+      ---- pipeline pre deploy ----
+      rc={{ init_parallel_result.rc }}
+      {{ init_parallel_result.stdout | default('') }}
+      {{ init_parallel_result.stderr | default('') }}
+      ---- pipeline pre deploy ----
+    status_tag_value: "{{ (deployment_ref | lower) ~ ':pre-deploy:' ~ ('ok' if init_parallel_result.rc == 0 else 'error') }}"
+    extra_tags: "{{ [ (deployment_ref | lower) ~ ':deploy:pending' ] if init_parallel_result.rc == 0 else [] }}"
