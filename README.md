@@ -1,161 +1,176 @@
-# initpara
-- name: "Executar init_parallel.sh no host (com log + stdout)"
-  ansible.builtin.shell: |
-    set -o pipefail
-    cd "{{ deploy_scripts_dir }}"
-    /usr/bin/stdbuf -oL -eL /bin/bash -x ./init_parallel.sh 2>&1 | tee -a "{{ deploy_scripts_dir }}/init_parallel.log"
-    exit ${PIPESTATUS[0]}
-  args:
-    executable: /bin/bash
-  environment: "{{ merged_env_vars }}"
-  become: true
-  delegate_to: "{{ current_machine }}"
-  register: init_parallel_result
-  changed_when: true
 
-# initrollback
-- name: "Executar init_rollback.sh no host (com log + stdout)"
-  ansible.builtin.shell: |
-    set -o pipefail
-    cd "{{ rollback_scripts_dir }}"
-    /usr/bin/stdbuf -oL -eL /bin/bash -x ./init_rollback.sh 2>&1 | tee -a "{{ rollback_scripts_dir }}/init_rollback.log"
-    exit ${PIPESTATUS[0]}
-  args:
-    executable: /bin/bash
-  environment: "{{ merged_env_vars }}"
-  become: true
-  delegate_to: "{{ current_machine }}"
-  register: init_rollback_result
-  changed_when: true
+---
+# Tarefas por máquina - DEPLOY
 
-
-----------------
-
-## harness_filestore_upload.yml
-# harness_filestore_upload.yml
-- name: "Compute File Store naming"
+- name: "Definir caminhos para {{ machine_name }}"
   ansible.builtin.set_fact:
-    fs_env: "{{ filestore_env | lower }}"
-    fs_ref_lower: "{{ deployment_ref | lower }}"
-    fs_ref_upper: "{{ deployment_ref | upper }}"
-    fs_machine: "{{ current_machine | lower }}"
-    fs_folder_name: "{{ (filestore_env | lower) ~ '/' ~ (deployment_ref | upper) }}"
-    fs_json_name: "{{ (deployment_ref | lower) ~ '-' ~ (current_machine | lower) ~ '-' ~ (filestore_env | lower) ~ '.json' }}"
-    fs_log_name: "{{ (deployment_ref | lower) ~ '-' ~ (current_machine | lower) ~ '-' ~ (filestore_env | lower) ~ '.log' }}"
+    machine_file: "{{ repo_root }}/machines/{{ machine_name }}.yml"
+    status_file: "{{ status_dir }}/deploy-{{ machine_name }}.json"
 
-# OBS: identifiers precisam ser "unique" se a API não deixar sobrescrever.
-# Eu coloco um suffix com timestamp pra não quebrar (histórico).
-- name: "Compute unique identifiers"
+    host_deploy_scripts: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
+
+- name: "Carregar config da máquina"
+  ansible.builtin.include_vars:
+    file: "{{ machine_file }}"
+    name: machine_cfg
+
+- name: "Carregar config do pacote"
+  ansible.builtin.include_vars:
+    file: "{{ repo_root }}/packages/{{ machine_cfg.package }}.yml"
+    name: package_cfg
+
+- name: "Definir usuário alvo padrão"
   ansible.builtin.set_fact:
-    fs_suffix: "{{ ansible_date_time.epoch }}"
-    fs_json_identifier: "{{ (deployment_ref | lower) ~ '-' ~ (current_machine | lower) ~ '-' ~ (filestore_env | lower) ~ '-json-' ~ ansible_date_time.epoch }}"
-    fs_log_identifier: "{{ (deployment_ref | lower) ~ '-' ~ (current_machine | lower) ~ '-' ~ (filestore_env | lower) ~ '-log-' ~ ansible_date_time.epoch }}"
+    target_user: "{{ machine_cfg.user | default('ec2-user') }}"
 
-- name: "Create temp log file locally (controller)"
+- name: "Definir ssh_common_args padrão"
+  ansible.builtin.set_fact:
+    target_ssh_common_args: >-
+      {{
+        machine_cfg.ssh_common_args
+          | default('-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null')
+      }}
+
+- name: "Registrar host dinâmico"
+  ansible.builtin.add_host:
+    name: "{{ machine_name }}"
+    ansible_host: "{{ machine_cfg.host }}"
+    ansible_user: "{{ target_user }}"
+    ansible_connection: ssh
+    ansible_ssh_common_args: "{{ target_ssh_common_args }}"
+
+# Monta env final = env do pacote + env da máquina
+# Exemplo:
+#   package.yml -> env_vars: { PACKAGE_VERSION: 'sitef-0.0.20' }
+#   machine.yml -> env_vars: { SITEF_ENV: 'prod', OUTRA_VAR: 'valor' }
+# Resultado vai ser passado pro init_deploy.sh
+- name: "Montar env final"
+  ansible.builtin.set_fact:
+    effective_env: >-
+      {{
+        (package_cfg.env_vars | default({}))
+        | combine(machine_cfg.env_vars | default({}), recursive=True)
+      }}
+
+- name: "Criar status inicial (queued)"
   ansible.builtin.copy:
-    dest: "{{ status_dir }}/{{ current_machine }}/pipeline.log"
+    dest: "{{ status_file }}"
     mode: "0644"
-    content: "{{ log_content | default('') }}"
+    content: |
+      {
+        "machine": "{{ machine_name }}",
+        "host": "{{ machine_cfg.host }}",
+        "package": "{{ machine_cfg.package }}",
+        "rollback": "{{ machine_cfg.rollback | default('') }}",
+        "status": "queued",
+        "stage": "deploy",
+        "deployment_ref": "{{ deployment_ref }}",
+        "timestamp": "{{ ansible_date_time.iso8601 }}",
+        "log_path": "{{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ machine_name }}-{{ filestore_env }}.log"
+      }
 
-# 1) Garante pasta raiz do deployment (opcional; se já existe, ignore falha)
-- name: "Ensure folder exists in File Store (best effort)"
+- name: "Verificar init_deploy.sh"
+  become: true
+  ansible.builtin.stat:
+    path: "{{ host_deploy_scripts }}/init_deploy.sh"
+  delegate_to: "{{ machine_name }}"
+  register: deploy_script_stat
+
+- name: "Falhar se init_deploy.sh não existir"
+  ansible.builtin.fail:
+    msg: "init_deploy.sh não encontrado em {{ host_deploy_scripts }}. Rode o predeploy antes."
+  when: not deploy_script_stat.stat.exists
+
+- name: "Executar init_deploy.sh"
+  become: true
   ansible.builtin.shell: |
-    set -euo pipefail
-    curl -sS -X POST \
-      "{{ harness_base_url }}/ng/api/file-store?accountIdentifier={{ harness_account }}&orgIdentifier={{ harness_org }}&projectIdentifier={{ harness_project }}" \
-      -H "x-api-key: {{ harness_pat }}" \
-      -F "name={{ fs_folder_name.split('/')[-1] }}" \
-      -F "type=FOLDER" \
-      -F "parentIdentifier=Root" \
-      -F "identifier={{ (filestore_env | lower) ~ '-' ~ (deployment_ref | lower) }}"
-  args:
-    executable: /bin/bash
-  no_log: true
+    set -e
+    cd "{{ host_deploy_scripts }}"
+    /bin/bash -x ./init_deploy.sh
+  delegate_to: "{{ machine_name }}"
+  environment: "{{ effective_env }}"
+  register: deploy_result
+  ignore_errors: true
+
+- name: "Ler deploy.txt do host"
+  become: true
+  ansible.builtin.shell: |
+    cat "{{ host_deploy_scripts }}/deploy.txt" 2>/dev/null || echo "deploy.txt nao existe"
+  delegate_to: "{{ machine_name }}"
+  register: deploy_log
+  changed_when: false
+
+- name: "Atualizar status para success"
+  ansible.builtin.copy:
+    dest: "{{ status_file }}"
+    mode: "0644"
+    content: |
+      {
+        "machine": "{{ machine_name }}",
+        "host": "{{ machine_cfg.host }}",
+        "package": "{{ machine_cfg.package }}",
+        "rollback": "{{ machine_cfg.rollback | default('') }}",
+        "status": "success",
+        "stage": "deploy",
+        "deployment_ref": "{{ deployment_ref }}",
+        "timestamp": "{{ ansible_date_time.iso8601 }}",
+        "rc": {{ deploy_result.rc | default(0) }},
+        "stdout": {{ deploy_result.stdout | default('') | to_json }},
+        "stderr": {{ deploy_result.stderr | default('') | to_json }},
+        "script_log": {{ deploy_log.stdout | default('') | to_json }},
+        "log_path": "{{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ machine_name }}-{{ filestore_env }}.log"
+      }
+  when: deploy_result.rc == 0
+
+- name: "Atualizar status para failed"
+  ansible.builtin.copy:
+    dest: "{{ status_file }}"
+    mode: "0644"
+    content: |
+      {
+        "machine": "{{ machine_name }}",
+        "host": "{{ machine_cfg.host }}",
+        "package": "{{ machine_cfg.package }}",
+        "rollback": "{{ machine_cfg.rollback | default('') }}",
+        "status": "failed",
+        "stage": "deploy",
+        "deployment_ref": "{{ deployment_ref }}",
+        "timestamp": "{{ ansible_date_time.iso8601 }}",
+        "rc": {{ deploy_result.rc | default(1) }},
+        "stdout": {{ deploy_result.stdout | default('') | to_json }},
+        "stderr": {{ deploy_result.stderr | default('') | to_json }},
+        "script_log": {{ deploy_log.stdout | default('') | to_json }},
+        "log_path": "{{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ machine_name }}-{{ filestore_env }}.log"
+      }
+  when: deploy_result.rc != 0
+
+- name: "Upload status JSON para Harness File Store"
+  ansible.builtin.shell: |
+    "{{ repo_root }}/harness/upload_filestore.sh" \
+      "{{ status_file }}" \
+      "{{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ machine_name }}-{{ filestore_env }}.json"
   changed_when: false
   failed_when: false
 
-# 2) Upload JSON (histórico)
-- name: "Upload JSON (history) to File Store"
+- name: "Upload log do deploy para Harness File Store"
   ansible.builtin.shell: |
-    set -euo pipefail
-    curl -sS -X POST \
-      "{{ harness_base_url }}/ng/api/file-store?accountIdentifier={{ harness_account }}&orgIdentifier={{ harness_org }}&projectIdentifier={{ harness_project }}" \
-      -H "x-api-key: {{ harness_pat }}" \
-      -F "name={{ fs_json_name }}" \
-      -F "type=FILE" \
-      -F "parentIdentifier=Root" \
-      -F "identifier={{ fs_json_identifier }}" \
-      -F 'tags=[{"key":"status","value":"{{ status_tag_value }}"}{% if extra_tags is defined and extra_tags|length>0 %}{% for t in extra_tags %},{"key":"status","value":"{{ t }}"}{% endfor %}{% endif %}]' \
-      -F "content=@{{ machine_status_file }}"
-  args:
-    executable: /bin/bash
-  no_log: true
-  changed_when: false
-  failed_when: false
-
-# 3) Upload LOG (histórico)
-- name: "Upload LOG (history) to File Store"
-  ansible.builtin.shell: |
-    set -euo pipefail
-    curl -sS -X POST \
-      "{{ harness_base_url }}/ng/api/file-store?accountIdentifier={{ harness_account }}&orgIdentifier={{ harness_org }}&projectIdentifier={{ harness_project }}" \
-      -H "x-api-key: {{ harness_pat }}" \
-      -F "name={{ fs_log_name }}" \
-      -F "type=FILE" \
-      -F "parentIdentifier=Root" \
-      -F "identifier={{ fs_log_identifier }}" \
-      -F 'tags=[{"key":"status","value":"{{ status_tag_value }}"}{% if extra_tags is defined and extra_tags|length>0 %}{% for t in extra_tags %},{"key":"status","value":"{{ t }}"}{% endfor %}{% endif %}]' \
-      -F "content=@{{ status_dir }}/{{ current_machine }}/pipeline.log"
-  args:
-    executable: /bin/bash
-  no_log: true
-  changed_when: false
-  failed_when: false
-
-# 4) (Opcional mas recomendado) Upload "LATEST POINTER" fixo (sempre sobrescreve via identifier diferente)
-# Como não dá overwrite garantido, a gente cria sempre um novo e o nome diz "latest".
-- name: "Upload LATEST pointer JSON"
-  ansible.builtin.shell: |
-    set -euo pipefail
-    cat > "{{ status_dir }}/{{ current_machine }}/latest-pointer.json" <<EOF
-    {
-      "deployment_ref": "{{ deployment_ref }}",
-      "machine": "{{ current_machine }}",
-      "env": "{{ filestore_env }}",
-      "status_tag": "{{ status_tag_value }}",
-      "json_identifier": "{{ fs_json_identifier }}",
-      "log_identifier": "{{ fs_log_identifier }}",
-      "timestamp": "{{ ansible_date_time.iso8601 }}"
-    }
+    "{{ repo_root }}/harness/upload_filestore.sh" \
+      "-" \
+      "{{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ machine_name }}-{{ filestore_env }}.log" \
+      <<'EOF'
+    ---- pipeline deploy ----
+    {{ deploy_result.stdout | default('') }}
+    {{ deploy_result.stderr | default('') }}
+    ---- deploy.txt ----
+    {{ deploy_log.stdout | default('') }}
+    ---- pipeline deploy ----
     EOF
-
-    curl -sS -X POST \
-      "{{ harness_base_url }}/ng/api/file-store?accountIdentifier={{ harness_account }}&orgIdentifier={{ harness_org }}&projectIdentifier={{ harness_project }}" \
-      -H "x-api-key: {{ harness_pat }}" \
-      -F "name={{ (deployment_ref | lower) ~ '-' ~ (current_machine | lower) ~ '-' ~ (filestore_env | lower) ~ '.latest.json' }}" \
-      -F "type=FILE" \
-      -F "parentIdentifier=Root" \
-      -F "identifier={{ (deployment_ref | lower) ~ '-' ~ (current_machine | lower) ~ '-' ~ (filestore_env | lower) ~ '-latest-' ~ ansible_date_time.epoch }}" \
-      -F 'tags=[{"key":"status","value":"{{ status_tag_value }}"}]' \
-      -F "content=@{{ status_dir }}/{{ current_machine }}/latest-pointer.json"
   args:
     executable: /bin/bash
-  no_log: true
   changed_when: false
   failed_when: false
 
-## per machines
-
-- name: "Upload File Store (predeploy)"
-  ansible.builtin.include_tasks: harness_filestore_upload.yml
-  vars:
-    current_machine: "{{ current_machine }}"
-    machine_status_file: "{{ machine_status_file }}"
-    log_content: |
-      ---- pipeline pre deploy ----
-      rc={{ init_parallel_result.rc }}
-      {{ init_parallel_result.stdout | default('') }}
-      {{ init_parallel_result.stderr | default('') }}
-      ---- pipeline pre deploy ----
-    status_tag_value: "{{ (deployment_ref | lower) ~ ':pre-deploy:' ~ ('ok' if init_parallel_result.rc == 0 else 'error') }}"
-    extra_tags: "{{ [ (deployment_ref | lower) ~ ':deploy:pending' ] if init_parallel_result.rc == 0 else [] }}"
+- name: "Falhar pipeline se init_deploy.sh retornou erro"
+  ansible.builtin.fail:
+    msg: "DEPLOY falhou em {{ machine_name }} (host {{ machine_cfg.host }})"
+  when: deploy_result.rc != 0
