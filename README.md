@@ -1,169 +1,3 @@
-deploy_from_status.yml
----
-# PIPELINE 2 - DEPLOY / ROLLBACK
-# - Recebe machine_name (ou lista via loop externo no script do Harness)
-# - Usa TAG (deployment_ref) como referência da execução
-# - Para deploy:
-#     - Reusa área /opt/SoftwareExpress/sitef-pipeline/deploy/scripts preparada no predeploy
-#     - Executa init_deploy.sh
-# - Para rollback:
-#     - Prepara /opt/SoftwareExpress/sitef-pipeline/rollback
-#     - Baixa componentes do Nexus
-#     - Executa init_rollback.sh
-# - Atualiza status em JSON por máquina
-# - Faz upload de JSON + LOG para Harness File Store
-
-- name: "Deploy/Rollback por máquina"
-  hosts: localhost
-  connection: local
-  gather_facts: true
-
-  vars:
-    # TAG da execução (vem do GIT_TAG no Harness)
-    deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
-
-    # Nome lógico da máquina (ex: sitef-01)
-    machine_name: "{{ machine_name | default('') }}"
-
-    # Ação solicitada: deploy ou rollback (vem do STRATEGY/ACTION no Harness)
-    deploy_action: "{{ deploy_action | default('deploy') }}"
-
-    # Paths do repositório
-    repo_root_resolved: "{{ playbook_dir }}/.."
-    status_dir_resolved: "{{ repo_root_resolved }}/status/{{ deployment_ref }}"
-
-    # URL default do Nexus (evita recursão)
-    nexus_base_url_default: "https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev"
-
-  tasks:
-    # -------------------------------------------------------------------
-    # Normalizar deploy_action (deploy/rollback)
-    # -------------------------------------------------------------------
-    - name: "Normalizar deploy_action (deploy/rollback)"
-      ansible.builtin.set_fact:
-        deploy_action_resolved: >-
-          {{
-            (deploy_action | string | lower | trim)
-              if (deploy_action is defined and (deploy_action | string | trim) | length > 0)
-              else 'deploy'
-          }}
-
-    # -------------------------------------------------------------------
-    # Resolver filestore_env e filestore_base_dir sem recursão
-    # -------------------------------------------------------------------
-    - name: "Resolver filestore_env e filestore_base_dir (deploy/rollback)"
-      ansible.builtin.set_fact:
-        filestore_env_resolved: >-
-          {{
-            (filestore_env | string | trim)
-              if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
-              else 'dev'
-          }}
-        filestore_base_dir_resolved: >-
-          {{
-            (filestore_base_dir | string | trim)
-              if (filestore_base_dir is defined and (filestore_base_dir | string | trim) | length > 0)
-              else (
-                (
-                  (filestore_env | string | trim)
-                    if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
-                    else 'dev'
-                ) ~ '/' ~ deployment_ref
-              )
-          }}
-
-    # -------------------------------------------------------------------
-    # Resolver Nexus (base_url, user, password) sem recursão
-    # -------------------------------------------------------------------
-    - name: "Resolver Nexus (base_url, user, password)"
-      ansible.builtin.set_fact:
-        nexus_base_url_resolved: >-
-          {{
-            (nexus_base_url | string | trim)
-              if (nexus_base_url is defined and (nexus_base_url | string | trim) | length > 0)
-              else nexus_base_url_default
-          }}
-        nexus_user_resolved: >-
-          {{
-            (nexus_user | string | trim)
-              if (nexus_user is defined)
-              else ''
-          }}
-        nexus_password_resolved: >-
-          {{
-            (nexus_password | string | trim)
-              if (nexus_password is defined)
-              else ''
-          }}
-
-    # -------------------------------------------------------------------
-    # Debug das principais variáveis de entrada / resolvidas
-    # -------------------------------------------------------------------
-    - name: "Mostrar variáveis de entrada e resolvidas (deploy/rollback)"
-      ansible.builtin.debug:
-        msg:
-          - "deployment_ref               = {{ deployment_ref }}"
-          - "machine_name                 = {{ machine_name }}"
-          - "deploy_action                = {{ deploy_action }}"
-          - "deploy_action_resolved       = {{ deploy_action_resolved }}"
-          - "repo_root_resolved           = {{ repo_root_resolved }}"
-          - "status_dir_resolved          = {{ status_dir_resolved }}"
-          - "nexus_base_url_resolved      = {{ nexus_base_url_resolved }}"
-          - "nexus_user_resolved          = {{ '***' if (nexus_user_resolved | length) > 0 else '(vazio)' }}"
-          - "filestore_env_resolved       = {{ filestore_env_resolved }}"
-          - "filestore_base_dir_resolved  = {{ filestore_base_dir_resolved }}"
-
-    # -------------------------------------------------------------------
-    # Garantir diretório base de status da TAG
-    # -------------------------------------------------------------------
-    - name: "Garantir diretório de status da TAG"
-      ansible.builtin.file:
-        path: "{{ status_dir_resolved }}"
-        state: directory
-        mode: "0755"
-
-    # -------------------------------------------------------------------
-    # Validar machine_name
-    # -------------------------------------------------------------------
-    - name: "Validar machine_name"
-      ansible.builtin.assert:
-        that:
-          - machine_name is defined
-          - (machine_name | string | trim) | length > 0
-        fail_msg: "machine_name não informado"
-
-    # -------------------------------------------------------------------
-    # Branch de DEPLOY
-    # -------------------------------------------------------------------
-    - name: "Incluir deploy por máquina"
-      ansible.builtin.include_tasks: deploy_per_machine.yml
-      when: deploy_action_resolved == 'deploy'
-      vars:
-        deployment_ref: "{{ deployment_ref }}"
-        machine_name: "{{ machine_name | string | trim }}"
-        repo_root: "{{ repo_root_resolved }}"
-        status_dir: "{{ status_dir_resolved }}"
-        filestore_env: "{{ filestore_env_resolved }}"
-        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
-
-    # -------------------------------------------------------------------
-    # Branch de ROLLBACK
-    # -------------------------------------------------------------------
-    - name: "Incluir rollback por máquina"
-      ansible.builtin.include_tasks: rollback_per_machine.yml
-      when: deploy_action_resolved == 'rollback'
-      vars:
-        deployment_ref: "{{ deployment_ref }}"
-        machine_name: "{{ machine_name | string | trim }}"
-        repo_root: "{{ repo_root_resolved }}"
-        status_dir: "{{ status_dir_resolved }}"
-        nexus_base_url: "{{ nexus_base_url_resolved }}"
-        nexus_user: "{{ nexus_user_resolved }}"
-        nexus_password: "{{ nexus_password_resolved }}"
-        filestore_env: "{{ filestore_env_resolved }}"
-        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
-
-
 # deploy_per_machine.yml
 ---
 # =====================================================================================
@@ -176,7 +10,8 @@ deploy_from_status.yml
 # - Montar env_vars efetivo
 # - Rodar init_deploy.sh no host (com tee)
 # - Ler deploy.txt e init_deploy.log
-# - Gerar status.json local (deploy:queued -> deploy:ok|deploy:error)
+# - Gerar status.json local com append em history (deploy:queued -> deploy:ok|deploy:error)
+# - Manter pipeline.log cumulativo local (append) e subir SEMPRE o conteúdo inteiro (efeito "append" no filestore)
 # - Upload JSON + LOG para Harness File Store (via harness_filestore_upload.yml)
 # - Falhar pipeline apenas DEPOIS do upload
 # =====================================================================================
@@ -306,10 +141,11 @@ deploy_from_status.yml
 # -----------------------------------------------------------------------------
 # 6) Status file local + paths lógicos do filestore
 # -----------------------------------------------------------------------------
-- name: "Deploy | Definir arquivos de status local"
+- name: "Deploy | Definir arquivos de status/log local"
   ansible.builtin.set_fact:
     machine_status_dir: "{{ status_dir }}/{{ current_machine }}"
     status_file: "{{ status_dir }}/{{ current_machine }}/status.json"
+    pipeline_log_file: "{{ status_dir }}/{{ current_machine }}/pipeline.log"
 
     # mantém hierarquia "dev/DEV000000007/" (deployment_ref como veio)
     env_folder: "{{ filestore_env | lower }}"
@@ -325,25 +161,64 @@ deploy_from_status.yml
     state: directory
     mode: "0755"
 
-- name: "Deploy | Escrever status inicial (deploy:queued)"
+# -----------------------------------------------------------------------------
+# 6.1) Ler status existente (pra append no JSON)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Verificar se status.json já existe (para append)"
+  ansible.builtin.stat:
+    path: "{{ status_file }}"
+  register: status_stat
+
+- name: "Deploy | Ler status.json existente (se existir)"
+  ansible.builtin.slurp:
+    path: "{{ status_file }}"
+  register: status_slurp
+  when: status_stat.stat.exists
+
+- name: "Deploy | Parse do status existente (ou base vazio)"
+  ansible.builtin.set_fact:
+    status_obj: >-
+      {{
+        (status_slurp.content | b64decode | from_json)
+          if (status_stat.stat.exists | default(false))
+          else {}
+      }}
+
+# -----------------------------------------------------------------------------
+# 6.2) Escrever/atualizar status inicial (deploy:queued) + append no history[]
+# -----------------------------------------------------------------------------
+- name: "Deploy | Atualizar status (deploy:queued) com append em history"
   ansible.builtin.copy:
     dest: "{{ status_file }}"
     mode: "0644"
-    content: |
-      {
-        "machine": "{{ current_machine }}",
-        "host": "{{ machine_cfg.host | default(machine_cfg.ip | default('')) }}",
-        "package": "{{ machine_cfg.package | default('') }}",
-        "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "deploy:queued",
-        "deployment_ref": "{{ deployment_ref | default('') }}",
-        "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "log_path": "{{ filestore_log_path }}"
-      }
+    content: >-
+      {{
+        (
+          status_obj
+          | combine({
+              "machine": current_machine,
+              "host": (machine_cfg.host | default(machine_cfg.ip | default(''))),
+              "package": (machine_cfg.package | default('')),
+              "rollback": (machine_cfg.rollback | default('')),
+              "deployment_ref": (deployment_ref | default('')),
+              "log_path": filestore_log_path,
+              "status": "deploy:queued",
+              "timestamp": ansible_date_time.iso8601,
+              "history": (
+                (status_obj.history | default([]))
+                + [ {
+                      "stage": "deploy",
+                      "status": "deploy:queued",
+                      "timestamp": ansible_date_time.iso8601
+                    } ]
+              )
+            }, recursive=True)
+        ) | to_nice_json
+      }}
   changed_when: true
 
 # -----------------------------------------------------------------------------
-# 7) Verificar script e executar deploy (com tee)
+# 7) Verificar script e executar deploy (com tee -a no host)
 # -----------------------------------------------------------------------------
 - name: "Deploy | Verificar init_deploy.sh no host"
   become: true
@@ -407,6 +282,7 @@ deploy_from_status.yml
       host={{ machine_cfg.host | default(machine_cfg.ip | default('')) }}
       stage=deploy
       rc={{ deploy_result.rc | default('') }}
+      ts={{ ansible_date_time.iso8601 }}
 
       ---- stdout (ansible) ----
       {{ deploy_result.stdout | default('') }}
@@ -422,25 +298,64 @@ deploy_from_status.yml
       ---- pipeline deploy ----
 
 # -----------------------------------------------------------------------------
-# 9) Atualizar status final (deploy:ok / deploy:error)
+# 9) Atualizar status final (deploy:ok / deploy:error) com append em history[]
 # -----------------------------------------------------------------------------
-- name: "Deploy | Atualizar status após execução do init_deploy.sh"
+- name: "Deploy | Ler status.json atual (antes do append final)"
+  ansible.builtin.slurp:
+    path: "{{ status_file }}"
+  register: status_after_queued_slurp
+
+- name: "Deploy | Parse do status atual"
+  ansible.builtin.set_fact:
+    status_now: "{{ status_after_queued_slurp.content | b64decode | from_json }}"
+
+- name: "Deploy | Atualizar status final (append em history)"
   ansible.builtin.copy:
     dest: "{{ status_file }}"
     mode: "0644"
-    content: |
-      {
-        "machine": "{{ current_machine }}",
-        "host": "{{ machine_cfg.host | default(machine_cfg.ip | default('')) }}",
-        "package": "{{ machine_cfg.package | default('') }}",
-        "rollback": "{{ machine_cfg.rollback | default('') }}",
-        "status": "{{ 'deploy:ok' if (deploy_result.rc | default(1)) == 0 else 'deploy:error' }}",
-        "deployment_ref": "{{ deployment_ref | default('') }}",
-        "timestamp": "{{ ansible_date_time.iso8601 }}",
-        "rc": {{ deploy_result.rc | default(1) }},
-        "log_path": "{{ filestore_log_path }}"
-      }
+    content: >-
+      {{
+        (
+          status_now
+          | combine({
+              "status": ("deploy:ok" if (deploy_result.rc | default(1)) == 0 else "deploy:error"),
+              "timestamp": ansible_date_time.iso8601,
+              "rc": (deploy_result.rc | default(1)),
+              "history": (
+                (status_now.history | default([]))
+                + [ {
+                      "stage": "deploy",
+                      "status": ("deploy:ok" if (deploy_result.rc | default(1)) == 0 else "deploy:error"),
+                      "rc": (deploy_result.rc | default(1)),
+                      "timestamp": ansible_date_time.iso8601
+                    } ]
+              )
+            }, recursive=True)
+        ) | to_nice_json
+      }}
   changed_when: true
+
+# -----------------------------------------------------------------------------
+# 9.5) Append no LOG cumulativo local (controller) e preparar conteúdo p/ upload
+# -----------------------------------------------------------------------------
+- name: "Deploy | Garantir arquivo de log cumulativo"
+  ansible.builtin.file:
+    path: "{{ pipeline_log_file }}"
+    state: touch
+    mode: "0644"
+
+- name: "Deploy | Append do bloco de log do deploy no log cumulativo"
+  ansible.builtin.blockinfile:
+    path: "{{ pipeline_log_file }}"
+    marker: ""
+    insertafter: EOF
+    block: |
+      {{ deploy_log_content }}
+  changed_when: true
+
+- name: "Deploy | Carregar conteúdo completo do log cumulativo (para upload)"
+  ansible.builtin.set_fact:
+    log_content_to_upload: "{{ lookup('ansible.builtin.file', pipeline_log_file) }}"
 
 # -----------------------------------------------------------------------------
 # 10) Upload JSON + LOG para Harness File Store
@@ -450,7 +365,9 @@ deploy_from_status.yml
   vars:
     current_machine: "{{ current_machine }}"
     machine_status_file: "{{ status_file }}"
-    log_content: "{{ deploy_log_content }}"
+
+    # SUBIR O LOG COMPLETO (cumulativo) => efeito "append" no filestore
+    log_content: "{{ log_content_to_upload }}"
 
     # IMPORTANTE: seu harness_filestore_upload.yml usa parentIdentifier={{ deployment_ref_folder }}
     env_folder: "{{ env_folder }}"
