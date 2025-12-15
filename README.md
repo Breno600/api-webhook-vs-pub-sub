@@ -1,3 +1,2 @@
-curl -s -X GET \
-"https://harness.onefiserv.net/ng/api/file-store/list?accountIdentifier=fgDto6qoTT6ctfZS9eWbEw&orgIdentifier=Fiserv&projectIdentifier=sitef&parentIdentifier=dev000000002" \
--H "x-api-key: $HARNESS_X_API_KEY" | jq -r '.data.content[].name'
+breno@LWGMFC264:~$ curl -s -X GET "https://harness.onefiserv.net/ng/api/file-store/list?accountIdentifier=fgDto6qoTT6ctfZS9eWbEw&orgIdentifier=Fiserv&projectIdentifier=sitef&parentIdentifier=dev000000002" -H "x-api-key: pat.fgDto6qoTT6ctfZS9eWbEw.693f147c43bfca2e849b46f4.WtMpaUZG5pxwDZcIkzl0"
+{"status":"ERROR","code":"ENTITY_NOT_FOUND","message":"File with identifier: list, accountIdentifier: fgDto6qoTT6ctfZS9eWbEw, orgIdentifier: Fiserv and projectIdentifier: sitef could not be found","correlationId":"a8efdba6-af34-4d8b-b0c4-ea9cf28cc464","detailedMessage":null,"responseMessages":[{"code":"ENTITY_NOT_FOUND","level":"ERROR","message":"File with identifier: list, accountIdentifier: fgDto6qoTT6ctfZS9eWbEw, orgIdentifier: Fiserv and projectIdentifier: sitef could not be found","exception":null,"failureTypes":[],"additionalInfo":{}}],"metadata":null}
