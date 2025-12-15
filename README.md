@@ -1,507 +1,200 @@
-Exec using JSCH
-Connecting to 10.218.238.144 ....
-Connection to 10.218.238.144 established
-Executing command ...
-export MACHINES=sitef-02
-export MACHINE=sitef-02
-export ACTION=deploy
-export GIT_TAG=DEV000000002
-export STRATEGY=deploy
-== DEPLOY PIPELINE ==
-BRANCH            : develop-testes
-STRATEGY          : deploy
-GIT_TAG           : DEV000000002
-MACHINES          : sitef-02
-FILESTORE_ENV     : dev
-FILESTORE_BASEDIR : dev/DEV000000002
-MACHINES_NORMALIZADAS: sitef-02 
-Clonando repo em /tmp/tmp.5uzo2PRMXk...
-Cloning into '/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef'...
-remote: Enumerating objects: 847, done.
-remote: Counting objects:   0% (1/797)
-remote: Counting objects:   1% (8/797)
-remote: Counting objects:   2% (16/797)
-remote: Counting objects:   3% (24/797)
-remote: Counting objects:   4% (32/797)
-remote: Counting objects:   5% (40/797)
-remote: Counting objects:   6% (48/797)
-remote: Counting objects:   7% (56/797)
-remote: Counting objects:   8% (64/797)
-remote: Counting objects:   9% (72/797)
-remote: Counting objects:  10% (80/797)
-remote: Counting objects:  11% (88/797)
-remote: Counting objects:  12% (96/797)
-remote: Counting objects:  13% (104/797)
-remote: Counting objects:  14% (112/797)
-remote: Counting objects:  15% (120/797)
-remote: Counting objects:  16% (128/797)
-remote: Counting objects:  17% (136/797)
-remote: Counting objects:  18% (144/797)
-remote: Counting objects:  19% (152/797)
-remote: Counting objects:  20% (160/797)
-remote: Counting objects:  21% (168/797)
-remote: Counting objects:  22% (176/797)
-remote: Counting objects:  23% (184/797)
-remote: Counting objects:  24% (192/797)
-remote: Counting objects:  25% (200/797)
-remote: Counting objects:  26% (208/797)
-remote: Counting objects:  27% (216/797)
-remote: Counting objects:  28% (224/797)
-remote: Counting objects:  29% (232/797)
-remote: Counting objects:  30% (240/797)
-remote: Counting objects:  31% (248/797)
-remote: Counting objects:  32% (256/797)
-remote: Counting objects:  33% (264/797)
-remote: Counting objects:  34% (271/797)
-remote: Counting objects:  35% (279/797)
-remote: Counting objects:  36% (287/797)
-remote: Counting objects:  37% (295/797)
-remote: Counting objects:  38% (303/797)
-remote: Counting objects:  39% (311/797)
-remote: Counting objects:  40% (319/797)
-remote: Counting objects:  41% (327/797)
-remote: Counting objects:  42% (335/797)
-remote: Counting objects:  43% (343/797)
-remote: Counting objects:  44% (351/797)
-remote: Counting objects:  45% (359/797)
-remote: Counting objects:  46% (367/797)
-remote: Counting objects:  47% (375/797)
-remote: Counting objects:  48% (383/797)
-remote: Counting objects:  49% (391/797)
-remote: Counting objects:  50% (399/797)
-remote: Counting objects:  51% (407/797)
-remote: Counting objects:  52% (415/797)
-remote: Counting objects:  53% (423/797)
-remote: Counting objects:  54% (431/797)
-remote: Counting objects:  55% (439/797)
-remote: Counting objects:  56% (447/797)
-remote: Counting objects:  57% (455/797)
-remote: Counting objects:  58% (463/797)
-remote: Counting objects:  59% (471/797)
-remote: Counting objects:  60% (479/797)
-remote: Counting objects:  61% (487/797)
-remote: Counting objects:  62% (495/797)
-remote: Counting objects:  63% (503/797)
-remote: Counting objects:  64% (511/797)
-remote: Counting objects:  65% (519/797)
-remote: Counting objects:  66% (527/797)
-remote: Counting objects:  67% (534/797)
-remote: Counting objects:  68% (542/797)
-remote: Counting objects:  69% (550/797)
-remote: Counting objects:  70% (558/797)
-remote: Counting objects:  71% (566/797)
-remote: Counting objects:  72% (574/797)
-remote: Counting objects:  73% (582/797)
-remote: Counting objects:  74% (590/797)
-remote: Counting objects:  75% (598/797)
-remote: Counting objects:  76% (606/797)
-remote: Counting objects:  77% (614/797)
-remote: Counting objects:  78% (622/797)
-remote: Counting objects:  79% (630/797)
-remote: Counting objects:  80% (638/797)
-remote: Counting objects:  81% (646/797)
-remote: Counting objects:  82% (654/797)
-remote: Counting objects:  83% (662/797)
-remote: Counting objects:  84% (670/797)
-remote: Counting objects:  85% (678/797)
-remote: Counting objects:  86% (686/797)
-remote: Counting objects:  87% (694/797)
-remote: Counting objects:  88% (702/797)
-remote: Counting objects:  89% (710/797)
-remote: Counting objects:  90% (718/797)
-remote: Counting objects:  91% (726/797)
-remote: Counting objects:  92% (734/797)
-remote: Counting objects:  93% (742/797)
-remote: Counting objects:  94% (750/797)
-remote: Counting objects:  95% (758/797)
-remote: Counting objects:  96% (766/797)
-remote: Counting objects:  97% (774/797)
-remote: Counting objects:  98% (782/797)
-remote: Counting objects:  99% (790/797)
-remote: Counting objects: 100% (797/797)
-remote: Counting objects: 100% (797/797), done.
-remote: Compressing objects:   0% (1/782)
-remote: Compressing objects:   1% (8/782)
-remote: Compressing objects:   2% (16/782)
-remote: Compressing objects:   3% (24/782)
-remote: Compressing objects:   4% (32/782)
-remote: Compressing objects:   5% (40/782)
-remote: Compressing objects:   6% (47/782)
-remote: Compressing objects:   7% (55/782)
-remote: Compressing objects:   8% (63/782)
-remote: Compressing objects:   9% (71/782)
-remote: Compressing objects:  10% (79/782)
-remote: Compressing objects:  11% (87/782)
-remote: Compressing objects:  12% (94/782)
-remote: Compressing objects:  13% (102/782)
-remote: Compressing objects:  14% (110/782)
-remote: Compressing objects:  15% (118/782)
-remote: Compressing objects:  16% (126/782)
-remote: Compressing objects:  17% (133/782)
-remote: Compressing objects:  18% (141/782)
-remote: Compressing objects:  19% (149/782)
-remote: Compressing objects:  20% (157/782)
-remote: Compressing objects:  21% (165/782)
-remote: Compressing objects:  22% (173/782)
-remote: Compressing objects:  23% (180/782)
-remote: Compressing objects:  24% (188/782)
-remote: Compressing objects:  25% (196/782)
-remote: Compressing objects:  26% (204/782)
-remote: Compressing objects:  27% (212/782)
-remote: Compressing objects:  28% (219/782)
-remote: Compressing objects:  29% (227/782)
-remote: Compressing objects:  30% (235/782)
-remote: Compressing objects:  31% (243/782)
-remote: Compressing objects:  32% (251/782)
-remote: Compressing objects:  33% (259/782)
-remote: Compressing objects:  34% (266/782)
-remote: Compressing objects:  35% (274/782)
-remote: Compressing objects:  36% (282/782)
-remote: Compressing objects:  37% (290/782)
-remote: Compressing objects:  38% (298/782)
-remote: Compressing objects:  39% (305/782)
-remote: Compressing objects:  40% (313/782)
-remote: Compressing objects:  41% (321/782)
-remote: Compressing objects:  42% (329/782)
-remote: Compressing objects:  43% (337/782)
-remote: Compressing objects:  44% (345/782)
-remote: Compressing objects:  45% (352/782)
-remote: Compressing objects:  46% (360/782)
-remote: Compressing objects:  47% (368/782)
-remote: Compressing objects:  48% (376/782)
-remote: Compressing objects:  49% (384/782)
-remote: Compressing objects:  50% (391/782)
-remote: Compressing objects:  51% (399/782)
-remote: Compressing objects:  52% (407/782)
-remote: Compressing objects:  53% (415/782)
-remote: Compressing objects:  54% (423/782)
-remote: Compressing objects:  55% (431/782)
-remote: Compressing objects:  56% (438/782)
-remote: Compressing objects:  57% (446/782)
-remote: Compressing objects:  58% (454/782)
-remote: Compressing objects:  59% (462/782)
-remote: Compressing objects:  60% (470/782)
-remote: Compressing objects:  61% (478/782)
-remote: Compressing objects:  62% (485/782)
-remote: Compressing objects:  63% (493/782)
-remote: Compressing objects:  64% (501/782)
-remote: Compressing objects:  65% (509/782)
-remote: Compressing objects:  66% (517/782)
-remote: Compressing objects:  67% (524/782)
-remote: Compressing objects:  68% (532/782)
-remote: Compressing objects:  69% (540/782)
-remote: Compressing objects:  70% (548/782)
-remote: Compressing objects:  71% (556/782)
-remote: Compressing objects:  72% (564/782)
-remote: Compressing objects:  73% (571/782)
-remote: Compressing objects:  74% (579/782)
-remote: Compressing objects:  75% (587/782)
-remote: Compressing objects:  76% (595/782)
-remote: Compressing objects:  77% (603/782)
-remote: Compressing objects:  78% (610/782)
-remote: Compressing objects:  79% (618/782)
-remote: Compressing objects:  80% (626/782)
-remote: Compressing objects:  81% (634/782)
-remote: Compressing objects:  82% (642/782)
-remote: Compressing objects:  83% (650/782)
-remote: Compressing objects:  84% (657/782)
-remote: Compressing objects:  85% (665/782)
-remote: Compressing objects:  86% (673/782)
-remote: Compressing objects:  87% (681/782)
-remote: Compressing objects:  88% (689/782)
-remote: Compressing objects:  89% (696/782)
-remote: Compressing objects:  90% (704/782)
-remote: Compressing objects:  91% (712/782)
-remote: Compressing objects:  92% (720/782)
-remote: Compressing objects:  93% (728/782)
-remote: Compressing objects:  94% (736/782)
-remote: Compressing objects:  95% (743/782)
-remote: Compressing objects:  96% (751/782)
-remote: Compressing objects:  97% (759/782)
-remote: Compressing objects:  98% (767/782)
-remote: Compressing objects:  99% (775/782)
-remote: Compressing objects: 100% (782/782)
-remote: Compressing objects: 100% (782/782), done.
-Receiving objects:   0% (1/847)
-Receiving objects:   1% (9/847)
-Receiving objects:   2% (17/847)
-Receiving objects:   3% (26/847)
-Receiving objects:   4% (34/847)
-Receiving objects:   5% (43/847)
-Receiving objects:   6% (51/847)
-Receiving objects:   7% (60/847)
-Receiving objects:   8% (68/847)
-Receiving objects:   9% (77/847)
-Receiving objects:  10% (85/847)
-Receiving objects:  11% (94/847)
-Receiving objects:  12% (102/847)
-Receiving objects:  13% (111/847)
-Receiving objects:  14% (119/847)
-Receiving objects:  15% (128/847)
-Receiving objects:  16% (136/847)
-Receiving objects:  17% (144/847)
-Receiving objects:  18% (153/847)
-Receiving objects:  19% (161/847)
-Receiving objects:  20% (170/847)
-Receiving objects:  21% (178/847)
-Receiving objects:  22% (187/847)
-Receiving objects:  23% (195/847)
-Receiving objects:  24% (204/847)
-Receiving objects:  25% (212/847)
-Receiving objects:  26% (221/847)
-Receiving objects:  27% (229/847)
-Receiving objects:  28% (238/847)
-Receiving objects:  29% (246/847)
-Receiving objects:  30% (255/847)
-Receiving objects:  31% (263/847)
-Receiving objects:  32% (272/847)
-Receiving objects:  33% (280/847)
-Receiving objects:  34% (288/847)
-Receiving objects:  35% (297/847)
-Receiving objects:  36% (305/847)
-Receiving objects:  37% (314/847)
-Receiving objects:  38% (322/847)
-Receiving objects:  39% (331/847)
-Receiving objects:  40% (339/847)
-Receiving objects:  41% (348/847)
-Receiving objects:  42% (356/847)
-Receiving objects:  43% (365/847)
-Receiving objects:  44% (373/847)
-Receiving objects:  45% (382/847)
-Receiving objects:  46% (390/847)
-Receiving objects:  47% (399/847)
-Receiving objects:  48% (407/847)
-Receiving objects:  49% (416/847)
-Receiving objects:  50% (424/847)
-Receiving objects:  51% (432/847)
-Receiving objects:  52% (441/847)
-Receiving objects:  53% (449/847)
-Receiving objects:  54% (458/847)
-Receiving objects:  55% (466/847)
-Receiving objects:  56% (475/847)
-Receiving objects:  57% (483/847)
-Receiving objects:  58% (492/847)
-Receiving objects:  59% (500/847)
-Receiving objects:  60% (509/847)
-Receiving objects:  61% (517/847)
-Receiving objects:  62% (526/847)
-Receiving objects:  63% (534/847)
-Receiving objects:  64% (543/847)
-Receiving objects:  65% (551/847)
-Receiving objects:  66% (560/847)
-Receiving objects:  67% (568/847)
-Receiving objects:  68% (576/847)
-Receiving objects:  69% (585/847)
-Receiving objects:  70% (593/847)
-Receiving objects:  71% (602/847)
-Receiving objects:  72% (610/847)
-Receiving objects:  73% (619/847)
-Receiving objects:  74% (627/847)
-Receiving objects:  75% (636/847)
-Receiving objects:  76% (644/847)
-Receiving objects:  77% (653/847)
-Receiving objects:  78% (661/847)
-Receiving objects:  79% (670/847)
-Receiving objects:  80% (678/847)
-Receiving objects:  81% (687/847)
-Receiving objects:  82% (695/847)
-Receiving objects:  83% (704/847)
-Receiving objects:  84% (712/847)
-remote: Total 847 (delta 533), reused 0 (delta 0), pack-reused 50
-Receiving objects:  85% (720/847)
-Receiving objects:  86% (729/847)
-Receiving objects:  87% (737/847)
-Receiving objects:  88% (746/847)
-Receiving objects:  89% (754/847)
-Receiving objects:  90% (763/847)
-Receiving objects:  91% (771/847)
-Receiving objects:  92% (780/847)
-Receiving objects:  93% (788/847)
-Receiving objects:  94% (797/847)
-Receiving objects:  95% (805/847)
-Receiving objects:  96% (814/847)
-Receiving objects:  97% (822/847)
-Receiving objects:  98% (831/847)
-Receiving objects:  99% (839/847)
-Receiving objects: 100% (847/847)
-Receiving objects: 100% (847/847), 925.98 KiB | 2.14 MiB/s, done.
-Resolving deltas:   0% (0/552)
-Resolving deltas:   1% (6/552)
-Resolving deltas:   2% (12/552)
-Resolving deltas:   3% (17/552)
-Resolving deltas:   4% (23/552)
-Resolving deltas:   5% (28/552)
-Resolving deltas:   6% (34/552)
-Resolving deltas:   7% (39/552)
-Resolving deltas:   8% (45/552)
-Resolving deltas:   9% (50/552)
-Resolving deltas:  10% (56/552)
-Resolving deltas:  11% (61/552)
-Resolving deltas:  12% (67/552)
-Resolving deltas:  13% (72/552)
-Resolving deltas:  14% (78/552)
-Resolving deltas:  15% (83/552)
-Resolving deltas:  16% (89/552)
-Resolving deltas:  17% (94/552)
-Resolving deltas:  18% (100/552)
-Resolving deltas:  19% (105/552)
-Resolving deltas:  20% (111/552)
-Resolving deltas:  21% (116/552)
-Resolving deltas:  22% (122/552)
-Resolving deltas:  23% (127/552)
-Resolving deltas:  24% (133/552)
-Resolving deltas:  25% (138/552)
-Resolving deltas:  26% (144/552)
-Resolving deltas:  27% (150/552)
-Resolving deltas:  28% (155/552)
-Resolving deltas:  29% (161/552)
-Resolving deltas:  30% (166/552)
-Resolving deltas:  31% (172/552)
-Resolving deltas:  32% (177/552)
-Resolving deltas:  33% (183/552)
-Resolving deltas:  34% (188/552)
-Resolving deltas:  35% (194/552)
-Resolving deltas:  36% (199/552)
-Resolving deltas:  37% (205/552)
-Resolving deltas:  38% (210/552)
-Resolving deltas:  39% (216/552)
-Resolving deltas:  40% (221/552)
-Resolving deltas:  41% (227/552)
-Resolving deltas:  42% (232/552)
-Resolving deltas:  43% (238/552)
-Resolving deltas:  44% (243/552)
-Resolving deltas:  45% (249/552)
-Resolving deltas:  46% (254/552)
-Resolving deltas:  47% (260/552)
-Resolving deltas:  48% (265/552)
-Resolving deltas:  49% (271/552)
-Resolving deltas:  50% (276/552)
-Resolving deltas:  51% (282/552)
-Resolving deltas:  52% (288/552)
-Resolving deltas:  53% (293/552)
-Resolving deltas:  54% (299/552)
-Resolving deltas:  55% (304/552)
-Resolving deltas:  56% (310/552)
-Resolving deltas:  57% (315/552)
-Resolving deltas:  58% (321/552)
-Resolving deltas:  59% (326/552)
-Resolving deltas:  60% (332/552)
-Resolving deltas:  61% (337/552)
-Resolving deltas:  62% (343/552)
-Resolving deltas:  63% (348/552)
-Resolving deltas:  64% (354/552)
-Resolving deltas:  65% (359/552)
-Resolving deltas:  66% (365/552)
-Resolving deltas:  67% (370/552)
-Resolving deltas:  68% (376/552)
-Resolving deltas:  69% (381/552)
-Resolving deltas:  70% (387/552)
-Resolving deltas:  71% (392/552)
-Resolving deltas:  72% (398/552)
-Resolving deltas:  73% (403/552)
-Resolving deltas:  74% (409/552)
-Resolving deltas:  75% (414/552)
-Resolving deltas:  76% (420/552)
-Resolving deltas:  77% (426/552)
-Resolving deltas:  78% (431/552)
-Resolving deltas:  79% (437/552)
-Resolving deltas:  80% (442/552)
-Resolving deltas:  81% (448/552)
-Resolving deltas:  82% (453/552)
-Resolving deltas:  83% (459/552)
-Resolving deltas:  84% (465/552)
-Resolving deltas:  85% (470/552)
-Resolving deltas:  86% (475/552)
-Resolving deltas:  87% (481/552)
-Resolving deltas:  88% (486/552)
-Resolving deltas:  89% (492/552)
-Resolving deltas:  90% (497/552)
-Resolving deltas:  91% (503/552)
-Resolving deltas:  92% (508/552)
-Resolving deltas:  93% (514/552)
-Resolving deltas:  94% (519/552)
-Resolving deltas:  95% (525/552)
-Resolving deltas:  96% (530/552)
-Resolving deltas:  97% (536/552)
-Resolving deltas:  98% (541/552)
-Resolving deltas:  99% (547/552)
-Resolving deltas: 100% (552/552)
-Resolving deltas: 100% (552/552), done.
-====================================================
-== DEPLOY -> sitef-02
-====================================================
-PLAY [Deploy/Rollback por máquina] *********************************************
-TASK [Gathering Facts] *********************************************************
-ok: [localhost]
-TASK [Normalizar deploy_action (deploy/rollback)] ******************************
-ok: [localhost]
-TASK [Resolver filestore_env e filestore_base_dir (deploy/rollback)] ***********
-ok: [localhost]
-TASK [Resolver Nexus (base_url, user, password)] *******************************
-ok: [localhost]
-TASK [Mostrar variáveis de entrada e resolvidas (deploy/rollback)] *************
-ok: [localhost] => {
-    "msg": [
-        "deployment_ref               = DEV000000002",
-        "machine_name                 = sitef-02",
-        "deploy_action                = deploy",
-        "deploy_action_resolved       = deploy",
-        "repo_root_resolved           = /tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/..",
-        "status_dir_resolved          = /tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../status/DEV000000002",
-        "nexus_base_url_resolved      = https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev",
-        "nexus_user_resolved          = (vazio)",
-        "filestore_env_resolved       = dev",
-        "filestore_base_dir_resolved  = dev/DEV000000002"
-    ]
-}
-TASK [Garantir diretório de status da TAG] *************************************
-changed: [localhost]
-TASK [Validar machine_name] ****************************************************
-ok: [localhost] => {
-    "changed": false,
-    "msg": "All assertions passed"
-}
-TASK [Incluir deploy por máquina] **********************************************
-included: /tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/deploy_per_machine.yml for localhost
-TASK [Deploy | Definir caminhos para sitef-02] *********************************
-ok: [localhost]
-TASK [Deploy | Definir diretórios principais do repositório] *******************
-ok: [localhost]
-TASK [Deploy | Definir candidatos de arquivo da máquina] ***********************
-ok: [localhost]
-TASK [Deploy | Verificar quais candidatos existem] *****************************
-ok: [localhost] => (item=/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml)
-TASK [Deploy | Selecionar machine_file existente] ******************************
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 248, 'inode': 6350476, 'dev': 64781, 'nlink': 1, 'atime': 1765829156.781857, 'mtime': 1765829156.780857, 'ctime': 1765829156.780857, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': '005e3367129d5aefc77f49fd9fe62b4e58c51cd5', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '2757534802', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-TASK [Deploy | Falhar se arquivo da máquina não existir] ***********************
-skipping: [localhost]
-TASK [Deploy | Carregar config da máquina sitef-02] ****************************
-ok: [localhost]
-TASK [Deploy | Validar package definido] ***************************************
-ok: [localhost] => {
-    "changed": false,
-    "msg": "All assertions passed"
-}
-TASK [Deploy | Carregar config do pacote sitef-core-0.0.1-0] *******************
-ok: [localhost]
-TASK [Deploy | Definir usuário alvo padrão] ************************************
-ok: [localhost]
-TASK [Deploy | Definir ssh_common_args padrão] *********************************
-ok: [localhost]
-TASK [Deploy | Aplicar ProxyJump via bastion (quando necessário)] **************
-skipping: [localhost]
-TASK [Deploy | Registrar host dinâmico] ****************************************
-changed: [localhost]
-TASK [Deploy | Montar env final] ***********************************************
-ok: [localhost]
-TASK [Deploy | Definir arquivos de status/log local] ***************************
-fatal: [localhost]: FAILED! => {"msg": "The task includes an option with an undefined variable. The error was: 'deployment_ref_lower' is undefined. 'deployment_ref_lower' is undefined\n\nThe error appears to be in '/tmp/tmp.5uzo2PRMXk/elastic-compute-cloud-sitef/ansible/deploy_per_machine.yml': line 144, column 3, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n# -----------------------------------------------------------------------------\n- name: \"Deploy | Definir arquivos de status/log local\"\n  ^ here\n"}
-PLAY RECAP *********************************************************************
-localhost                  : ok=20   changed=2    unreachable=0    failed=1    skipped=2    rescued=0    ignored=0   
-Command finished with status FAILURE
+---
+# =====================================================================================
+# DEPLOY POR MÁQUINA
+# =====================================================================================
+
+# -----------------------------------------------------------------------------
+# 1) Paths e defaults
+# -----------------------------------------------------------------------------
+- name: "Deploy | Definir caminhos para {{ machine_name }}"
+  ansible.builtin.set_fact:
+    repo_root_safe: "{{ repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..')) }}"
+    current_machine: "{{ machine_name | trim }}"
+    host_deploy_scripts: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
+    host_deploy_init_log: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/init_deploy.log"
+
+- name: "Deploy | Definir diretórios principais do repositório"
+  ansible.builtin.set_fact:
+    execution_dir: "{{ repo_root_safe }}/execution"
+    machines_dir: "{{ repo_root_safe }}/machines"
+    packages_dir: "{{ repo_root_safe }}/packages"
+
+# -----------------------------------------------------------------------------
+# 2) Resolver machine_file
+# -----------------------------------------------------------------------------
+- name: "Deploy | Definir candidatos de arquivo da máquina"
+  ansible.builtin.set_fact:
+    candidate_machine_files:
+      - "{{ execution_dir }}/machines/{{ current_machine }}.yml"
+      - "{{ execution_dir }}/{{ current_machine }}.yml"
+      - "{{ machines_dir }}/{{ current_machine }}.yml"
+      - "{{ repo_root_safe }}/inventory/machines/{{ current_machine }}.yml"
+
+- name: "Deploy | Verificar candidatos"
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop: "{{ candidate_machine_files }}"
+  register: machine_candidates_stat
+
+- name: "Deploy | Selecionar machine_file existente"
+  ansible.builtin.set_fact:
+    machine_file: "{{ item.item }}"
+  when:
+    - item.stat.exists
+    - machine_file is not defined
+  loop: "{{ machine_candidates_stat.results }}"
+
+- name: "Deploy | Falhar se arquivo da máquina não existir"
+  ansible.builtin.fail:
+    msg: "Arquivo da máquina {{ current_machine }} não encontrado"
+  when: machine_file is not defined
+
+# -----------------------------------------------------------------------------
+# 3) Carregar configs
+# -----------------------------------------------------------------------------
+- name: "Deploy | Carregar config da máquina"
+  ansible.builtin.include_vars:
+    file: "{{ machine_file }}"
+    name: machine_cfg
+
+- name: "Deploy | Carregar config do pacote"
+  ansible.builtin.include_vars:
+    file: "{{ packages_dir }}/{{ machine_cfg.package }}.yml"
+    name: package_cfg
+
+# -----------------------------------------------------------------------------
+# 4) SSH dinâmico
+# -----------------------------------------------------------------------------
+- name: "Deploy | Registrar host"
+  ansible.builtin.add_host:
+    name: "{{ current_machine }}"
+    ansible_host: "{{ machine_cfg.host | default(machine_cfg.ip) }}"
+    ansible_user: "{{ machine_cfg.user | default('ec2-user') }}"
+    ansible_connection: ssh
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+# -----------------------------------------------------------------------------
+# 5) ENV final
+# -----------------------------------------------------------------------------
+- name: "Deploy | Montar env final"
+  ansible.builtin.set_fact:
+    effective_env: >-
+      {{
+        (package_cfg.env_vars | default({}))
+        | combine(machine_cfg.env_vars | default({}), recursive=True)
+        | combine({
+            'SITEF_MACHINE': current_machine,
+            'DEPLOYMENT_REF': deployment_ref,
+            'PACKAGE_NAME': machine_cfg.package
+          }, recursive=True)
+      }}
+
+# -----------------------------------------------------------------------------
+# 6) DEFINIÇÕES IMPORTANTES (CORREÇÃO DO ERRO)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Definir variáveis base"
+  ansible.builtin.set_fact:
+    deployment_ref_lower: "{{ deployment_ref | lower }}"
+    machine_status_dir: "{{ status_dir }}/{{ current_machine }}"
+    status_file: "{{ status_dir }}/{{ current_machine }}/status.json"
+    pipeline_log_file: "{{ status_dir }}/{{ current_machine }}/pipeline.log"
+
+    filestore_log_path: "{{ filestore_base_dir }}/{{ deployment_ref_lower }}-{{ current_machine }}-{{ filestore_env }}.log"
+
+- name: "Deploy | Garantir diretório da máquina"
+  ansible.builtin.file:
+    path: "{{ machine_status_dir }}"
+    state: directory
+    mode: "0755"
+
+# -----------------------------------------------------------------------------
+# 7) Status inicial (append em history)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Escrever status deploy:queued"
+  ansible.builtin.copy:
+    dest: "{{ status_file }}"
+    mode: "0644"
+    content: |
+      {
+        "machine": "{{ current_machine }}",
+        "package": "{{ machine_cfg.package }}",
+        "deployment_ref": "{{ deployment_ref }}",
+        "status": "deploy:queued",
+        "timestamp": "{{ ansible_date_time.iso8601 }}",
+        "log_path": "{{ filestore_log_path }}",
+        "history": [
+          {
+            "stage": "deploy",
+            "status": "deploy:queued",
+            "timestamp": "{{ ansible_date_time.iso8601 }}"
+          }
+        ]
+      }
+
+# -----------------------------------------------------------------------------
+# 8) Executar deploy no host
+# -----------------------------------------------------------------------------
+- name: "Deploy | Executar init_deploy.sh"
+  become: true
+  ansible.builtin.shell: |
+    set -o pipefail
+    cd "{{ host_deploy_scripts }}"
+    /bin/bash -x ./init_deploy.sh 2>&1 | tee -a "{{ host_deploy_init_log }}"
+    exit ${PIPESTATUS[0]}
+  delegate_to: "{{ current_machine }}"
+  environment: "{{ effective_env }}"
+  register: deploy_result
+  ignore_errors: true
+
+# -----------------------------------------------------------------------------
+# 9) Log cumulativo local (append)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Append no pipeline.log"
+  ansible.builtin.blockinfile:
+    path: "{{ pipeline_log_file }}"
+    insertafter: EOF
+    marker: ""
+    block: |
+      ---- deploy ----
+      machine={{ current_machine }}
+      rc={{ deploy_result.rc }}
+      ts={{ ansible_date_time.iso8601 }}
+      {{ deploy_result.stdout | default('') }}
+
+# -----------------------------------------------------------------------------
+# 10) Status final (append)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Atualizar status final"
+  ansible.builtin.copy:
+    dest: "{{ status_file }}"
+    mode: "0644"
+    content: |
+      {
+        "machine": "{{ current_machine }}",
+        "package": "{{ machine_cfg.package }}",
+        "deployment_ref": "{{ deployment_ref }}",
+        "status": "{{ 'deploy:ok' if deploy_result.rc == 0 else 'deploy:error' }}",
+        "rc": {{ deploy_result.rc }},
+        "timestamp": "{{ ansible_date_time.iso8601 }}",
+        "log_path": "{{ filestore_log_path }}"
+      }
+
+# -----------------------------------------------------------------------------
+# 11) Upload para Harness File Store
+# -----------------------------------------------------------------------------
+- name: "Deploy | Upload JSON + LOG"
+  ansible.builtin.include_tasks: harness_filestore_upload.yml
+  vars:
+    current_machine: "{{ current_machine }}"
+    machine_status_file: "{{ status_file }}"
+    log_content: "{{ lookup('ansible.builtin.file', pipeline_log_file) }}"
+    deployment_ref_folder: "{{ deployment_ref }}"
+    status_tag_value: "{{ deployment_ref_lower }}:deploy:{{ 'ok' if deploy_result.rc == 0 else 'error' }}"
+
+# -----------------------------------------------------------------------------
+# 12) Falhar pipeline se erro
+# -----------------------------------------------------------------------------
+- name: "Deploy | Falhar pipeline se deploy falhou"
+  ansible.builtin.fail:
+    msg: "Deploy falhou em {{ current_machine }}"
+  when: deploy_result.rc != 0
