@@ -1,29 +1,29 @@
-## Create file 
-curl -v --request POST \
-  'https://harness.onefiserv.net/ng/api/file-store?accountIdentifier=fgDto6qoTT6ctfZS9eWbEw&orgIdentifier=Fiserv&projectIdentifier=sitef' \
-  -H 'x-api-key: pat.fgDto6qoTT6ctfZS9eWbEw.693f147c43bfca2e849b46f4.WtMpaUZG5pxwDZcIkzl0' \
-  -F 'name=curl-breno' \
-  -F 'type=FILE' \
-  -F 'parentIdentifier=Root' \
-  -F 'identifier=curltest' \
-  -F 'tags=[{"key":"env","value":"testeee"}]' \
-  -F 'content=@local'
+- name: "Harness | Garantir folder ENV"
+  ansible.builtin.shell: |
+    curl -sS -o /tmp/hfs_env_create.out -w "%{http_code}" \
+      --request POST \
+      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+      -H "x-api-key: {{ harness_x_api_key }}" \
+      -F "name={{ env_lower }}" \
+      -F "type=FOLDER" \
+      -F "parentIdentifier=Root" \
+      -F "identifier={{ env_lower }}" \
+      -F "tags={{ harness_tags | to_json }}"
+  register: hfs_env_create_http
+  changed_when: hfs_env_create_http.stdout in ['200','201']
+  failed_when: hfs_env_create_http.stdout not in ['200','201','409']
 
-## Create a folder 
-curl -v --request POST \
-  'https://harness.onefiserv.net/ng/api/file-store?accountIdentifier=fgDto6qoTT6ctfZS9eWbEw&orgIdentifier=Fiserv&projectIdentifier=sitef' \
-  -H 'x-api-key: pat.fgDto6qoTT6ctfZS9eWbEw.693f147c43bfca2e849b46f4.WtMpaUZG5pxwDZcIkzl0' \
-  -F 'name=meu-folder' \
-  -F 'type=FOLDER' \
-  -F 'parentIdentifier=Root' \
-  -F 'identifier=meufolder' \
-  -F 'tags=[{"key":"env","value":"testeee"}]' 
-
-## Create a subfolder 
-curl -v --request POST \
-  'https://harness.onefiserv.net/ng/api/file-store?accountIdentifier=fgDto6qoTT6ctfZS9eWbEw&orgIdentifier=Fiserv&projectIdentifier=sitef' \
-  -H 'x-api-key: pat.fgDto6qoTT6ctfZS9eWbEw.693f147c43bfca2e849b46f4.WtMpaUZG5pxwDZcIkzl0' \
-  -F 'name=templates' \
-  -F 'type=FOLDER' \
-  -F 'parentIdentifier=meufolder' \
-  -F 'identifier=templates'
+- name: "Harness | Garantir folder DEPLOYMENT_REF"
+  ansible.builtin.shell: |
+    curl -sS -o /tmp/hfs_ref_create.out -w "%{http_code}" \
+      --request POST \
+      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+      -H "x-api-key: {{ harness_x_api_key }}" \
+      -F "name={{ deployment_ref_folder }}" \
+      -F "type=FOLDER" \
+      -F "parentIdentifier={{ env_lower }}" \
+      -F "identifier={{ deployment_ref_folder }}" \
+      -F "tags={{ harness_tags | to_json }}"
+  register: hfs_ref_create_http
+  changed_when: hfs_ref_create_http.stdout in ['200','201']
+  failed_when: hfs_ref_create_http.stdout not in ['200','201','409']
