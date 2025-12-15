@@ -32,11 +32,17 @@
     # pasta ENV sempre em lower
     env_lower: "{{ (filestore_env | string | trim | lower) }}"
 
-    # pasta do deployment: mantém como veio (DEV000000007)
+    # folder visual do deployment (ex: DEV000001) - nome pode ter uppercase
     deployment_ref_folder: "{{ (deployment_ref_folder | default(deployment_ref)) | string | trim }}"
 
     # lower para nomes/identifiers/tags
     deployment_ref_lower: "{{ (deployment_ref | string | trim | lower) }}"
+
+- name: "Harness | Normalizar identifiers (safe)"
+  ansible.builtin.set_fact:
+    # regra "segura" pra identifier: lower + troca qualquer coisa fora [a-z0-9_-] por "-"
+    env_identifier: "{{ env_lower | regex_replace('[^a-z0-9_-]+', '-') }}"
+    deployment_ref_identifier: "{{ (deployment_ref_folder | lower) | regex_replace('[^a-z0-9_-]+', '-') }}"
 
 - name: "Harness | Resolver token (vars > env)"
   ansible.builtin.set_fact:
@@ -69,6 +75,14 @@
 
 
 # -----------------------------------------------------------------------------
+# Helpers: valida http_code + debug body quando falhar
+# -----------------------------------------------------------------------------
+- name: "Harness | Definir http_codes aceitos"
+  ansible.builtin.set_fact:
+    hfs_ok_create_codes: ["200","201","202","409"]
+    hfs_ok_update_codes: ["200","201","202"]
+
+# -----------------------------------------------------------------------------
 # 1) Garantir folder ENV (filestore_env) embaixo da raiz
 # -----------------------------------------------------------------------------
 - name: "Harness | Garantir folder ENV (create se não existir)"
@@ -81,14 +95,29 @@
       -F "name={{ env_lower }}" \
       -F "type=FOLDER" \
       -F "parentIdentifier={{ harness_filestore_root_identifier_resolved }}" \
-      -F "identifier={{ env_lower }}" \
+      -F "identifier={{ env_identifier }}" \
       -F "tags={{ harness_tags | to_json }}"
   args:
     executable: /bin/bash
   register: hfs_env_create_http
+  changed_when: (hfs_env_create_http.stdout | default('')) is match('^2..$')
+  failed_when: (hfs_env_create_http.stdout | default('')) not in hfs_ok_create_codes
+  no_log: true
+
+- name: "Harness | DEBUG body ENV (somente se falhar)"
+  ansible.builtin.shell: "sed -n '1,200p' /tmp/hfs_env_create.out || true"
+  register: hfs_env_create_body
   changed_when: false
   failed_when: false
-  no_log: true
+  when: (hfs_env_create_http.stdout | default('')) not in hfs_ok_create_codes
+
+- name: "Harness | DEBUG http_code/body ENV"
+  ansible.builtin.debug:
+    msg:
+      - "ENV create http_code={{ hfs_env_create_http.stdout | default('') }}"
+      - "{{ hfs_env_create_body.stdout | default('') }}"
+  when: (hfs_env_create_http.stdout | default('')) not in hfs_ok_create_codes
+
 
 # -----------------------------------------------------------------------------
 # 2) Garantir folder DEPLOYMENT_REF embaixo do ENV
@@ -102,15 +131,30 @@
       -H "x-api-key: {{ harness_x_api_key }}" \
       -F "name={{ deployment_ref_folder }}" \
       -F "type=FOLDER" \
-      -F "parentIdentifier={{ env_lower }}" \
-      -F "identifier={{ deployment_ref_folder }}" \
+      -F "parentIdentifier={{ env_identifier }}" \
+      -F "identifier={{ deployment_ref_identifier }}" \
       -F "tags={{ harness_tags | to_json }}"
   args:
     executable: /bin/bash
   register: hfs_ref_create_http
+  changed_when: (hfs_ref_create_http.stdout | default('')) is match('^2..$')
+  failed_when: (hfs_ref_create_http.stdout | default('')) not in hfs_ok_create_codes
+  no_log: true
+
+- name: "Harness | DEBUG body REF (somente se falhar)"
+  ansible.builtin.shell: "sed -n '1,200p' /tmp/hfs_ref_create.out || true"
+  register: hfs_ref_create_body
   changed_when: false
   failed_when: false
-  no_log: true
+  when: (hfs_ref_create_http.stdout | default('')) not in hfs_ok_create_codes
+
+- name: "Harness | DEBUG http_code/body REF"
+  ansible.builtin.debug:
+    msg:
+      - "REF create http_code={{ hfs_ref_create_http.stdout | default('') }}"
+      - "{{ hfs_ref_create_body.stdout | default('') }}"
+  when: (hfs_ref_create_http.stdout | default('')) not in hfs_ok_create_codes
+
 
 # -----------------------------------------------------------------------------
 # 3) Upload/Upsert STATUS JSON
@@ -119,6 +163,7 @@
   ansible.builtin.set_fact:
     hfs_status_name: "{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}.json"
     hfs_status_identifier: "{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-json"
+    hfs_status_parent_identifier: "{{ deployment_ref_identifier }}"
 
 - name: "Harness | Tentar CREATE status JSON"
   ansible.builtin.shell: |
@@ -129,18 +174,18 @@
       -H "x-api-key: {{ harness_x_api_key }}" \
       -F "name={{ hfs_status_name }}" \
       -F "type=FILE" \
-      -F "parentIdentifier={{ deployment_ref_folder }}" \
+      -F "parentIdentifier={{ hfs_status_parent_identifier }}" \
       -F "identifier={{ hfs_status_identifier }}" \
       -F "tags={{ harness_tags | to_json }}" \
       -F "content=@{{ machine_status_file }}"
   args:
     executable: /bin/bash
   register: hfs_status_create_http
-  changed_when: false
-  failed_when: false
+  changed_when: (hfs_status_create_http.stdout | default('')) is match('^2..$')
+  failed_when: (hfs_status_create_http.stdout | default('')) not in hfs_ok_create_codes
   no_log: true
 
-- name: "Harness | UPDATE status JSON (se create não retornou 2xx)"
+- name: "Harness | UPDATE status JSON (se create retornou 409)"
   ansible.builtin.shell: |
     set -e
     curl -sS -o /tmp/hfs_status_update.out -w "%{http_code}" \
@@ -149,16 +194,37 @@
       -H "x-api-key: {{ harness_x_api_key }}" \
       -F "name={{ hfs_status_name }}" \
       -F "type=FILE" \
-      -F "parentIdentifier={{ deployment_ref_folder }}" \
+      -F "parentIdentifier={{ hfs_status_parent_identifier }}" \
       -F "identifier={{ hfs_status_identifier }}" \
       -F "tags={{ harness_tags | to_json }}" \
       -F "content=@{{ machine_status_file }}"
   args:
     executable: /bin/bash
-  when: (hfs_status_create_http.stdout | default('')) is not match('^2..$')
+  register: hfs_status_update_http
+  when: (hfs_status_create_http.stdout | default('')) == '409'
+  changed_when: (hfs_status_update_http.stdout | default('')) is match('^2..$')
+  failed_when: (hfs_status_update_http.stdout | default('')) not in hfs_ok_update_codes
+  no_log: true
+
+- name: "Harness | DEBUG body STATUS (somente se falhar)"
+  ansible.builtin.shell: |
+    echo "CREATE:"; sed -n '1,200p' /tmp/hfs_status_create.out || true
+    echo "UPDATE:"; sed -n '1,200p' /tmp/hfs_status_update.out || true
+  register: hfs_status_body
   changed_when: false
   failed_when: false
-  no_log: true
+  when:
+    - (hfs_status_create_http.stdout | default('')) not in hfs_ok_create_codes
+      or ((hfs_status_create_http.stdout | default('')) == '409' and (hfs_status_update_http.stdout | default('')) not in hfs_ok_update_codes)
+
+- name: "Harness | DEBUG http_code/body STATUS"
+  ansible.builtin.debug:
+    msg:
+      - "STATUS create http_code={{ hfs_status_create_http.stdout | default('') }}"
+      - "STATUS update http_code={{ hfs_status_update_http.stdout | default('') }}"
+      - "{{ hfs_status_body.stdout | default('') }}"
+  when: hfs_status_body is defined
+
 
 # -----------------------------------------------------------------------------
 # 4) Upload/Upsert LOG
@@ -167,6 +233,7 @@
   ansible.builtin.set_fact:
     hfs_log_name: "{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}.log"
     hfs_log_identifier: "{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-log"
+    hfs_log_parent_identifier: "{{ deployment_ref_identifier }}"
 
 - name: "Harness | Upload do LOG (create/update) com cleanup garantido"
   block:
@@ -185,18 +252,18 @@
           -H "x-api-key: {{ harness_x_api_key }}" \
           -F "name={{ hfs_log_name }}" \
           -F "type=FILE" \
-          -F "parentIdentifier={{ deployment_ref_folder }}" \
+          -F "parentIdentifier={{ hfs_log_parent_identifier }}" \
           -F "identifier={{ hfs_log_identifier }}" \
           -F "tags={{ harness_tags | to_json }}" \
           -F "content=@/tmp/{{ hfs_log_name }}"
       args:
         executable: /bin/bash
       register: hfs_log_create_http
-      changed_when: false
-      failed_when: false
+      changed_when: (hfs_log_create_http.stdout | default('')) is match('^2..$')
+      failed_when: (hfs_log_create_http.stdout | default('')) not in hfs_ok_create_codes
       no_log: true
 
-    - name: "Harness | UPDATE log (se create não retornou 2xx)"
+    - name: "Harness | UPDATE log (se create retornou 409)"
       ansible.builtin.shell: |
         set -e
         curl -sS -o /tmp/hfs_log_update.out -w "%{http_code}" \
@@ -205,16 +272,36 @@
           -H "x-api-key: {{ harness_x_api_key }}" \
           -F "name={{ hfs_log_name }}" \
           -F "type=FILE" \
-          -F "parentIdentifier={{ deployment_ref_folder }}" \
+          -F "parentIdentifier={{ hfs_log_parent_identifier }}" \
           -F "identifier={{ hfs_log_identifier }}" \
           -F "tags={{ harness_tags | to_json }}" \
           -F "content=@/tmp/{{ hfs_log_name }}"
       args:
         executable: /bin/bash
-      when: (hfs_log_create_http.stdout | default('')) is not match('^2..$')
+      register: hfs_log_update_http
+      when: (hfs_log_create_http.stdout | default('')) == '409'
+      changed_when: (hfs_log_update_http.stdout | default('')) is match('^2..$')
+      failed_when: (hfs_log_update_http.stdout | default('')) not in hfs_ok_update_codes
+      no_log: true
+
+    - name: "Harness | DEBUG body LOG (somente se falhar)"
+      ansible.builtin.shell: |
+        echo "CREATE:"; sed -n '1,200p' /tmp/hfs_log_create.out || true
+        echo "UPDATE:"; sed -n '1,200p' /tmp/hfs_log_update.out || true
+      register: hfs_log_body
       changed_when: false
       failed_when: false
-      no_log: true
+      when:
+        - (hfs_log_create_http.stdout | default('')) not in hfs_ok_create_codes
+          or ((hfs_log_create_http.stdout | default('')) == '409' and (hfs_log_update_http.stdout | default('')) not in hfs_ok_update_codes)
+
+    - name: "Harness | DEBUG http_code/body LOG"
+      ansible.builtin.debug:
+        msg:
+          - "LOG create http_code={{ hfs_log_create_http.stdout | default('') }}"
+          - "LOG update http_code={{ hfs_log_update_http.stdout | default('') }}"
+          - "{{ hfs_log_body.stdout | default('') }}"
+      when: hfs_log_body is defined
 
   always:
     - name: "Harness | Limpar arquivo temporário do log"
