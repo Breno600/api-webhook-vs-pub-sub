@@ -1,35 +1,29 @@
 #!/bin/bash
 set -euo pipefail
 
-GIT_TOKEN="xXAiJyF1Hx4noamrBSdV"
-GIT_TAG="${GIT_TAG:-}"
+# Obrigatórios (vindos do Harness Secrets / Variables)
+: "${GIT_TAG:?ERRO: GIT_TAG não informado}"
+: "${GIT_TOKEN:?ERRO: GIT_TOKEN não informado}"
+: "${NEXUS_USER:?ERRO: NEXUS_USER não informado}"
+: "${NEXUS_PASSWORD:?ERRO: NEXUS_PASSWORD não informado}"
+
+# Opcionais
 EXECUTION_FILE_NAME="${EXECUTION_FILE_NAME:-execution/machine_list_dev.yml}"
 GIT_BRANCH="${GIT_BRANCH:-develop}"
-
-GIT_USER_NAME="${GIT_USER_NAME:-harness-bot}"
-GIT_USER_EMAIL="${GIT_USER_EMAIL:-harness-bot@fiserv.com}"
-
-NEXUS_BASE_URL="${NEXUS_BASE_URL:-https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev}"
-NEXUS_USER="${NEXUS_USER:-AS4hZF20}"
-NEXUS_PASSWORD="${NEXUS_PASSWORD:-l7WwGfJd_Grmh-5Kn7B__U8nqgdNWh1XhrYtVQQ5I_6k}"
-
 FILESTORE_ENV="${FILESTORE_ENV:-dev}"
-
-if [[ -z "${GIT_TOKEN}" || -z "${GIT_TAG}" ]]; then
-  echo "ERRO: GIT_TOKEN ou GIT_TAG não informado"
-  exit 1
-fi
+NEXUS_BASE_URL="${NEXUS_BASE_URL:-https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev}"
 
 export ANSIBLE_HOST_KEY_CHECKING=False
 
 REPO_URL="https://harness:${GIT_TOKEN}@gitlab.onefiserv.net/latam/latam/merchant-latam/LAC/aws-cd-configuration/elastic-compute-cloud-sitef.git"
 
 WORKDIR="$(mktemp -d)"
+trap 'rm -rf "$WORKDIR"' EXIT
+
 echo "Clonando repo em ${WORKDIR}..."
-rm -rf "${WORKDIR}/elastic-compute-cloud-sitef"
 git clone --branch "${GIT_BRANCH}" "${REPO_URL}" "${WORKDIR}/elastic-compute-cloud-sitef"
 cd "${WORKDIR}/elastic-compute-cloud-sitef"
-git fetch --tags
+git fetch --tags --force
 
 echo "== PIPELINE PREDEPLOY =="
 echo "TAG   : ${GIT_TAG}"
@@ -39,11 +33,12 @@ echo
 
 cd ansible
 
+# Passa secrets via env (melhor do que -e)
+export NEXUS_BASE_URL NEXUS_USER NEXUS_PASSWORD FILESTORE_ENV
+
 ansible-playbook predeploy_from_execution.yml \
   -e "execution_file_name=${EXECUTION_FILE_NAME}" \
   -e "deployment_ref=${GIT_TAG}" \
   -e "nexus_base_url=${NEXUS_BASE_URL}" \
-  -e "nexus_user=${NEXUS_USER}" \
-  -e "nexus_password=${NEXUS_PASSWORD}" \
   -e "filestore_env=${FILESTORE_ENV}" \
   --forks 10
