@@ -1,1 +1,1 @@
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDvT/EuYdWSNC5wnAN7ELp8vO6PtaT6TiIeJaLoDC5k+ your_email@example.com
+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
