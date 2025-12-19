@@ -1,1 +1,1 @@
-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
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDvT/EuYdWSNC5wnAN7ELp8vO6PtaT6TiIeJaLoDC5k+ your_email@example.com
