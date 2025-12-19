@@ -1,7 +1,139 @@
-api-webhook-vs-pub-sub $ aws secretsmanager get-secret-value \
->   --region us-east-1 \
->   --secret-id 'omnidata/dev/transaction-rules-v2/env' \
->   --query SecretString \
->   --output text
+image:
+  repository: fmk.nexus-dev.onefiserv.net/apm/0011753/transaction-data-rules-v2
+  tag: 2.0.0-20251218_174100-eff70050-SNAPSHOT
 
-{"DB_URL":"jdbc:snowflake://sz68910.sa-east-1.aws.privatelink.snowflakecomputing.com?authenticator=SNOWFLAKE_JWT&disablePlatformDetection=true&db=DB_DEV_RAW_APM0011753_OMNIDATA&schema=SCH_OMINIDATA_HOSPEDADO&warehouse=WH_DEV_OMNIDATA_ETL","DB_USERNAME":"OMNIDATA_LOWER_SRVACCT","DB_PRIVATE_KEY_PASSWORD":"8WMREJikBS","KAFKA_KEYSTORE_PASSWORD":"Brasil2025.@","KAFKA_TRUSTSTORE_PASSWORD":"N@v@Exp.2025","wvcAp11753":"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","kafka-truststore":"/u3+7QAAAAIAAAAEAAAAAgAGcm9vdGNhAAABmgcq6mkABVguNTA5AAAGsDCCBqwwggSUoAMCAQICCADOY/kAAABlMA0GCSqGSIb3DQEBDAUAMIGpMQswCQYDVQQGEwJVUzEQMA4GA1UECAwHR2VvcmdpYTEQMA4GA1UEBwwHQXRsYW50YTEfMB0GA1UECgwWRmlyc3QgRGF0YSBDb3Jwb3JhdGlvbjENMAsGA1UECwwEQ0tNUzEbMBkGA1UEAwwSRmlyc3QgRGF0YSBSb290IENBMSkwJwYJKoZIhvcNAQkBFhpQS0kuU2VydmljZXNAZmlyc3RkYXRhLmNvbTAeFw0xODExMDUwMDAwMDBaFw0zODExMDUwMDAwMDBaMIGpMQswCQYDVQQGEwJVUzEQMA4GA1UECAwHR2VvcmdpYTEQMA4GA1UEBwwHQXRsYW50YTEfMB0GA1UECgwWRmlyc3QgRGF0YSBDb3Jwb3JhdGlvbjENMAsGA1UECwwEQ0tNUzEbMBkGA1UEAwwSRmlyc3QgRGF0YSBSb290IENBMSkwJwYJKoZIhvcNAQkBFhpQS0kuU2VydmljZXNAZmlyc3RkYXRhLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAJ5gN0peFrxVIoTLXzM68DoJYznC+igp24c0uTr9gFf70xWWs40159+orhd7fYclt4kZWZ61+WtIQilEumOj/zzXxq3pcmMwBNCg6/yfFwmL2V5RYzDs2C6dUV5ibMn4STafEO+RcBs93otvJ11ercnWFyXAv22zDdn68Dt+Z1tlNSdglYApMI0ZFed9oa5U53MbGzNzVNMadvp8qXfayykQ31o7vaW8oZQcAFKp23naHUmibYbde9/QHiIz7f1qDPoBUe5sUhCRP1eUHx/XYCJqGAS9+oQcKLxNjOpF66bHrzK1vkQUFeIhwsOMi5zRZB+oMiw8xOc9aIY48Q13hIT/frD8P2KmC5+iuzNhlUbkX4oXGrQFpk0o8rVd+bblcPVc2ZX2G0AymQ9BL0SCcQwobeATDNcJmpdvbMJ3syt5z2GTldn9SgCwQtI0aF1hSqIlTeZEna6cBmo8k8VgbD5JmecsmmQofFSJuQK5SlZlsqG2QVybN4Df3Iegb/LnSOVsh+8Vv5fPPQgsOMMunvTK+VPBeUFVdET6yO25to/bex0lAHzuSLCPUklsYYLkLoF29imicMSqFIcr0Bkw5tBrAewh5rXC64gMwEH7dbBrqJ1jtpQe7EMJg1NEaWn1TBVbpe3qi8etam07gTJdZy5J3Uw+zSDL3IrfUPu4zcEBAgMBAAGjgdUwgdIwOwYDVR0jBDQwMoAwpwABbaWtL0kjWo7/QekSxQUFUdNXCKKWuOWAh8CqZ+GBpkbLdh67d0GduVNiWAmcMDkGA1UdDgQyBDCnAAFtpa0vSSNajv9B6RLFBQVR01cIopa45YCHwKpn4YGmRst2Hrt3QZ25U2JYCZwwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAYYwNwYDVR0gAQEABC0wKzApBgRVHSAAMCEwHwYIKwYBBQUHAgIwExoRSW50ZXJuYWwgdXNlIG9ubHkwDQYJKoZIhvcNAQEMBQADggIBAEL937UYSPrEVS9KGJO3:
+env: dev
+
+config:
+  DB_DRIVER_CLASS_NAME: "net.snowflake.client.jdbc.SnowflakeDriver"
+  DB_CONNECTION_TIMEOUT: "30000"
+  DB_MINIMUM_IDLE: "10"
+  DB_MAXIMUM_POOL_SIZE: "10"
+  DB_IDLE_TIMEOUT: "600000"
+  DB_MAX_LIFETIME: "1800000"
+  DB_AUTO_COMMIT: "true"
+  SERVER_PORT: "8083"
+  TRACES_EXPORTER: "otlp"
+  METRICS_EXPORTER: "otlp"
+  LOGS_EXPORTER: "none"
+  OTLP_ENDPOINT: "http://opentelemetry-dev-otel-chart.opentelemetry.svc.cluster.local:4317"
+  OTLP_PROTOCOL: "grpc"
+  HABILITAR_INFO_LOGS: "true"
+  HABILITAR_CACHE_POR_DEMANDA: "true"
+  HABILITAR_ENVIO_KAFKA: "true"
+  HABILITAR_ENVIO_SQS: "true"
+  HABILITAR_USO_REDIS: "false"
+  PAIS: "BR"
+  CAFFEINE_SPEC: "expireAfterWrite=24h"
+  SQS_PUBLISH_URLS: "https://sqs.us-east-1.amazonaws.com/909139952102/omnidata-PFAC-queue-out.fifo"
+  SQS_LISTENER_ENDPOINT: "https://sqs.us-east-1.amazonaws.com/909139952102/"
+  SQS_LISTENER_QUEUE: "omnidata-PFAC-queue-in.fifo"
+  SQS_LISTENER_REGION: "us-east-1"
+  SQS_LISTENER_MAX_MESSAGES_PER_POLL: "20"
+  SQS_LISTENER_MAX_CONCURRENT_MESSAGES: "20"
+  SQS_LISTENER_WAIT_TIMEOUT: "0"
+  KAFKA_KEYSTORE_LOCATION: "file:/opt/booter/kafka-certs/wvc-ap11753-me-kpc-d.1dc.com.p12"
+  KAFKA_TRUSTSTORE_LOCATION: "file:/opt/booter/kafka-certs/kafka-truststore.p12"
+  KAFKA_SECURITY_PROTOCOL: "SSL"
+  KAFKA_BOOTSTRAP_SERVERS: "hbld2kafapp0009.1dc.com:9094,hbld2kafapp0013.1dc.com:9094,hbld2kafapp0014.1dc.com:9094"
+  ENABLE_IDEMPOTENCE: "true"
+  SPRING_DATASOURCE_HIKARI_MAX_LIFETIME: "1800000"
+  DB_DIALECT: "com.fiserv.expdatarules.adapters.outbound.database.jpa.dialect.DefaultDialect"
+  DB_PRIVATE_KEY_PATH: "/opt/booter/snowflake-certs/OMNIDATA_LOWER_SRVACCT_rsa_key.p8"
+
+# 1) ExternalSecrets que GERAM os secrets no cluster
+externalSecrets:
+  enabled: true
+  storeRef:
+    name: omnidata-external-secrets-clustersecretstore
+    kind: ClusterSecretStore  # ou ClusterSecretStore
+  secrets:
+    # Secret para variáveis sensíveis (env)
+    - name: app-env
+      refreshInterval: 1m
+      target:
+        name: transaction-data-rules-v2-env
+      data:
+        - secretKey: KAFKA_KEYSTORE_PASSWORD
+          remoteRef:
+            key: "omnidata/dev/transaction-rules-v2/env"
+            property: "KAFKA_KEYSTORE_PASSWORD"
+        - secretKey: DB_URL
+          remoteRef:
+            key: "omnidata/dev/transaction-rules-v2/env"
+            property: DB_URL"
+        - secretKey: DB_USERNAME
+          remoteRef:
+            key: "omnidata/dev/transaction-rules-v2/env"
+            property: "DB_USERNAME"
+        - secretKey: DB_PRIVATE_KEY_PASSWORD
+          remoteRef:
+            key: "omnidata/dev/transaction-rules-v2/env"
+            property: "DB_PRIVATE_KEY_PASSWORD"
+        - secretKey: KAFKA_TRUSTSTORE_PASSWORD
+          remoteRef:
+            key: "omnidata/dev/transaction-rules-v2/env"
+            property: "KAFKA_TRUSTSTORE_PASSWORD"
+
+    # Secret para certificados (volume/arquivos)
+    - name: application-certs
+      refreshInterval: 1m
+      target:
+        name: application-certs
+      data:
+        # Se você armazenar no AWS como BASE64 (string),
+        # use decodingStrategy Base64 para virar binário no Secret do K8s
+        - secretKey: wvcAp11753
+          remoteRef:
+            key: "omnidata/dev/transaction-rules-v2/env"
+            property: "wvcAp11753"
+            decodingStrategy: Base64
+        - secretKey: kafka-truststore
+          remoteRef:
+            key: "omnidata/dev/transaction-rules-v2/env"
+            property: "kafka-truststore"
+            decodingStrategy: Base64
+        - secretKey: snowflake-cert
+          remoteRef:
+            key: "omnidata/dev/transaction-rules-v2/env
+            property: "snowflake-cert"
+            decodingStrategy: Base64
+
+# Mantém seu volume/volumeMount (agora o Secret "application-certs" vem do ExternalSecret)
+volumes:
+  - name: kafka-certs
+    secret:
+      secretName: application-certs
+      items:
+        - key: wvcAp11753
+          path: wvc-ap11753-me-kpc-d.1dc.com.p12
+        - key: kafka-truststore
+          path: kafka-truststore.p12
+  - name: snowflake-certs
+    secret:
+      secretName: application-certs
+      items:
+        - key: snowflake-cert
+          path: OMNIDATA_LOWER_SRVACCT_rsa_key.p8
+
+volumeMounts:
+  - name: kafka-certs
+    mountPath: /opt/booter/kafka-certs
+    readOnly: true
+  - name: snowflake-certs
+    mountPath: /opt/booter/snowflake-certs
+    readOnly: true
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::909139952102:role/omnidata-irsa-sqs-full-access
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
