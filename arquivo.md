@@ -1,87 +1,160 @@
-~ $ kubectl get crd | grep external-secrets
-acraccesstokens.generators.external-secrets.io          2025-12-19T18:46:56Z
-clusterexternalsecrets.external-secrets.io              2025-12-19T18:46:56Z
-clustersecretstores.external-secrets.io                 2025-12-19T18:46:56Z
-ecrauthorizationtokens.generators.external-secrets.io   2025-12-19T18:46:56Z
-externalsecrets.external-secrets.io                     2025-12-19T18:46:56Z
-fakes.generators.external-secrets.io                    2025-12-19T18:46:56Z
-gcraccesstokens.generators.external-secrets.io          2025-12-19T18:46:56Z
-githubaccesstokens.generators.external-secrets.io       2025-12-19T18:46:56Z
-passwords.generators.external-secrets.io                2025-12-19T18:46:56Z
-pushsecrets.external-secrets.io                         2025-12-19T18:46:56Z
-secretstores.external-secrets.io                        2025-12-19T18:46:56Z
-uuids.generators.external-secrets.io                    2025-12-19T18:46:56Z
-vaultdynamicsecrets.generators.external-secrets.io      2025-12-19T18:46:56Z
-webhooks.generators.external-secrets.io                 2025-12-19T18:46:56Z
-~ $ kubectl get pods -n external-secrets
-No resources found in external-secrets namespace.
-~ $ kubectl get deploy -n external-secrets
-No resources found in external-secrets namespace.
-~ $ 
-~ $ kubectl get externalsecret -n omnidata
-NAME                                                    STORE                                          REFRESH INTERVAL   STATUS              READY
-transaction-rules-v2-dev-java-chart-app-env             omnidata-external-secrets-clustersecretstore   1m                 SecretSyncedError   False
-transaction-rules-v2-dev-java-chart-application-certs   omnidata-external-secrets-clustersecretstore   1m                 SecretSyncedError   False
-~ $ kubectl describe externalsecret -n omnidata transaction-rules-v2-dev-java-chart-application-certs
-Name:         transaction-rules-v2-dev-java-chart-application-certs
-Namespace:    omnidata
-Labels:       app.kubernetes.io/instance=transaction-rules-v2-dev
-              app.kubernetes.io/managed-by=Helm
-              app.kubernetes.io/name=java-chart
-              app.kubernetes.io/version=1.16.0
-              argocd.argoproj.io/instance=transaction-rules-v2-dev
-              helm.sh/chart=java-chart-0.1.0
-Annotations:  <none>
-API Version:  external-secrets.io/v1beta1
-Kind:         ExternalSecret
-Metadata:
-  Creation Timestamp:  2025-12-19T18:54:21Z
-  Generation:          2
-  Resource Version:    11676188
-  UID:                 66a58373-355e-4c98-a369-5e26d9c6ab02
-Spec:
-  Data:
-    Remote Ref:
-      Conversion Strategy:  Default
-      Decoding Strategy:    Base64
-      Key:                  omnidata/dev/transaction-rules-v2/env/wvcAp11753_b64
-      Metadata Policy:      None
-    Secret Key:             wvcAp11753
-    Remote Ref:
-      Conversion Strategy:  Default
-      Decoding Strategy:    Base64
-      Key:                  omnidata/dev/transaction-rules-v2/env/kafka-truststore_b64
-      Metadata Policy:      None
-    Secret Key:             kafka-truststore
-    Remote Ref:
-      Conversion Strategy:  Default
-      Decoding Strategy:    Base64
-      Key:                  omnidata/dev/transaction-rules-v2/env/snowflake-cert_b64
-      Metadata Policy:      None
-    Secret Key:             snowflake-cert
-  Refresh Interval:         1m
-  Secret Store Ref:
-    Kind:  ClusterSecretStore
-    Name:  omnidata-external-secrets-clustersecretstore
-  Target:
-    Creation Policy:  Owner
-    Deletion Policy:  Retain
-    Name:             application-certs
-    Template:
-      Engine Version:  v2
-      Merge Policy:    Replace
-      Type:            Opaque
-Status:
-  Conditions:
-    Last Transition Time:  2025-12-19T18:54:23Z
-    Message:               could not get secret data from provider
-    Reason:                SecretSyncedError
-    Status:                False
-    Type:                  Ready
-Events:
-  Type     Reason        Age                 From              Message
-  ----     ------        ----                ----              -------
-  Warning  UpdateFailed  12m (x21 over 23m)  external-secrets  error retrieving secret at .data[0], key: omnidata/dev/transaction-rules-v2/env/wvcAp11753_b64, err: Secret does not exist
-  Warning  UpdateFailed  12m (x21 over 23m)  external-secrets  error retrieving secret at .data[0], key: omnidata/dev/transaction-rules-v2/env/wvcAp11753_b64, err: Secret does not exist
-~ $ 
-~ $ 
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+TS="$(date +%Y%m%d_%H%M%S)"
+OUT_DIR="${OUT_DIR:-eso-debug-${TS}}"
+APP_NS="${APP_NS:-omnidata}"
+CSS_NAME="${CSS_NAME:-omnidata-external-secrets-clustersecretstore}"
+
+mkdir -p "${OUT_DIR}"
+LOG="${OUT_DIR}/run.log"
+
+# -------- helpers ----------
+run() {
+  local name="$1"; shift
+  {
+    echo
+    echo "==================== ${name} ===================="
+    echo "+ $*"
+    "$@"
+  } |& tee -a "${LOG}" > "${OUT_DIR}/${name}.txt" || true
+}
+
+run_sh() {
+  local name="$1"; shift
+  {
+    echo
+    echo "==================== ${name} ===================="
+    echo "+ $*"
+    bash -lc "$*"
+  } |& tee -a "${LOG}" > "${OUT_DIR}/${name}.txt" || true
+}
+
+redact_secret_yaml() {
+  # Redige values em `.data:` e `.stringData:` (sem precisar de yq/jq)
+  awk '
+    BEGIN{inData=0}
+    /^[^[:space:]]/ {inData=0}
+    /^[[:space:]]*(data|stringData):[[:space:]]*$/ {print; inData=1; next}
+    inData==1 && match($0, /^[[:space:]]+[A-Za-z0-9_.-]+:[[:space:]]*/) {
+      split($0,a,":"); key=a[1];
+      sub(/^[[:space:]]+/,"",key);
+      sub(/[[:space:]]+$/,"",key);
+      indent=match($0,/^[[:space:]]+/)?substr($0,RSTART,RLENGTH):"  ";
+      print indent key ": <redacted>";
+      next
+    }
+    {print}
+  '
+}
+
+echo "Output dir: ${OUT_DIR}" | tee "${LOG}"
+echo "App namespace: ${APP_NS}" | tee -a "${LOG}"
+echo "ClusterSecretStore: ${CSS_NAME}" | tee -a "${LOG}"
+
+# -------- 0) contexto ----------
+run "00-context-current" kubectl config current-context
+run "01-context-cluster-info" kubectl cluster-info
+run "02-version" kubectl version --short
+
+# -------- 1) CRDs / API resources ----------
+run_sh "10-crds-eso" "kubectl get crd | egrep -i 'external-secrets|externalsecret|secretstore|clustersecretstore|clusterexternalsecret' || true"
+run_sh "11-api-resources-eso" "kubectl api-resources | egrep -i 'externalsecret|secretstore|clustersecretstore|application' || true"
+
+# -------- 2) descobrir onde o operator roda (deploy/pods/svc) ----------
+run_sh "20-deploy-find-eso" "kubectl get deploy -A | egrep -i 'external-secrets|externalsecrets|\\beso\\b' || true"
+run_sh "21-pods-find-eso"  "kubectl get pods  -A | egrep -i 'external-secrets|externalsecrets|\\beso\\b' || true"
+run_sh "22-svc-find-eso"   "kubectl get svc   -A | egrep -i 'external-secrets|externalsecrets|\\beso\\b' || true"
+
+# tenta inferir namespace(s) e deploy(s) do controller
+mapfile -t ESO_DEPLOYS < <(kubectl get deploy -A --no-headers 2>/dev/null | awk '
+  tolower($0) ~ /external-secrets|externalsecrets|(^|[[:space:]])eso([[:space:]]|$)/ {print $1 "/" $2}
+' || true)
+
+# fallback: procurar por label padrão
+if [[ ${#ESO_DEPLOYS[@]} -eq 0 ]]; then
+  mapfile -t ESO_DEPLOYS < <(kubectl get deploy -A -l app.kubernetes.io/name=external-secrets --no-headers 2>/dev/null | awk '{print $1 "/" $2}' || true)
+fi
+
+printf "%s\n" "${ESO_DEPLOYS[@]:-}" > "${OUT_DIR}/23-eso-deploys-detected.txt" || true
+
+# -------- 3) coletar detalhes e logs do operator ----------
+if [[ ${#ESO_DEPLOYS[@]} -gt 0 ]]; then
+  i=0
+  for ns_name in "${ESO_DEPLOYS[@]}"; do
+    i=$((i+1))
+    NS="${ns_name%%/*}"
+    DEP="${ns_name##*/}"
+
+    run "30-${i}-eso-all-${NS}" kubectl get all -n "${NS}"
+    run "31-${i}-eso-deploy-${NS}-${DEP}" kubectl describe deploy -n "${NS}" "${DEP}"
+
+    # logs do deploy (tail e since)
+    run "32-${i}-eso-logs-tail-${NS}-${DEP}" kubectl logs -n "${NS}" "deploy/${DEP}" --tail=300
+    run "33-${i}-eso-logs-since-${NS}-${DEP}" kubectl logs -n "${NS}" "deploy/${DEP}" --since=60m
+
+    run "34-${i}-eso-events-${NS}" kubectl get events -n "${NS}" --sort-by=.lastTimestamp
+  done
+else
+  echo "Nenhum deploy do external-secrets detectado automaticamente." | tee -a "${LOG}"
+fi
+
+# -------- 4) ClusterSecretStore / SecretStore ----------
+run "40-clustersecretstore-list" kubectl get clustersecretstore -o wide
+run "41-clustersecretstore-describe" kubectl describe clustersecretstore "${CSS_NAME}"
+run_sh "42-clustersecretstore-status-grep" "kubectl get clustersecretstore ${CSS_NAME} -o yaml | egrep -n 'status:|conditions:|message:|reason:|type:|status:' || true"
+
+# -------- 5) ExternalSecrets da aplicação ----------
+run "50-externalsecret-list-${APP_NS}" kubectl get externalsecret -n "${APP_NS}" -o wide
+run "51-externalsecret-yaml-${APP_NS}" kubectl get externalsecret -n "${APP_NS}" -o yaml
+run "52-events-${APP_NS}" kubectl get events -n "${APP_NS}" --sort-by=.lastTimestamp
+
+# descreve todos os ExternalSecrets do namespace (um por arquivo)
+mapfile -t ES_NAMES < <(kubectl get externalsecret -n "${APP_NS}" --no-headers 2>/dev/null | awk '{print $1}' || true)
+j=0
+for es in "${ES_NAMES[@]:-}"; do
+  j=$((j+1))
+  run "53-${j}-externalsecret-describe-${APP_NS}-${es}" kubectl describe externalsecret -n "${APP_NS}" "${es}"
+done
+
+# -------- 6) Secrets gerados (redigidos) ----------
+# principais (podem não existir ainda)
+for sec in application-certs transaction-data-rules-v2-env; do
+  if kubectl get secret -n "${APP_NS}" "${sec}" >/dev/null 2>&1; then
+    kubectl get secret -n "${APP_NS}" "${sec}" -o yaml | redact_secret_yaml > "${OUT_DIR}/60-secret-${APP_NS}-${sec}-redacted.yaml" || true
+    kubectl describe secret -n "${APP_NS}" "${sec}" > "${OUT_DIR}/61-secret-${APP_NS}-${sec}-describe.txt" || true
+  else
+    echo "Secret ${APP_NS}/${sec} não existe." > "${OUT_DIR}/60-secret-${APP_NS}-${sec}-missing.txt"
+  fi
+done
+
+run "62-secrets-list-${APP_NS}" kubectl get secret -n "${APP_NS}" -o wide
+
+# -------- 7) Ver Apps (Argo CD / Harness GitOps) se existir CRD Application ----------
+if kubectl api-resources 2>/dev/null | awk '{print $1}' | grep -qE '^applications$'; then
+  run "70-argocd-apps-all" kubectl get applications -A
+  # tenta achar apps relacionadas a external secret/operator
+  run_sh "71-argocd-apps-filter" "kubectl get applications -A | egrep -i 'external-secret|external-secrets|cdr' || true"
+else
+  echo "CRD 'applications' não encontrada (Argo Application). Pulando seção 7." > "${OUT_DIR}/70-argocd-apps-skip.txt"
+fi
+
+# -------- 8) salvar um resumo rápido ----------
+{
+  echo "OUT_DIR=${OUT_DIR}"
+  echo "APP_NS=${APP_NS}"
+  echo "CSS_NAME=${CSS_NAME}"
+  echo "Detected ESO deploys:"
+  printf " - %s\n" "${ESO_DEPLOYS[@]:-<none>}"
+  echo
+  echo "Tip: compacte e envie a pasta:"
+  echo "  tar -czf ${OUT_DIR}.tar.gz ${OUT_DIR}"
+} > "${OUT_DIR}/_SUMMARY.txt"
+
+echo
+echo "✅ Coleta finalizada."
+echo "📁 Pasta: ${OUT_DIR}"
+echo "📌 Resumo: ${OUT_DIR}/_SUMMARY.txt"
+echo
+echo "Para compactar:"
+echo "  tar -czf ${OUT_DIR}.tar.gz ${OUT_DIR}"
