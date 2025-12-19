@@ -1,47 +1,161 @@
-#  clustersecretstore.yaml
+{{- if .Values.externalSecrets.enabled }}
+{{- $storeName := .Values.externalSecrets.storeRef.name }}
+{{- $storeKind := .Values.externalSecrets.storeRef.kind | default "SecretStore" }}
+
+{{- range $es := .Values.externalSecrets.secrets }}
+---
 apiVersion: external-secrets.io/v1beta1
-kind: ClusterSecretStore
+kind: ExternalSecret
 metadata:
-  name: {{ include "chart.fullname" . }}-clustersecretstore
+  name: {{ include "java-chart.fullname" $ }}-{{ $es.name }}
+  labels:
+    {{- include "java-chart.labels" $ | nindent 4 }}
 spec:
-  provider:
-    aws:
-      service: {{ .Values.secrets.service }}
-      region: {{ .Values.secrets.region }}
-      auth:
-        jwt:
-          serviceAccountRef:
-            name:  {{ .Values.secrets.serviceaccount.name }}
-            namespace: {{ .Values.secrets.serviceaccount.namespace }} 
+  refreshInterval: {{ $es.refreshInterval | default "1h" }}
+  secretStoreRef:
+    name: {{ $storeName }}
+    kind: {{ $storeKind }}
+  target:
+    name: {{ $es.target.name }}
+    creationPolicy: Owner
+    template:
+      type: Opaque
+  data:
+    {{- range $es.data }}
+    - secretKey: {{ .secretKey }}
+      remoteRef:
+        key: {{ .remoteRef.key | quote }}
+        {{- if .remoteRef.property }}
+        property: {{ .remoteRef.property | quote }}
+        {{- end }}
+        {{- if .remoteRef.version }}
+        version: {{ .remoteRef.version | quote }}
+        {{- end }}
+        {{- if .remoteRef.decodingStrategy }}
+        decodingStrategy: {{ .remoteRef.decodingStrategy }}
+        {{- end }}
+    {{- end }}
+{{- end }}
+{{- end }}
 
-# secrets-values.dev.yaml
-# apps/omnidata/external-secrets/dev/secrets-values.dev.yaml
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "java-chart.fullname" . }}
+  labels:
+    {{- include "java-chart.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount | default 1 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "java-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "java-chart.selectorLabels" . | nindent 8 }}
+        env: {{ .Values.env | quote }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
-secretStore:
-  name: omnidata-external-secrets-clustersecretstore
-  kind: ClusterSecretStore
+      serviceAccountName: {{ include "java-chart.serviceAccountName" . }}
 
-secrets:
-  enabled: true
-  refreshInterval: 1h
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
-  service: SecretsManager
+      containers:
+        - name: {{ .Chart.Name }}
 
-  region: us-east-1
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
 
-  serviceaccount:
-    name: external-secrets-us
-    namespace: external-secrets
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
 
-  k8sSecretName: omnidata-app-secrets
-  
-  mapping:
-    - secretKey: DB_PASSWORD
-      ssm:
-        key: omnidata/dev/db_password
-    - secretKey: API_KEY
-      ssm:
-        key: omnidata/dev/api_key
-    - secretKey: REDIS_PASSWORD
-      ssm:
-        key: omnidata/dev/redis_password
+          env:
+            {{- range $k, $v := .Values.config }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+
+            {{- range .Values.secretEnv }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretName | quote }}
+                  key: {{ .secretKey | quote }}
+                  {{- if hasKey . "optional" }}
+                  optional: {{ .optional }}
+                  {{- end }}
+            {{- end }}
+
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - {{ .Chart.Name }}
+              topologyKey: "kubernetes.io/hostname"
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: "topology.kubernetes.io/zone"
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: {{ .Chart.Name }}
+        - maxSkew: 1
+          topologyKey: "kubernetes.io/hostname"
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: {{ .Chart.Name }}
+
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
