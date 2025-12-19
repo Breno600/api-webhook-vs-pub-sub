@@ -1,37 +1,29 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-TS="$(date +%Y%m%d_%H%M%S)"
-OUT_DIR="${OUT_DIR:-eso-debug-${TS}}"
+REPORT="${REPORT:-eso_report.txt}"
 APP_NS="${APP_NS:-omnidata}"
 CSS_NAME="${CSS_NAME:-omnidata-external-secrets-clustersecretstore}"
 
-mkdir -p "${OUT_DIR}"
-LOG="${OUT_DIR}/run.log"
-
 # -------- helpers ----------
+sep() { echo -e "\n\n==================== $* ====================\n"; }
+
 run() {
-  local name="$1"; shift
-  {
-    echo
-    echo "==================== ${name} ===================="
-    echo "+ $*"
-    "$@"
-  } |& tee -a "${LOG}" > "${OUT_DIR}/${name}.txt" || true
+  local title="$1"; shift
+  sep "${title}"
+  echo "+ $*"
+  "$@" 2>&1 || true
 }
 
 run_sh() {
-  local name="$1"; shift
-  {
-    echo
-    echo "==================== ${name} ===================="
-    echo "+ $*"
-    bash -lc "$*"
-  } |& tee -a "${LOG}" > "${OUT_DIR}/${name}.txt" || true
+  local title="$1"; shift
+  sep "${title}"
+  echo "+ $*"
+  bash -lc "$*" 2>&1 || true
 }
 
 redact_secret_yaml() {
-  # Redige values em `.data:` e `.stringData:` (sem precisar de yq/jq)
+  # Redige values em `.data:` e `.stringData:` (sem yq/jq)
   awk '
     BEGIN{inData=0}
     /^[^[:space:]]/ {inData=0}
@@ -48,37 +40,46 @@ redact_secret_yaml() {
   '
 }
 
-echo "Output dir: ${OUT_DIR}" | tee "${LOG}"
-echo "App namespace: ${APP_NS}" | tee -a "${LOG}"
-echo "ClusterSecretStore: ${CSS_NAME}" | tee -a "${LOG}"
+# -------- start ----------
+: > "${REPORT}"
+exec > >(tee -a "${REPORT}") 2>&1
 
-# -------- 0) contexto ----------
-run "00-context-current" kubectl config current-context
-run "01-context-cluster-info" kubectl cluster-info
-run "02-version" kubectl version --short
+echo "Report generated at: ${REPORT}"
+echo "Date: $(date -Is)"
+echo "APP_NS=${APP_NS}"
+echo "CSS_NAME=${CSS_NAME}"
+
+# -------- 0) Context / cluster ----------
+run "00-current-context" kubectl config current-context
+run "01-cluster-info" kubectl cluster-info
+run "02-kubectl-version" kubectl version --short
 
 # -------- 1) CRDs / API resources ----------
 run_sh "10-crds-eso" "kubectl get crd | egrep -i 'external-secrets|externalsecret|secretstore|clustersecretstore|clusterexternalsecret' || true"
 run_sh "11-api-resources-eso" "kubectl api-resources | egrep -i 'externalsecret|secretstore|clustersecretstore|application' || true"
 
-# -------- 2) descobrir onde o operator roda (deploy/pods/svc) ----------
-run_sh "20-deploy-find-eso" "kubectl get deploy -A | egrep -i 'external-secrets|externalsecrets|\\beso\\b' || true"
-run_sh "21-pods-find-eso"  "kubectl get pods  -A | egrep -i 'external-secrets|externalsecrets|\\beso\\b' || true"
-run_sh "22-svc-find-eso"   "kubectl get svc   -A | egrep -i 'external-secrets|externalsecrets|\\beso\\b' || true"
+# -------- 2) Where is the operator running? ----------
+run_sh "20-find-deploy-eso" "kubectl get deploy -A | egrep -i 'external-secrets|externalsecrets|\\beso\\b' || true"
+run_sh "21-find-pods-eso"  "kubectl get pods  -A | egrep -i 'external-secrets|externalsecrets|\\beso\\b' || true"
+run_sh "22-find-svc-eso"   "kubectl get svc   -A | egrep -i 'external-secrets|externalsecrets|\\beso\\b' || true"
 
-# tenta inferir namespace(s) e deploy(s) do controller
+# detect ESO deploys
 mapfile -t ESO_DEPLOYS < <(kubectl get deploy -A --no-headers 2>/dev/null | awk '
   tolower($0) ~ /external-secrets|externalsecrets|(^|[[:space:]])eso([[:space:]]|$)/ {print $1 "/" $2}
 ' || true)
 
-# fallback: procurar por label padrão
 if [[ ${#ESO_DEPLOYS[@]} -eq 0 ]]; then
   mapfile -t ESO_DEPLOYS < <(kubectl get deploy -A -l app.kubernetes.io/name=external-secrets --no-headers 2>/dev/null | awk '{print $1 "/" $2}' || true)
 fi
 
-printf "%s\n" "${ESO_DEPLOYS[@]:-}" > "${OUT_DIR}/23-eso-deploys-detected.txt" || true
+sep "23-eso-deploys-detected"
+if [[ ${#ESO_DEPLOYS[@]} -gt 0 ]]; then
+  printf "%s\n" "${ESO_DEPLOYS[@]}"
+else
+  echo "<none detected>"
+fi
 
-# -------- 3) coletar detalhes e logs do operator ----------
+# Describe + logs for each detected deploy
 if [[ ${#ESO_DEPLOYS[@]} -gt 0 ]]; then
   i=0
   for ns_name in "${ESO_DEPLOYS[@]}"; do
@@ -86,75 +87,82 @@ if [[ ${#ESO_DEPLOYS[@]} -gt 0 ]]; then
     NS="${ns_name%%/*}"
     DEP="${ns_name##*/}"
 
-    run "30-${i}-eso-all-${NS}" kubectl get all -n "${NS}"
-    run "31-${i}-eso-deploy-${NS}-${DEP}" kubectl describe deploy -n "${NS}" "${DEP}"
-
-    # logs do deploy (tail e since)
-    run "32-${i}-eso-logs-tail-${NS}-${DEP}" kubectl logs -n "${NS}" "deploy/${DEP}" --tail=300
-    run "33-${i}-eso-logs-since-${NS}-${DEP}" kubectl logs -n "${NS}" "deploy/${DEP}" --since=60m
-
+    run "30-${i}-eso-all-in-ns-${NS}" kubectl get all -n "${NS}"
+    run "31-${i}-eso-deploy-describe-${NS}/${DEP}" kubectl describe deploy -n "${NS}" "${DEP}"
+    run "32-${i}-eso-logs-tail-${NS}/${DEP}" kubectl logs -n "${NS}" "deploy/${DEP}" --tail=400
+    run "33-${i}-eso-logs-since-60m-${NS}/${DEP}" kubectl logs -n "${NS}" "deploy/${DEP}" --since=60m
     run "34-${i}-eso-events-${NS}" kubectl get events -n "${NS}" --sort-by=.lastTimestamp
   done
 else
-  echo "Nenhum deploy do external-secrets detectado automaticamente." | tee -a "${LOG}"
+  sep "30-eso-logs"
+  echo "Nenhum deploy do external-secrets detectado automaticamente."
+  echo "Se você souber o namespace, rode:"
+  echo "  kubectl get deploy -n <ns>"
+  echo "  kubectl logs -n <ns> deploy/<nome>"
 fi
 
-# -------- 4) ClusterSecretStore / SecretStore ----------
+# -------- 3) ClusterSecretStore / SecretStore ----------
 run "40-clustersecretstore-list" kubectl get clustersecretstore -o wide
 run "41-clustersecretstore-describe" kubectl describe clustersecretstore "${CSS_NAME}"
 run_sh "42-clustersecretstore-status-grep" "kubectl get clustersecretstore ${CSS_NAME} -o yaml | egrep -n 'status:|conditions:|message:|reason:|type:|status:' || true"
 
-# -------- 5) ExternalSecrets da aplicação ----------
+# -------- 4) App namespace objects ----------
 run "50-externalsecret-list-${APP_NS}" kubectl get externalsecret -n "${APP_NS}" -o wide
 run "51-externalsecret-yaml-${APP_NS}" kubectl get externalsecret -n "${APP_NS}" -o yaml
 run "52-events-${APP_NS}" kubectl get events -n "${APP_NS}" --sort-by=.lastTimestamp
+run "53-secrets-list-${APP_NS}" kubectl get secret -n "${APP_NS}" -o wide
 
-# descreve todos os ExternalSecrets do namespace (um por arquivo)
+# Describe each ExternalSecret
 mapfile -t ES_NAMES < <(kubectl get externalsecret -n "${APP_NS}" --no-headers 2>/dev/null | awk '{print $1}' || true)
-j=0
-for es in "${ES_NAMES[@]:-}"; do
-  j=$((j+1))
-  run "53-${j}-externalsecret-describe-${APP_NS}-${es}" kubectl describe externalsecret -n "${APP_NS}" "${es}"
-done
+if [[ ${#ES_NAMES[@]} -gt 0 ]]; then
+  j=0
+  for es in "${ES_NAMES[@]}"; do
+    j=$((j+1))
+    run "54-${j}-externalsecret-describe-${APP_NS}/${es}" kubectl describe externalsecret -n "${APP_NS}" "${es}"
+  done
+else
+  sep "54-externalsecret-describe"
+  echo "Nenhum ExternalSecret encontrado em ${APP_NS}."
+fi
 
-# -------- 6) Secrets gerados (redigidos) ----------
-# principais (podem não existir ainda)
-for sec in application-certs transaction-data-rules-v2-env; do
+# Secrets expected (adjust as needed)
+EXPECTED_SECRETS=(application-certs transaction-data-rules-v2-env)
+
+sep "60-expected-secrets-details-${APP_NS}"
+for sec in "${EXPECTED_SECRETS[@]}"; do
+  echo
+  echo "---- Secret: ${APP_NS}/${sec} ----"
   if kubectl get secret -n "${APP_NS}" "${sec}" >/dev/null 2>&1; then
-    kubectl get secret -n "${APP_NS}" "${sec}" -o yaml | redact_secret_yaml > "${OUT_DIR}/60-secret-${APP_NS}-${sec}-redacted.yaml" || true
-    kubectl describe secret -n "${APP_NS}" "${sec}" > "${OUT_DIR}/61-secret-${APP_NS}-${sec}-describe.txt" || true
+    echo "[OK] exists"
+    echo "-- describe --"
+    kubectl describe secret -n "${APP_NS}" "${sec}" 2>&1 || true
+    echo
+    echo "-- yaml (redacted) --"
+    kubectl get secret -n "${APP_NS}" "${sec}" -o yaml 2>&1 | redact_secret_yaml || true
   else
-    echo "Secret ${APP_NS}/${sec} não existe." > "${OUT_DIR}/60-secret-${APP_NS}-${sec}-missing.txt"
+    echo "[MISSING] does not exist"
   fi
 done
 
-run "62-secrets-list-${APP_NS}" kubectl get secret -n "${APP_NS}" -o wide
+# -------- 5) Pods that are failing because secret not found (helpful) ----------
+run_sh "70-pods-failedmount-secret-not-found-${APP_NS}" \
+  "kubectl get events -n ${APP_NS} --sort-by=.lastTimestamp | egrep -i 'FailedMount|secret.*not found|MountVolume|application-certs' || true"
 
-# -------- 7) Ver Apps (Argo CD / Harness GitOps) se existir CRD Application ----------
+# -------- 6) Argo Application objects (if CRD exists) ----------
 if kubectl api-resources 2>/dev/null | awk '{print $1}' | grep -qE '^applications$'; then
-  run "70-argocd-apps-all" kubectl get applications -A
-  # tenta achar apps relacionadas a external secret/operator
-  run_sh "71-argocd-apps-filter" "kubectl get applications -A | egrep -i 'external-secret|external-secrets|cdr' || true"
+  run "80-argocd-apps-all" kubectl get applications -A
+  run_sh "81-argocd-apps-filter-eso" "kubectl get applications -A | egrep -i 'external-secret|external-secrets|cdr|operator' || true"
 else
-  echo "CRD 'applications' não encontrada (Argo Application). Pulando seção 7." > "${OUT_DIR}/70-argocd-apps-skip.txt"
+  sep "80-argocd-apps"
+  echo "CRD 'applications' não encontrada (Argo Application). Pulando."
 fi
 
-# -------- 8) salvar um resumo rápido ----------
-{
-  echo "OUT_DIR=${OUT_DIR}"
-  echo "APP_NS=${APP_NS}"
-  echo "CSS_NAME=${CSS_NAME}"
-  echo "Detected ESO deploys:"
-  printf " - %s\n" "${ESO_DEPLOYS[@]:-<none>}"
-  echo
-  echo "Tip: compacte e envie a pasta:"
-  echo "  tar -czf ${OUT_DIR}.tar.gz ${OUT_DIR}"
-} > "${OUT_DIR}/_SUMMARY.txt"
+# -------- Summary ----------
+sep "_SUMMARY"
+echo "Se quiser colar aqui no chat, cole o conteúdo do arquivo: ${REPORT}"
+echo "Comando:"
+echo "  cat ${REPORT}"
 
 echo
-echo "✅ Coleta finalizada."
-echo "📁 Pasta: ${OUT_DIR}"
-echo "📌 Resumo: ${OUT_DIR}/_SUMMARY.txt"
-echo
-echo "Para compactar:"
-echo "  tar -czf ${OUT_DIR}.tar.gz ${OUT_DIR}"
+echo "✅ Pronto. Arquivo gerado: ${REPORT}"
+echo "Agora rode: cat ${REPORT}  (e cole aqui)"
