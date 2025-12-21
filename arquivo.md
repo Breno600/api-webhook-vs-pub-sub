@@ -35,7 +35,7 @@ pipeline:
                     environmentVariables:
                       - name: PAIRS
                         type: String
-                        value: DB_USERNAME=<+secrets.getValue("DB_USERNAME")>;KAFKA_KEYSTORE_PASSWORD=<+secrets.getValue("KAFKA_KEYSTORE_PASSWORD")>
+                        value: <+stage.variables.AWS_STRUCTURE_SECRET_MANAGER>
                     source:
                       type: Inline
                       spec:
@@ -77,9 +77,9 @@ pipeline:
                   name: CreateStack_Secrets
                   identifier: CreateStack_Secrets
                   spec:
-                    provisionerIdentifier: ProvisionerSecretsFromHarness_<+pipeline.variables.ENVIRONMENT>
+                    provisionerIdentifier: ProvisionerSecretsFromHarness_dev
                     configuration:
-                      stackName: StackSecretsFromHarness_<+pipeline.variables.ENVIRONMENT>
+                      stackName: StackSecretsFromHarness_dev
                       connectorRef: <+input>
                       region: <+input>
                       templateFile:
@@ -129,10 +129,10 @@ pipeline:
                       roleArn: ""
                       parameterOverrides:
                         - name: SecretName
-                          value: application-secrets-<+pipeline.variables.ENVIRONMENT>
+                          value: application-secrets-dev
                           type: String
                         - name: SecretDescription
-                          value: Secret for environment <+pipeline.variables.ENVIRONMENT>
+                          value: Secret for environment dev
                           type: String
                         - name: SecretValue
                           value: <+execution.steps.Prepare_Secret_JSON.output.outputVariables.SECRET_JSON>
@@ -141,9 +141,15 @@ pipeline:
                           value: <+project.name>
                           type: String
                         - name: Environment
-                          value: <+pipeline.variables.ENVIRONMENT>
+                          value: dev
                           type: String
                         - name: ManagedBy
                           value: cloudformation
                           type: String
                   timeout: 10m
+        variables:
+          - name: AWS_STRUCTURE_SECRET_MANAGER
+            type: String
+            description: ""
+            required: false
+            value: DB_USERNAME=<+secrets.getValue("DB_USERNAME")>;KAFKA_KEYSTORE_PASSWORD=<+secrets.getValue("KAFKA_KEYSTORE_PASSWORD")>
