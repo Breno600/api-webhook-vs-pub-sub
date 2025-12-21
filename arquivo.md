@@ -81,7 +81,7 @@ pipeline:
                     configuration:
                       stackName: StackSecretsFromHarness_<+pipeline.variables.ENVIRONMENT>
                       connectorRef: <+input>
-                      region: <+input>.executionInput()
+                      region: <+input>
                       templateFile:
                         type: Inline
                         spec:
@@ -91,11 +91,11 @@ pipeline:
                                 SecretName:
                                     Type: String
                                     Description: 'Secret Name'
-                                    Default: 'application-secrets-<+execution.steps.Validation.output.outputVariables.ENVIRONMENT>'
+                                    Default: 'application-secrets-dev'
                                 SecretDescription:
                                     Type: String
                                     Description: 'Secret Description'
-                                    Default: 'Secret for environment <+execution.steps.Validation.output.outputVariables.ENVIRONMENT>'
+                                    Default: 'Secret for environment dev'
                                 SecretValue:
                                     Type: String
                                     Description: 'Secret JSON'
@@ -107,7 +107,7 @@ pipeline:
                                 Environment:
                                     Type: String
                                     Description: 'Environment name for tagging'
-                                    Default: '<+execution.steps.Validation.output.outputVariables.ENVIRONMENT>'
+                                    Default: 'dev'
                                 ManagedBy:
                                     Type: String
                                     Description: 'Managed by for tagging'
