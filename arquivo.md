@@ -4,10 +4,16 @@ pipeline:
   projectIdentifier: ExportadorSitef
   orgIdentifier: Fiserv
   tags: {}
+
   variables:
     - name: ENVIRONMENT
       type: String
       value: dev
+
+    - name: AWS_STRUCTURE_SECRET_MANAGER
+      type: String
+      value: DB_USERNAME=<+secrets.getValue("DB_USERNAME")>;KAFKA_KEYSTORE_PASSWORD=<+secrets.getValue("KAFKA_KEYSTORE_PASSWORD")>
+
   stages:
     - stage:
         name: DEV
@@ -35,7 +41,7 @@ pipeline:
                     environmentVariables:
                       - name: PAIRS
                         type: String
-                        value: <+stage.variables.AWS_STRUCTURE_SECRET_MANAGER>
+                        value: <+pipeline.variables.AWS_STRUCTURE_SECRET_MANAGER>
                     source:
                       type: Inline
                       spec:
@@ -72,14 +78,24 @@ pipeline:
                       - name: SECRET_JSON
                         type: String
                         value: SECRET_JSON
+
+              # 1) CREATE STACK (primeira vez)
               - step:
                   type: CreateStack
                   name: CreateStack_Secrets
                   identifier: CreateStack_Secrets
+                  timeout: 10m
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          # Se falhar (ex: stack já existe), não mata a execução.
+                          type: Ignore
                   spec:
-                    provisionerIdentifier: ProvisionerSecretsFromHarness_dev
+                    provisionerIdentifier: ProvisionerSecretsFromHarness_<+pipeline.variables.ENVIRONMENT>
                     configuration:
-                      stackName: StackSecretsFromHarness_dev
+                      stackName: StackSecretsFromHarness_<+pipeline.variables.ENVIRONMENT>
                       connectorRef: <+input>
                       region: <+input>
                       templateFile:
@@ -88,51 +104,46 @@ pipeline:
                           templateBody: |
                             AWSTemplateFormatVersion: '2010-09-09'
                             Parameters:
-                                SecretName:
-                                    Type: String
-                                    Description: 'Secret Name'
-                                    Default: 'application-secrets-dev'
-                                SecretDescription:
-                                    Type: String
-                                    Description: 'Secret Description'
-                                    Default: 'Secret for environment dev'
-                                SecretValue:
-                                    Type: String
-                                    Description: 'Secret JSON'
-                                    NoEcho: true
-                                Project:
-                                    Type: String
-                                    Description: 'Project name for tagging'
-                                    Default: '<+project.name>'
-                                Environment:
-                                    Type: String
-                                    Description: 'Environment name for tagging'
-                                    Default: 'dev'
-                                ManagedBy:
-                                    Type: String
-                                    Description: 'Managed by for tagging'
-                                    Default: 'cloudformation'
+                              SecretName:
+                                Type: String
+                                Description: 'Secret Name'
+                              SecretDescription:
+                                Type: String
+                                Description: 'Secret Description'
+                              SecretValue:
+                                Type: String
+                                Description: 'Secret JSON'
+                                NoEcho: true
+                              Project:
+                                Type: String
+                                Description: 'Project name for tagging'
+                              Environment:
+                                Type: String
+                                Description: 'Environment name for tagging'
+                              ManagedBy:
+                                Type: String
+                                Description: 'Managed by for tagging'
                             Resources:
-                                SecretHarness:
-                                    Type: AWS::SecretsManager::Secret
-                                    Properties:
-                                        Name: !Ref SecretName
-                                        Description: !Ref SecretDescription
-                                        SecretString: !Ref SecretValue
-                                        Tags:
-                                            - Key: Project
-                                              Value: !Ref Project
-                                            - Key: Environment
-                                              Value: !Ref Environment
-                                            - Key: ManagedBy
-                                              Value: !Ref ManagedBy
+                              SecretHarness:
+                                Type: AWS::SecretsManager::Secret
+                                Properties:
+                                  Name: !Ref SecretName
+                                  Description: !Ref SecretDescription
+                                  SecretString: !Ref SecretValue
+                                  Tags:
+                                    - Key: Project
+                                      Value: !Ref Project
+                                    - Key: Environment
+                                      Value: !Ref Environment
+                                    - Key: ManagedBy
+                                      Value: !Ref ManagedBy
                       roleArn: ""
                       parameterOverrides:
                         - name: SecretName
-                          value: application-secrets-dev
+                          value: application-secrets-<+pipeline.variables.ENVIRONMENT>
                           type: String
                         - name: SecretDescription
-                          value: Secret for environment dev
+                          value: Secret for environment <+pipeline.variables.ENVIRONMENT>
                           type: String
                         - name: SecretValue
                           value: <+execution.steps.Prepare_Secret_JSON.output.outputVariables.SECRET_JSON>
@@ -141,15 +152,83 @@ pipeline:
                           value: <+project.name>
                           type: String
                         - name: Environment
-                          value: dev
+                          value: <+pipeline.variables.ENVIRONMENT>
                           type: String
                         - name: ManagedBy
                           value: cloudformation
                           type: String
+
+              # 2) UPDATE STACK (se já existe)
+              - step:
+                  type: UpdateStack
+                  name: UpdateStack_Secrets
+                  identifier: UpdateStack_Secrets
                   timeout: 10m
-        variables:
-          - name: AWS_STRUCTURE_SECRET_MANAGER
-            type: String
-            description: ""
-            required: false
-            value: DB_USERNAME=<+secrets.getValue("DB_USERNAME")>;KAFKA_KEYSTORE_PASSWORD=<+secrets.getValue("KAFKA_KEYSTORE_PASSWORD")>
+                  when:
+                    stageStatus: Success
+                    condition: <+execution.steps.CreateStack_Secrets.status> == "FAILED"
+                  spec:
+                    provisionerIdentifier: ProvisionerSecretsFromHarness_<+pipeline.variables.ENVIRONMENT>
+                    configuration:
+                      stackName: StackSecretsFromHarness_<+pipeline.variables.ENVIRONMENT>
+                      connectorRef: <+input>
+                      region: <+input>
+                      templateFile:
+                        type: Inline
+                        spec:
+                          templateBody: |
+                            AWSTemplateFormatVersion: '2010-09-09'
+                            Parameters:
+                              SecretName:
+                                Type: String
+                                Description: 'Secret Name'
+                              SecretDescription:
+                                Type: String
+                                Description: 'Secret Description'
+                              SecretValue:
+                                Type: String
+                                Description: 'Secret JSON'
+                                NoEcho: true
+                              Project:
+                                Type: String
+                                Description: 'Project name for tagging'
+                              Environment:
+                                Type: String
+                                Description: 'Environment name for tagging'
+                              ManagedBy:
+                                Type: String
+                                Description: 'Managed by for tagging'
+                            Resources:
+                              SecretHarness:
+                                Type: AWS::SecretsManager::Secret
+                                Properties:
+                                  Name: !Ref SecretName
+                                  Description: !Ref SecretDescription
+                                  SecretString: !Ref SecretValue
+                                  Tags:
+                                    - Key: Project
+                                      Value: !Ref Project
+                                    - Key: Environment
+                                      Value: !Ref Environment
+                                    - Key: ManagedBy
+                                      Value: !Ref ManagedBy
+                      roleArn: ""
+                      parameterOverrides:
+                        - name: SecretName
+                          value: application-secrets-<+pipeline.variables.ENVIRONMENT>
+                          type: String
+                        - name: SecretDescription
+                          value: Secret for environment <+pipeline.variables.ENVIRONMENT>
+                          type: String
+                        - name: SecretValue
+                          value: <+execution.steps.Prepare_Secret_JSON.output.outputVariables.SECRET_JSON>
+                          type: String
+                        - name: Project
+                          value: <+project.name>
+                          type: String
+                        - name: Environment
+                          value: <+pipeline.variables.ENVIRONMENT>
+                          type: String
+                        - name: ManagedBy
+                          value: cloudformation
+                          type: String
