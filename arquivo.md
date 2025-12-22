@@ -1,59 +1,51 @@
 set -euo pipefail
 set +x
 
-RAW_JSON="${PAIRS:-}"
-
-# Debug seguro (não vaza segredo): tamanho + começo do payload
-python3 - <<'PY'
-import os, hashlib
-raw=os.environ.get("RAW_JSON","")
-print(f"[DEBUG] RAW_JSON len={len(raw)} sha256={hashlib.sha256(raw.encode('utf-8')).hexdigest()} head={raw[:30]!r}")
-PY
-
-if [ -z "${RAW_JSON//[[:space:]]/}" ] || [ "$RAW_JSON" = "null" ]; then
-  echo "ERRO: input JSON vazio/null (PAIRS)"
+RAW="${PAIRS:-}"
+if [ -z "${RAW//[[:space:]]/}" ] || [ "$RAW" = "null" ]; then
+  echo "ERRO: input vazio/null (PAIRS)" >&2
   exit 1
 fi
 
-# roda python e se falhar, derruba o step
-SECRET_JSON="$(RAW_JSON="$RAW_JSON" python3 - <<'PY'
-import os, json, sys, hashlib
+# Converte a sequência textual "\x1F" em um separador real (ASCII 31)
+US="$(printf '\037')"
+RAW_REAL="${RAW//\\x1F/$US}"
 
-raw = os.environ.get("RAW_JSON","")
+SECRET_JSON="$(python3 - <<'PY'
+import os, sys, json, re, hashlib
 
-try:
-  obj = json.loads(raw)
-except Exception as e:
-  print(f"ERRO: JSON inválido: {e}", file=sys.stderr)
-  sys.exit(1)
+raw = os.environ.get("RAW_REAL","")
+US = chr(31)
 
-if not isinstance(obj, dict) or not obj:
-  print("ERRO: JSON precisa ser um objeto (dict) e não pode ser vazio", file=sys.stderr)
-  sys.exit(1)
+key_re = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
-for k, v in obj.items():
-  if not isinstance(k, str) or not k:
-    print("ERRO: chave inválida no JSON", file=sys.stderr); sys.exit(1)
-  if not isinstance(v, str):
-    print(f"ERRO: valor de '{k}' precisa ser string", file=sys.stderr); sys.exit(1)
+out = {}
+for chunk in raw.split(US):
+  chunk = chunk.strip()
+  if not chunk:
+    continue
+  if "=" not in chunk:
+    print(f"ERRO: item sem '=': {chunk}", file=sys.stderr); sys.exit(1)
+  k, v = chunk.split("=", 1)
+  k, v = k.strip(), v.strip()
+  if not key_re.match(k):
+    print(f"ERRO: key inválida: {k}", file=sys.stderr); sys.exit(1)
+  out[k] = v
 
-# validação no stderr (log), não contamina o JSON
+if not out:
+  print("ERRO: nenhuma variável encontrada", file=sys.stderr); sys.exit(1)
+
 print("--- VALIDAÇÃO (sem mostrar valor) ---", file=sys.stderr)
-for k in sorted(obj.keys()):
-  v = obj[k]
+for k in sorted(out.keys()):
+  v = out[k]
   sha = hashlib.sha256(v.encode("utf-8")).hexdigest()
   print(f"{k}: len={len(v)} sha256={sha}", file=sys.stderr)
 
-# stdout = somente o JSON compactado
-sys.stdout.write(json.dumps(obj, ensure_ascii=False, separators=(",",":")))
+sys.stdout.write(json.dumps(out, ensure_ascii=False, separators=(",",":")))
 PY
-)" || { echo "ERRO: falha ao gerar SECRET_JSON"; exit 1; }
+)" 2>/dev/null
 
-# garante que não ficou vazio
-if [ -z "${SECRET_JSON//[[:space:]]/}" ]; then
-  echo "ERRO: SECRET_JSON ficou vazio"
-  exit 1
-fi
+# OBS: o python acima manda validação em stderr; não contamina o SECRET_JSON
 
 export SECRET_JSON
-echo "OK: SECRET_JSON pronto (len=${#SECRET_JSON})"
+echo "OK: SECRET_JSON pronto (len=${#SECRET_JSON})" >&2
