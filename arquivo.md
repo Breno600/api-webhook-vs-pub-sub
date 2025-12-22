@@ -1,34 +1,43 @@
 set -euo pipefail
 set +x
 
-SECRET_NAME="application-secrets-${ENVIRONMENT}"
-REGION="${AWS_REGION}"
+: "${AWS_ACCESS_KEY_ID:?missing AWS_ACCESS_KEY_ID}"
+: "${AWS_SECRET_ACCESS_KEY:?missing AWS_SECRET_ACCESS_KEY}"
+: "${ROLE_ARN:?missing ROLE_ARN}"
+: "${EXTERNAL_ID:?missing EXTERNAL_ID}"
+: "${AWS_REGION:?missing AWS_REGION}"
+: "${SECRET_NAME:?missing SECRET_NAME}"
+: "${SECRET_JSON:?missing SECRET_JSON}"
 
-# (Opcional) assume role se você precisar
-if [[ -n "${ROLE_ARN:-}" ]]; then
-  CREDS="$(aws sts assume-role \
+# Assume role com ExternalId
+CREDS_JSON="$(
+  aws sts assume-role \
     --role-arn "$ROLE_ARN" \
-    --role-session-name harness-secret \
-    ${EXTERNAL_ID:+--external-id "$EXTERNAL_ID"} \
-  )"
-  export AWS_ACCESS_KEY_ID="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["Credentials"]["AccessKeyId"])' <<<"$CREDS")"
-  export AWS_SECRET_ACCESS_KEY="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["Credentials"]["SecretAccessKey"])' <<<"$CREDS")"
-  export AWS_SESSION_TOKEN="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["Credentials"]["SessionToken"])' <<<"$CREDS")"
-fi
+    --role-session-name "harness-secret-write" \
+    --external-id "$EXTERNAL_ID" \
+    --region "$AWS_REGION"
+)"
 
-# cria ou atualiza o valor (sem limite 4096 do CFN Parameter)
-if aws secretsmanager describe-secret --secret-id "$SECRET_NAME" --region "$REGION" >/dev/null 2>&1; then
+export AWS_ACCESS_KEY_ID="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["Credentials"]["AccessKeyId"])' <<<"$CREDS_JSON")"
+export AWS_SECRET_ACCESS_KEY="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["Credentials"]["SecretAccessKey"])' <<<"$CREDS_JSON")"
+export AWS_SESSION_TOKEN="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["Credentials"]["SessionToken"])' <<<"$CREDS_JSON")"
+
+# Cria ou atualiza o Secret (sem limite 4096 de CFN Parameter)
+if aws secretsmanager describe-secret --secret-id "$SECRET_NAME" --region "$AWS_REGION" >/dev/null 2>&1; then
   aws secretsmanager put-secret-value \
     --secret-id "$SECRET_NAME" \
     --secret-string "$SECRET_JSON" \
-    --region "$REGION" >/dev/null
+    --region "$AWS_REGION" >/dev/null
 else
   aws secretsmanager create-secret \
     --name "$SECRET_NAME" \
-    --description "Secret for environment ${ENVIRONMENT}" \
+    --description "Secret for environment ${ENVIRONMENT:-unknown}" \
     --secret-string "$SECRET_JSON" \
-    --tags Key=Project,Value="${PROJECT_NAME:-ExportadorSitef}" Key=Environment,Value="${ENVIRONMENT}" Key=ManagedBy,Value="harness" \
-    --region "$REGION" >/dev/null
+    --tags \
+      Key=Project,Value="${PROJECT_NAME:-ExportadorSitef}" \
+      Key=Environment,Value="${ENVIRONMENT:-unknown}" \
+      Key=ManagedBy,Value="harness" \
+    --region "$AWS_REGION" >/dev/null
 fi
 
-echo "OK: Secret atualizado em $SECRET_NAME"
+echo "OK: Secret gravado em '$SECRET_NAME' na region '$AWS_REGION'"
