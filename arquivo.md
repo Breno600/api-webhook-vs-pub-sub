@@ -1,75 +1,68 @@
 set -euo pipefail
 set +x
 
-# INPUT vindo do Harness (uma linha)
-# Formato esperado:
-#   KEY=VALOR***KEY2=VALOR2***KEY3=VALOR3
-RAW="${PAIRS:-}"
+# Entrada (string) no formato:
+# KEY1=<+secrets.getValue("SECRET1")>***KEY2=<+secrets.getValue("SECRET2")>***...
+RAW_PAIRS="${PAIRS:-}"
+SEP='***'
 
-if [ -z "$RAW" ] || [ "$RAW" = "null" ]; then
-  echo "ERRO: input vazio/null (PAIRS)" >&2
+if [ -z "$RAW_PAIRS" ] || [ "$RAW_PAIRS" = "null" ]; then
+  echo "ERRO: PAIRS vazio/null"
   exit 1
 fi
 
-# Onde gravar output variables (depende do runner/versão do Harness)
-OUT_FILE="${HARNESS_OUTPUT_VARIABLES:-${HARNESS_ENV_EXPORT:-}}"
-if [ -z "${OUT_FILE:-}" ]; then
-  echo "ERRO: Harness não forneceu arquivo de output (HARNESS_OUTPUT_VARIABLES/HARNESS_ENV_EXPORT)." >&2
-  env | grep -E 'HARNESS_(OUTPUT|ENV)' || true
-  exit 1
-fi
+# Gera JSON compacto (stdout) e manda validação/metrics pra stderr
+SECRET_JSON="$(RAW_PAIRS="$RAW_PAIRS" SEP="$SEP" python3 - <<'PY'
+import os, re, sys, json, hashlib
 
-# Gera JSON compacto a partir do RAW (separador ***), sem vazar valores nos logs
-SECRET_JSON="$(RAW="$RAW" python3 - <<'PY'
-import os, sys, json, re, hashlib
-
-raw = os.environ.get("RAW", "").strip()
-
-# separador entre pares: ***
-chunks = [c.strip() for c in re.split(r"\s*\*\*\*\s*", raw) if c.strip()]
+raw = os.environ.get("RAW_PAIRS","")
+sep = os.environ.get("SEP","***")
 
 out = {}
-key_re = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+parts = raw.split(sep)
 
-for chunk in chunks:
+for idx, chunk in enumerate(parts, 1):
+  chunk = chunk.strip()
+  if not chunk:
+    continue
   if "=" not in chunk:
-    print(f"ERRO: item sem '=': {chunk}", file=sys.stderr)
+    print(f"ERRO: item {idx} sem '=': {chunk!r}", file=sys.stderr)
     sys.exit(1)
 
-  # somente o PRIMEIRO '=' separa key do valor (valor pode conter '=')
   k, v = chunk.split("=", 1)
-  k, v = k.strip(), v.strip()
+  k = k.strip()
+  v = v.strip()
 
-  if not key_re.match(k):
-    print(f"ERRO: key inválida: {k}", file=sys.stderr)
+  if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", k):
+    print(f"ERRO: key inválida: {k!r}", file=sys.stderr)
     sys.exit(1)
 
-  # mantém exatamente o valor (não tenta interpretar, não faz replace)
   out[k] = v
 
 if not out:
-  print("ERRO: nenhuma variável encontrada após split por '***'", file=sys.stderr)
+  print("ERRO: nenhuma chave encontrada após parse (out vazio). Verifique separador e formato.", file=sys.stderr)
   sys.exit(1)
 
-# Validação sem vazar valores
+# Validação sem vazar segredo -> manda pra STDERR (não entra no SECRET_JSON)
 print("--- VALIDAÇÃO (sem mostrar valor) ---", file=sys.stderr)
 for k in sorted(out.keys()):
   v = out[k]
   sha = hashlib.sha256(v.encode("utf-8")).hexdigest()
   print(f"{k}: len={len(v)} sha256={sha}", file=sys.stderr)
 
-# stdout precisa ser somente o JSON (pra capturar no bash)
+# JSON compacto -> STDOUT (isso vira o SECRET_JSON)
 sys.stdout.write(json.dumps(out, ensure_ascii=False, separators=(",",":")))
 PY
 )"
 
-# sanity
-if [ -z "${SECRET_JSON:-}" ]; then
-  echo "ERRO: SECRET_JSON ficou vazio" >&2
-  exit 1
+echo "OK: SECRET_JSON pronto (len=${#SECRET_JSON})"
+
+# Exporta output pro próximo step (Harness)
+if [ -n "${HARNESS_OUTPUT_VARIABLES:-}" ]; then
+  echo "SECRET_JSON=$SECRET_JSON" >> "$HARNESS_OUTPUT_VARIABLES"
+elif [ -n "${HARNESS_ENV_EXPORT:-}" ]; then
+  echo "SECRET_JSON=$SECRET_JSON" >> "$HARNESS_ENV_EXPORT"
+else
+  echo "WARN: Harness não forneceu arquivo de output (HARNESS_OUTPUT_VARIABLES/HARNESS_ENV_EXPORT)."
+  # não falha aqui pra você enxergar o log, mas sem isso não passa pro próximo step.
 fi
-
-echo "OK: SECRET_JSON pronto (len=${#SECRET_JSON})" >&2
-
-# Exporta pro próximo step (CreateStack)
-printf 'SECRET_JSON=%s\n' "$SECRET_JSON" >> "$OUT_FILE"
