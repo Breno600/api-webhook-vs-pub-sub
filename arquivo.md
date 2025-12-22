@@ -1,234 +1,37 @@
-pipeline:
-  name: TESTE
-  identifier: TESTE
-  projectIdentifier: ExportadorSitef
-  orgIdentifier: Fiserv
-  tags: {}
+set -euo pipefail
+set +x
 
-  variables:
-    - name: ENVIRONMENT
-      type: String
-      value: dev
+RAW_JSON="${PAIRS:-}"
+if [ -z "$RAW_JSON" ] || [ "$RAW_JSON" = "null" ]; then
+  echo "ERRO: input JSON vazio/null"
+  exit 1
+fi
 
-    - name: AWS_STRUCTURE_SECRET_MANAGER
-      type: String
-      value: DB_USERNAME=<+secrets.getValue("DB_USERNAME")>;KAFKA_KEYSTORE_PASSWORD=<+secrets.getValue("KAFKA_KEYSTORE_PASSWORD")>
+# Valida JSON e gera versão compacta (1 linha)
+SECRET_JSON="$(python3 - <<'PY'
+import os, json, sys
+raw = os.environ["RAW_JSON"]
 
-  stages:
-    - stage:
-        name: DEV
-        identifier: DEV
-        description: ""
-        type: Custom
-        tags: {}
-        failureStrategies:
-          - onFailure:
-              errors:
-                - AllErrors
-              action:
-                type: MarkAsFailure
-        spec:
-          execution:
-            steps:
-              - step:
-                  type: ShellScript
-                  name: Prepare_Secret_JSON
-                  identifier: Prepare_Secret_JSON
-                  timeout: 10m
-                  spec:
-                    shell: Bash
-                    executionTarget: {}
-                    environmentVariables:
-                      - name: PAIRS
-                        type: String
-                        value: <+pipeline.variables.AWS_STRUCTURE_SECRET_MANAGER>
-                    source:
-                      type: Inline
-                      spec:
-                        script: |
-                          set -euo pipefail
-                          set +x
+try:
+  obj = json.loads(raw)
+except Exception as e:
+  print(f"ERRO: JSON inválido: {e}", file=sys.stderr)
+  sys.exit(1)
 
-                          if [ -z "${PAIRS:-}" ] || [ "$PAIRS" = "null" ]; then
-                            echo "ERRO: PAIRS vazio/null"
-                            exit 1
-                          fi
+if not isinstance(obj, dict) or not obj:
+  print("ERRO: JSON precisa ser um objeto (dict) e não pode ser vazio", file=sys.stderr)
+  sys.exit(1)
 
-                          SECRET_JSON="$(PAIRS="$PAIRS" python3 - <<'PY'
-                          import os, json, re, sys
-                          pairs = os.environ.get("PAIRS","").strip()
-                          out = {}
-                          for chunk in pairs.split(";"):
-                            chunk = chunk.strip()
-                            if not chunk:
-                              continue
-                            if "=" not in chunk:
-                              print(f"ERRO item sem '=': {chunk}", file=sys.stderr); sys.exit(1)
-                            k, v = chunk.split("=", 1)
-                            k, v = k.strip(), v.strip()
-                            if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", k):
-                              print(f"ERRO key inválida: {k}", file=sys.stderr); sys.exit(1)
-                            out[k] = v
-                          sys.stdout.write(json.dumps(out, ensure_ascii=False, separators=(",",":")))
-                          PY
-                          )"
+# valida chaves
+for k,v in obj.items():
+  if not isinstance(k,str) or not k:
+    print("ERRO: chave inválida no JSON", file=sys.stderr); sys.exit(1)
+  if not isinstance(v,str):
+    print(f"ERRO: valor de '{k}' precisa ser string", file=sys.stderr); sys.exit(1)
 
-                          echo "SECRET_JSON=$SECRET_JSON" >> "$HARNESS_OUTPUT_VARIABLES"
-                    outputVariables:
-                      - name: SECRET_JSON
-                        type: String
-                        value: SECRET_JSON
+# compacta pra passar no CloudFormation sem espaços/quebras
+sys.stdout.write(json.dumps(obj, ensure_ascii=False, separators=(",",":")))
+PY
+)"
 
-              # 1) CREATE STACK (primeira vez)
-              - step:
-                  type: CreateStack
-                  name: CreateStack_Secrets
-                  identifier: CreateStack_Secrets
-                  timeout: 10m
-                  failureStrategies:
-                    - onFailure:
-                        errors:
-                          - AllErrors
-                        action:
-                          # Se falhar (ex: stack já existe), não mata a execução.
-                          type: Ignore
-                  spec:
-                    provisionerIdentifier: ProvisionerSecretsFromHarness_<+pipeline.variables.ENVIRONMENT>
-                    configuration:
-                      stackName: StackSecretsFromHarness_<+pipeline.variables.ENVIRONMENT>
-                      connectorRef: <+input>
-                      region: <+input>
-                      templateFile:
-                        type: Inline
-                        spec:
-                          templateBody: |
-                            AWSTemplateFormatVersion: '2010-09-09'
-                            Parameters:
-                              SecretName:
-                                Type: String
-                                Description: 'Secret Name'
-                              SecretDescription:
-                                Type: String
-                                Description: 'Secret Description'
-                              SecretValue:
-                                Type: String
-                                Description: 'Secret JSON'
-                                NoEcho: true
-                              Project:
-                                Type: String
-                                Description: 'Project name for tagging'
-                              Environment:
-                                Type: String
-                                Description: 'Environment name for tagging'
-                              ManagedBy:
-                                Type: String
-                                Description: 'Managed by for tagging'
-                            Resources:
-                              SecretHarness:
-                                Type: AWS::SecretsManager::Secret
-                                Properties:
-                                  Name: !Ref SecretName
-                                  Description: !Ref SecretDescription
-                                  SecretString: !Ref SecretValue
-                                  Tags:
-                                    - Key: Project
-                                      Value: !Ref Project
-                                    - Key: Environment
-                                      Value: !Ref Environment
-                                    - Key: ManagedBy
-                                      Value: !Ref ManagedBy
-                      roleArn: ""
-                      parameterOverrides:
-                        - name: SecretName
-                          value: application-secrets-<+pipeline.variables.ENVIRONMENT>
-                          type: String
-                        - name: SecretDescription
-                          value: Secret for environment <+pipeline.variables.ENVIRONMENT>
-                          type: String
-                        - name: SecretValue
-                          value: <+execution.steps.Prepare_Secret_JSON.output.outputVariables.SECRET_JSON>
-                          type: String
-                        - name: Project
-                          value: <+project.name>
-                          type: String
-                        - name: Environment
-                          value: <+pipeline.variables.ENVIRONMENT>
-                          type: String
-                        - name: ManagedBy
-                          value: cloudformation
-                          type: String
-
-              # 2) UPDATE STACK (se já existe)
-              - step:
-                  type: UpdateStack
-                  name: UpdateStack_Secrets
-                  identifier: UpdateStack_Secrets
-                  timeout: 10m
-                  when:
-                    stageStatus: Success
-                    condition: <+execution.steps.CreateStack_Secrets.status> == "FAILED"
-                  spec:
-                    provisionerIdentifier: ProvisionerSecretsFromHarness_<+pipeline.variables.ENVIRONMENT>
-                    configuration:
-                      stackName: StackSecretsFromHarness_<+pipeline.variables.ENVIRONMENT>
-                      connectorRef: <+input>
-                      region: <+input>
-                      templateFile:
-                        type: Inline
-                        spec:
-                          templateBody: |
-                            AWSTemplateFormatVersion: '2010-09-09'
-                            Parameters:
-                              SecretName:
-                                Type: String
-                                Description: 'Secret Name'
-                              SecretDescription:
-                                Type: String
-                                Description: 'Secret Description'
-                              SecretValue:
-                                Type: String
-                                Description: 'Secret JSON'
-                                NoEcho: true
-                              Project:
-                                Type: String
-                                Description: 'Project name for tagging'
-                              Environment:
-                                Type: String
-                                Description: 'Environment name for tagging'
-                              ManagedBy:
-                                Type: String
-                                Description: 'Managed by for tagging'
-                            Resources:
-                              SecretHarness:
-                                Type: AWS::SecretsManager::Secret
-                                Properties:
-                                  Name: !Ref SecretName
-                                  Description: !Ref SecretDescription
-                                  SecretString: !Ref SecretValue
-                                  Tags:
-                                    - Key: Project
-                                      Value: !Ref Project
-                                    - Key: Environment
-                                      Value: !Ref Environment
-                                    - Key: ManagedBy
-                                      Value: !Ref ManagedBy
-                      roleArn: ""
-                      parameterOverrides:
-                        - name: SecretName
-                          value: application-secrets-<+pipeline.variables.ENVIRONMENT>
-                          type: String
-                        - name: SecretDescription
-                          value: Secret for environment <+pipeline.variables.ENVIRONMENT>
-                          type: String
-                        - name: SecretValue
-                          value: <+execution.steps.Prepare_Secret_JSON.output.outputVariables.SECRET_JSON>
-                          type: String
-                        - name: Project
-                          value: <+project.name>
-                          type: String
-                        - name: Environment
-                          value: <+pipeline.variables.ENVIRONMENT>
-                          type: String
-                        - name: ManagedBy
-                          value: cloudformation
-                          type: String
+echo "SECRET_JSON=$SECRET_JSON" >> "$HARNESS_OUTPUT_VARIABLES"
