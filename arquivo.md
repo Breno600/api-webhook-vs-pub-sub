@@ -1,67 +1,100 @@
 set -euo pipefail
 set +x
 
-DELIM='***'
-
-PAIRS_RAW="${PAIRS:-}"
-if [ -z "${PAIRS_RAW}" ] || [ "${PAIRS_RAW}" = "null" ]; then
+RAW="${PAIRS:-}"
+if [ -z "${RAW}" ] || [ "${RAW}" = "null" ]; then
   echo "ERRO: PAIRS vazio/null"
   exit 1
 fi
 
-# (Opcional) se quiser bloquear literal de secret não resolvido
-# -> cuidado: tem Harness que tenta avaliar "<+secrets..." até dentro do script,
-# então montamos a string sem escrever "<+" literal
-token="<""+secrets.getValue"
-if echo "${PAIRS_RAW}" | grep -Fq "${token}"; then
-  echo "ERRO: detectei placeholder de secret não resolvido dentro do PAIRS."
-  echo "Isso indica que o Harness não resolveu os secrets dentro desse input."
-  exit 1
+# Detecta modo
+MODE=""
+DELIM=""
+
+trimmed="$(printf "%s" "$RAW" | sed -e 's/^[[:space:]]*//' )"
+
+if printf "%s" "$trimmed" | grep -qE '^\{'; then
+  MODE="json"
+elif printf "%s" "$RAW" | grep -Fq "***"; then
+  MODE="pairs"
+  DELIM="***"
+elif printf "%s" "$RAW" | grep -Fq ";"; then
+  MODE="pairs"
+  DELIM=";"
+else
+  # 1 item só (KEY=VALUE) sem delimitador
+  MODE="pairs"
+  DELIM=""  # split não vai ser usado
 fi
 
 SECRET_JSON="$(
-  PAIRS_RAW="${PAIRS_RAW}" DELIM="${DELIM}" python3 - <<'PY'
+  RAW="$RAW" MODE="$MODE" DELIM="$DELIM" python3 - <<'PY'
 import os, re, sys, json, hashlib
 
-raw = os.environ.get("PAIRS_RAW","")
-delim = os.environ.get("DELIM","***")
+raw = os.environ.get("RAW","")
+mode = os.environ.get("MODE","pairs")
+delim = os.environ.get("DELIM","")
 
-parts = [p.strip() for p in raw.split(delim)]
-obj = {}
-
-# aceita: letra/underscore no começo, depois letra/número/underscore/ponto/hífen
+# Aceita: começa com letra/_ e depois letra/número/_/./-
 key_re = re.compile(r"^[A-Za-z_][A-Za-z0-9_.-]*$")
 
+def log(s):  # logs vão pro stderr (não contaminam o Secret)
+  print(s, file=sys.stderr)
+
+def compact(obj: dict) -> str:
+  log("--- VALIDAÇÃO (sem mostrar valor) ---")
+  for k in sorted(obj.keys()):
+    v = obj[k]
+    sha = hashlib.sha256(v.encode("utf-8")).hexdigest()
+    log(f"{k}: len={len(v)} sha256={sha}")
+  return json.dumps(obj, ensure_ascii=False, separators=(",",":"))
+
+if mode == "json":
+  try:
+    obj = json.loads(raw)
+  except Exception as e:
+    log(f"ERRO: JSON inválido: {e}")
+    sys.exit(1)
+  if not isinstance(obj, dict) or not obj:
+    log("ERRO: JSON precisa ser um objeto e não pode ser vazio")
+    sys.exit(1)
+  for k, v in obj.items():
+    if not isinstance(k, str) or not k or not key_re.match(k):
+      log(f"ERRO: key inválida no JSON: '{k}'")
+      sys.exit(1)
+    if not isinstance(v, str):
+      log(f"ERRO: valor de '{k}' precisa ser string")
+      sys.exit(1)
+  sys.stdout.write(compact(obj))
+  sys.exit(0)
+
+# mode == "pairs"
+parts = []
+if delim:
+  parts = [p.strip() for p in raw.split(delim)]
+else:
+  parts = [raw.strip()]
+
+obj = {}
 for part in parts:
   if not part:
     continue
   if "=" not in part:
-    print(f"ERRO: item sem '=': {part}", file=sys.stderr)
+    log(f"ERRO: item sem '=': {part}")
     sys.exit(1)
-
-  k, v = part.split("=", 1)
+  k, v = part.split("=", 1)  # mantém '=' dentro do valor
   k = k.strip()
   v = v.strip()
-
   if not k or not key_re.match(k):
-    print(f"ERRO: key inválida: '{k}'", file=sys.stderr)
+    log(f"ERRO: key inválida: '{k}'")
     sys.exit(1)
-
-  # valor pode ser qualquer string (inclusive conter '=')
   obj[k] = v
 
 if not obj:
-  print("ERRO: nenhum par key=value encontrado", file=sys.stderr)
+  log("ERRO: nenhum par key=value encontrado")
   sys.exit(1)
 
-# log sem vazar segredo
-print("--- VALIDAÇÃO (sem mostrar valor) ---", file=sys.stderr)
-for k in sorted(obj.keys()):
-  v = obj[k]
-  sha = hashlib.sha256(v.encode("utf-8")).hexdigest()
-  print(f"{k}: len={len(v)} sha256={sha}", file=sys.stderr)
-
-sys.stdout.write(json.dumps(obj, ensure_ascii=False, separators=(",",":")))
+sys.stdout.write(compact(obj))
 PY
 )"
 
@@ -73,4 +106,8 @@ if [ -z "${OUT_FILE}" ]; then
   exit 1
 fi
 
-echo "SECRET_JSON=${SECRET_JSON}" >> "${OUT_FILE}"
+# garante que existe
+mkdir -p "$(dirname "$OUT_FILE")" 2>/dev/null || true
+touch "$OUT_FILE"
+
+echo "SECRET_JSON=${SECRET_JSON}" >> "$OUT_FILE"
