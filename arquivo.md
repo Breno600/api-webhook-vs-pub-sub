@@ -1,327 +1,47 @@
-template:
-  name: DEV
-  identifier: DEV
-  versionLabel: v1
-  type: Stage
-  projectIdentifier: ExportadorSitef
-  orgIdentifier: Fiserv
-  tags: {}
-  spec:
-    type: Custom
-    spec:
-      execution:
-        steps:
-          - step:
-              type: ShellScript
-              name: Prepare_Secret_JSON
-              identifier: Prepare_Secret_JSON
-              timeout: 10m
-              spec:
-                shell: Bash
-                executionTarget: {}
-                environmentVariables:
-                  - name: PAIRS
-                    type: String
-                    value: <+stage.variables.AWS_STRUCTURE_SECRET_MANAGER>
-                  - name: RAW_REAL
-                    type: String
-                    value: ""
-                source:
-                  type: Inline
-                  spec:
-                    script: |-
-                      set -euo pipefail
-                      set +x
+bash-5.2# kubectl logs transaction-rules-v2-dev-java-chart-688b86cc7f-hbklf -f -n omnidata
 
-                      RAW="${PAIRS:-}"
-                      if [ -z "${RAW}" ] || [ "${RAW}" = "null" ]; then
-                        echo "ERRO: PAIRS vazio/null"
-                        exit 1
-                      fi
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
 
-                      # Detecta modo
-                      MODE=""
-                      DELIM=""
+ :: Spring Boot ::                (v3.5.8)
 
-                      trimmed="$(printf "%s" "$RAW" | sed -e 's/^[[:space:]]*//')"
-
-                      if printf "%s" "$trimmed" | grep -qE '^\{'; then
-                        MODE="json"
-                      elif printf "%s" "$RAW" | grep -Fq "***"; then
-                        MODE="pairs"; DELIM="***"
-                      elif printf "%s" "$RAW" | grep -Fq ";"; then
-                        MODE="pairs"; DELIM=";"
-                      else
-                        MODE="pairs"; DELIM=""   # 1 item só (KEY=VALUE)
-                      fi
-
-                      SECRET_JSON="$(
-                        RAW="$RAW" MODE="$MODE" DELIM="$DELIM" python3 - <<'PY'
-                      import os, re, sys, json, hashlib
-
-                      raw  = os.environ.get("RAW","")
-                      mode = os.environ.get("MODE","pairs")
-                      delim = os.environ.get("DELIM","")
-
-                      key_re = re.compile(r"^[A-Za-z_][A-Za-z0-9_.-]*$")
-
-                      def log(s):  # stderr pra não “contaminar” o secret
-                        print(s, file=sys.stderr)
-
-                      def compact(obj):
-                        log("--- VALIDAÇÃO (sem mostrar valor) ---")
-                        for k in sorted(obj.keys()):
-                          v = obj[k]
-                          sha = hashlib.sha256(v.encode("utf-8")).hexdigest()
-                          log(f"{k}: len={len(v)} sha256={sha}")
-                        return json.dumps(obj, ensure_ascii=False, separators=(",",":"))
-
-                      if mode == "json":
-                        try:
-                          obj = json.loads(raw)
-                        except Exception as e:
-                          log(f"ERRO: JSON inválido: {e}")
-                          sys.exit(1)
-                        if not isinstance(obj, dict) or not obj:
-                          log("ERRO: JSON precisa ser um objeto e não pode ser vazio")
-                          sys.exit(1)
-                        for k,v in obj.items():
-                          if not isinstance(k,str) or not k or not key_re.match(k):
-                            log(f"ERRO: key inválida no JSON: '{k}'"); sys.exit(1)
-                          if not isinstance(v,str):
-                            log(f"ERRO: valor de '{k}' precisa ser string"); sys.exit(1)
-                        sys.stdout.write(compact(obj))
-                        sys.exit(0)
-
-                      # pairs mode
-                      parts = [raw.strip()] if not delim else [p.strip() for p in raw.split(delim)]
-                      obj = {}
-
-                      for part in parts:
-                        if not part:
-                          continue
-                        if "=" not in part:
-                          log(f"ERRO: item sem '=': {part}")
-                          sys.exit(1)
-                        k, v = part.split("=", 1)  # mantém '=' dentro do valor
-                        k = k.strip(); v = v.strip()
-
-                        if not k or not key_re.match(k):
-                          log(f"ERRO: key inválida: '{k}'")
-                          sys.exit(1)
-
-                        obj[k] = v
-
-                      if not obj:
-                        log("ERRO: nenhum par key=value encontrado")
-                        sys.exit(1)
-
-                      sys.stdout.write(compact(obj))
-                      PY
-                      )"
-
-                      echo "OK: SECRET_JSON pronto (len=${#SECRET_JSON})"
-                      export SECRET_JSON
-                outputVariables:
-                  - name: SECRET_JSON
-                    type: String
-                    value: SECRET_JSON
-          - step:
-              type: ShellScript
-              name: Upsert_SecretManager
-              identifier: Upsert_SecretManager
-              spec:
-                shell: Bash
-                executionTarget: {}
-                source:
-                  type: Inline
-                  spec:
-                    script: |-
-                      #!/usr/bin/env bash
-                      set -euo pipefail
-                      set +x
-
-                      #############################################
-                      # INPUTS obrigatórios
-                      #############################################
-                      : "${AWS_REGION:?AWS_REGION obrigatório}"
-                      : "${ASSUME_ROLE_ARN:?ASSUME_ROLE_ARN obrigatório}"
-                      : "${ASSUME_ROLE_EXTERNAL_ID:?ASSUME_ROLE_EXTERNAL_ID obrigatório}"
-                      : "${SECRET_NAME:?SECRET_NAME obrigatório}"
-
-                      # Credenciais base (vindas do Harness Secret Manager)
-                      : "${BASE_AWS_ACCESS_KEY_ID:?BASE_AWS_ACCESS_KEY_ID obrigatório}"
-                      : "${BASE_AWS_SECRET_ACCESS_KEY:?BASE_AWS_SECRET_ACCESS_KEY obrigatório}"
-                      BASE_AWS_SESSION_TOKEN="${BASE_AWS_SESSION_TOKEN:-}"
-
-                      # Payload em pares (um-liner com *** separando)
-                      : "${PAIRS:?PAIRS obrigatório}"
-                      DELIM="${DELIM:-***}"
-
-                      #############################################
-                      # 1) Assume Role (precisa das credenciais base)
-                      #############################################
-                      export AWS_ACCESS_KEY_ID="$BASE_AWS_ACCESS_KEY_ID"
-                      export AWS_SECRET_ACCESS_KEY="$BASE_AWS_SECRET_ACCESS_KEY"
-                      if [[ -n "$BASE_AWS_SESSION_TOKEN" ]]; then
-                        export AWS_SESSION_TOKEN="$BASE_AWS_SESSION_TOKEN"
-                      else
-                        unset AWS_SESSION_TOKEN || true
-                      fi
-
-                      SESSION_NAME="harness-secrets-$(date +%s)"
-
-                      ASSUME_JSON="$(aws sts assume-role \
-                        --region "$AWS_REGION" \
-                        --role-arn "$ASSUME_ROLE_ARN" \
-                        --role-session-name "$SESSION_NAME" \
-                        --external-id "$ASSUME_ROLE_EXTERNAL_ID" \
-                        --duration-seconds 3600)"
-
-                      export AWS_ACCESS_KEY_ID="$(printf '%s' "$ASSUME_JSON" | python3 -c "import sys,json;print(json.load(sys.stdin)['Credentials']['AccessKeyId'])")"
-                      export AWS_SECRET_ACCESS_KEY="$(printf '%s' "$ASSUME_JSON" | python3 -c "import sys,json;print(json.load(sys.stdin)['Credentials']['SecretAccessKey'])")"
-                      export AWS_SESSION_TOKEN="$(printf '%s' "$ASSUME_JSON" | python3 -c "import sys,json;print(json.load(sys.stdin)['Credentials']['SessionToken'])")"
-
-                      aws sts get-caller-identity --region "$AWS_REGION" >/dev/null
-                      echo "OK: Role assumida com sucesso."
-
-                      #############################################
-                      # 2) Montar JSON do Secret a partir de PAIRS
-                      #    - valida keys (permite _ . -)
-                      #    - não imprime valores
-                      #############################################
-                      SECRET_JSON="$(PAIRS_RAW="$PAIRS" DELIM="$DELIM" python3 - <<'PY'
-                      import os, re, sys, json, hashlib
-
-                      raw = os.environ.get("PAIRS_RAW","")
-                      delim = os.environ.get("DELIM","***")
-
-                      parts = [p.strip() for p in raw.split(delim)]
-                      obj = {}
-
-                      key_re = re.compile(r"^[A-Za-z_][A-Za-z0-9_.-]*$")  # aceita hífen
-
-                      for part in parts:
-                          if not part:
-                              continue
-                          if "=" not in part:
-                              print(f"ERRO: item sem '=': {part}", file=sys.stderr)
-                              sys.exit(1)
-                          k, v = part.split("=", 1)
-                          k = k.strip()
-                          v = v.strip()
-
-                          if not k or not key_re.match(k):
-                              print(f"ERRO: key inválida: '{k}'", file=sys.stderr)
-                              sys.exit(1)
-
-                          obj[k] = v
-
-                      # validação segura (sem mostrar valor)
-                      print("--- VALIDAÇÃO (sem mostrar valor) ---", file=sys.stderr)
-                      for k, v in obj.items():
-                          h = hashlib.sha256(v.encode("utf-8")).hexdigest()
-                          print(f"{k}: len={len(v)} sha256={h}", file=sys.stderr)
-
-                      print(json.dumps(obj, ensure_ascii=False))
-                      PY
-                      )"
-
-                      # limite do Secrets Manager é ~64KB por SecretString
-                      SECRET_LEN_BYTES="$(printf '%s' "$SECRET_JSON" | wc -c | tr -d ' ')"
-                      if (( SECRET_LEN_BYTES > 60000 )); then
-                        echo "ERRO: SecretString ficou muito grande (${SECRET_LEN_BYTES} bytes). Secrets Manager tem limite ~64KB."
-                        exit 1
-                      fi
-
-                      echo "OK: SECRET_JSON pronto (bytes=${SECRET_LEN_BYTES})."
-
-                      #############################################
-                      # 3) UPSERT no AWS Secrets Manager
-                      #############################################
-                      if aws secretsmanager describe-secret --region "$AWS_REGION" --secret-id "$SECRET_NAME" >/dev/null 2>&1; then
-                        echo "Secret existe. Atualizando valor..."
-                        aws secretsmanager put-secret-value \
-                          --region "$AWS_REGION" \
-                          --secret-id "$SECRET_NAME" \
-                          --secret-string "$SECRET_JSON" >/dev/null
-                      else
-                        echo "Secret não existe. Criando..."
-                        aws secretsmanager create-secret \
-                          --region "$AWS_REGION" \
-                          --name "$SECRET_NAME" \
-                          --secret-string "$SECRET_JSON" >/dev/null
-                      fi
-
-                      SECRET_ARN="$(aws secretsmanager describe-secret --region "$AWS_REGION" --secret-id "$SECRET_NAME" --query ARN --output text)"
-                      echo "OK: upsert finalizado. ARN=${SECRET_ARN}"
-
-                      #############################################
-                      # 4) (Opcional) Exportar outputs para próximos steps
-                      #############################################
-                      if [[ -n "${HARNESS_ENV_EXPORT:-}" && -f "${HARNESS_ENV_EXPORT:-/dev/null}" ]]; then
-                        {
-                          echo "SECRET_NAME=${SECRET_NAME}"
-                          echo "SECRET_ARN=${SECRET_ARN}"
-                        } >> "$HARNESS_ENV_EXPORT"
-                      else
-                        echo "WARN: HARNESS_ENV_EXPORT não disponível; pulando export de output vars."
-                      fi
-                environmentVariables:
-                  - name: AWS_REGION
-                    type: String
-                    value: <+stage.variables.AWS_REGION>
-                  - name: ASSUME_ROLE_ARN
-                    type: String
-                    value: <+stage.variables.ASSUME_ROLE_ARN>
-                  - name: ASSUME_ROLE_EXTERNAL_ID
-                    type: String
-                    value: <+stage.variables.ASSUME_ROLE_EXTERNAL_ID>
-                  - name: SECRET_NAME
-                    type: String
-                    value: <+stage.variables.SECRET_NAME>
-                  - name: PAIRS
-                    type: String
-                    value: <+stage.variables.AWS_STRUCTURE_SECRET_MANAGER>
-                  - name: BASE_AWS_ACCESS_KEY_ID
-                    type: String
-                    value: <+secrets.getValue("aws_access_key_nonprod")>
-                  - name: BASE_AWS_SECRET_ACCESS_ID
-                    type: String
-                    value: <+secrets.getValue("aws_secret_key_nonprod")>
-                outputVariables: []
-              timeout: 10m
-            contextType: StageTemplate
-    variables:
-      - name: AWS_STRUCTURE_SECRET_MANAGER
-        type: String
-        description: |-
-          Ex (JSON):
-          {"VAR1":"<+secrets.getValue(\"VAR1\")>","VAR2":"<+secrets.getValue(\"VAR2\")>"}
-        required: true
-        value: <+input>
-      - name: ENVIRONMENT
-        type: String
-        description: dev / cat / prod
-        required: true
-        value: <+input>
-      - name: AWS_REGION
-        type: String
-        description: ""
-        required: true
-        value: <+input>
-      - name: ASSUME_ROLE_ARN
-        type: String
-        description: ""
-        required: true
-        value: <+input>
-      - name: ASSUME_ROLE_EXTERNAL_ID
-        type: String
-        description: ""
-        required: true
-        value: <+input>
-      - name: SECRET_NAME
-        type: String
-        description: ""
-        required: true
-        value: <+input>
+timestamp="2025-12-22 21:38:12.077", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="c.f.e.TransactionDataRulesApplication", thread="main", log="Starting TransactionDataRulesApplication v2.0.0-SNAPSHOT using Java 21.0.8 with PID 1 (/opt/booter/transaction-data-rules.jar started by booter in /opt/booter) "
+timestamp="2025-12-22 21:38:12.079", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="c.f.e.TransactionDataRulesApplication", thread="main", log="No active profile set, falling back to 1 default profile: "default" "
+timestamp="2025-12-22 21:38:27.583", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationDelegate", thread="main", log="Multiple Spring Data modules found, entering strict repository configuration mode "
+timestamp="2025-12-22 21:38:27.680", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationDelegate", thread="main", log="Bootstrapping Spring Data JPA repositories in DEFAULT mode. "
+timestamp="2025-12-22 21:38:29.173", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ClienteRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
+timestamp="2025-12-22 21:38:29.175", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ConvBandeiraRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
+timestamp="2025-12-22 21:38:29.176", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ConvModoEntradaRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
+timestamp="2025-12-22 21:38:29.279", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ConvProdutoRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
+timestamp="2025-12-22 21:38:29.281", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ConvTransacoesRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
+timestamp="2025-12-22 21:38:29.282", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.LojaRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
+timestamp="2025-12-22 21:38:29.284", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.SitRedeRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
+timestamp="2025-12-22 21:38:29.677", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationDelegate", thread="main", log="Finished Spring Data repository scanning in 1899 ms. Found 6 JPA repository interfaces. "
+timestamp="2025-12-22 21:38:39.875", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.b.w.e.tomcat.TomcatWebServer", thread="main", log="Tomcat initialized with port 8083 (http) "
+2025-12-22 21:38:40.075  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+timestamp="2025-12-22 21:38:40.075", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.a.catalina.core.StandardService", thread="main", log="Starting service [Tomcat] "
+2025-12-22 21:38:40.281  INFO 1 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.49]
+timestamp="2025-12-22 21:38:40.281", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.a.catalina.core.StandardEngine", thread="main", log="Starting Servlet engine: [Apache Tomcat/10.1.49] "
+2025-12-22 21:38:41.079  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+timestamp="2025-12-22 21:38:41.079", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.a.c.c.C.[Tomcat].[localhost].[/]", thread="main", log="Initializing Spring embedded WebApplicationContext "
+timestamp="2025-12-22 21:38:41.080", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.b.w.s.c.ServletWebServerApplicationContext", thread="main", log="Root WebApplicationContext: initialization completed in 28404 ms "
+timestamp="2025-12-22 21:38:53.674", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="com.zaxxer.hikari.HikariDataSource", thread="main", log="HikariPool-1 - Starting... "
+2025-12-22 21:38:55.576  INFO 1 --- [           main] net.snowflake.client.core.SFSession      : Opening session with server: https://sz68910.sa-east-1.aws.privatelink.snowflakecomputing.com:443/, account: sz68910, user: OMNIDATA_USER_LOWER, password is not provided, role: null, database: DB_DEV_RAW_APM0011753_OMNIDATA, schema: SCH_OMINIDATA_HOSPEDADO, warehouse: WH_DEV_OMNIDATA_ETL, validate default parameters: null, authenticator: SNOWFLAKE_JWT, ocsp mode: FAIL_OPEN, passcode in password: null, passcode is not provided, private key is not provided, disable socks proxy: null, application: null, app id: JDBC, app version: 3.27.0, login timeout: null, retry timeout: null, network timeout: null, query timeout: null, connection timeout: null, socket timeout: null, tracing: null, private key file: /opt/booter/snowflake-certs/OMNIDATA_LOWER_SRVACCT_rsa_key.p8, private key base 64: not provided, private key pwd is provided, enable_diagnostics: null, diagnostics_allowlist_path: null, session parameters: client store temporary credential: null, gzip disabled: null, browser response timeout: null
+timestamp="2025-12-22 21:38:55.576", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="net.snowflake.client.core.SFSession", thread="main", log="Opening session with server: https://sz68910.sa-east-1.aws.privatelink.snowflakecomputing.com:443/, account: sz68910, user: OMNIDATA_USER_LOWER, password is not provided, role: null, database: DB_DEV_RAW_APM0011753_OMNIDATA, schema: SCH_OMINIDATA_HOSPEDADO, warehouse: WH_DEV_OMNIDATA_ETL, validate default parameters: null, authenticator: SNOWFLAKE_JWT, ocsp mode: FAIL_OPEN, passcode in password: null, passcode is not provided, private key is not provided, disable socks proxy: null, application: null, app id: JDBC, app version: 3.27.0, login timeout: null, retry timeout: null, network timeout: null, query timeout: null, connection timeout: null, socket timeout: null, tracing: null, private key file: /opt/booter/snowflake-certs/OMNIDATA_LOWER_SRVACCT_rsa_key.p8, private key base 64: not provided, private key pwd is provided, enable_diagnostics: null, diagnostics_allowlist_path: null, session parameters: client store temporary credential: null, gzip disabled: null, browser response timeout: null "
+2025-12-22 21:38:55.580  INFO 1 --- [           main] net.snowflake.client.core.SFSession      : Connecting to GLOBAL Snowflake domain
+timestamp="2025-12-22 21:38:55.580", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="net.snowflake.client.core.SFSession", thread="main", log="Connecting to GLOBAL Snowflake domain "
+2025-12-22 21:38:58.176  WARN 1 --- [           main] net.snowflake.client.core.FileUtil       : Extract private key from file: File /opt/booter/snowflake-certs/OMNIDATA_LOWER_SRVACCT_rsa_key.p8 is accessible by others to: read
+timestamp="2025-12-22 21:38:58.176", apm="0011753", appname="TransactionDataRulesV2", level="WARN", logger="net.snowflake.client.core.FileUtil", thread="main", log="Extract private key from file: File /opt/booter/snowflake-certs/OMNIDATA_LOWER_SRVACCT_rsa_key.p8 is accessible by others to: read "
+2025-12-22 21:39:05.074 ERROR 1 --- [           main] net.snowflake.client.core.SessionUtil    : Failed to open new session for user: OMNIDATA_USER_LOWER, host: sz68910.sa-east-1.aws.privatelink.snowflakecomputing.com. Error: JWT token is invalid. [18007fc5-2b67-411f-bc44-a53b409aac27]
+timestamp="2025-12-22 21:39:05.074", apm="0011753", appname="TransactionDataRulesV2", level="ERROR", logger="n.snowflake.client.core.SessionUtil", thread="main", log="Failed to open new session for user: OMNIDATA_USER_LOWER, host: sz68910.sa-east-1.aws.privatelink.snowflakecomputing.com. Error: JWT token is invalid. [18007fc5-2b67-411f-bc44-a53b409aac27] "
+timestamp="2025-12-22 21:39:06.181", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.h.jpa.internal.util.LogHelper", thread="main", log="HHH000204: Processing PersistenceUnitInfo [name: default] "
+timestamp="2025-12-22 21:39:08.321", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="org.hibernate.Version", thread="main", log="HHH000412: Hibernate ORM core version 6.6.36.Final "
+bash-5.2# kubectl get pods -n omnidata
+NAME                                                       READY   STATUS    RESTARTS      AGE
+transaction-data-parquet-dev-java-chart-8468dfcd8d-x4sx6   1/1     Running   0             2d19h
+transaction-rules-v2-dev-java-chart-688b86cc7f-hbklf       1/1     Running   1 (21s ago)   96s
+bash-5.2# kubectl get pods -n omnidata
