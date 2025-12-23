@@ -1,47 +1,27 @@
-bash-5.2# kubectl logs transaction-rules-v2-dev-java-chart-688b86cc7f-hbklf -f -n omnidata
+#!/usr/bin/env bash
+set -euo pipefail
 
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
+# ajusta aqui os nomes dos arquivos exatamente como estão na sua máquina
+WVC_P12="wvc-ap11753-me-kpc-d.1dc.com"
+KAFKA_TRUSTSTORE="kafka-truststore"
+SNOWFLAKE_CERT="zvc-ap11753-me-kpc-c.1dc.com"  # <- troque se o cert correto for outro arquivo
 
- :: Spring Boot ::                (v3.5.8)
+# base64 “uma linha só” (compatível Linux/macOS). Se der erro no -w, uso fallback.
+b64_1line() {
+  if base64 --help 2>/dev/null | grep -q -- "-w"; then
+    base64 -w 0 "$1"
+  else
+    base64 "$1" | tr -d '\n'
+  fi
+}
 
-timestamp="2025-12-22 21:38:12.077", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="c.f.e.TransactionDataRulesApplication", thread="main", log="Starting TransactionDataRulesApplication v2.0.0-SNAPSHOT using Java 21.0.8 with PID 1 (/opt/booter/transaction-data-rules.jar started by booter in /opt/booter) "
-timestamp="2025-12-22 21:38:12.079", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="c.f.e.TransactionDataRulesApplication", thread="main", log="No active profile set, falling back to 1 default profile: "default" "
-timestamp="2025-12-22 21:38:27.583", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationDelegate", thread="main", log="Multiple Spring Data modules found, entering strict repository configuration mode "
-timestamp="2025-12-22 21:38:27.680", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationDelegate", thread="main", log="Bootstrapping Spring Data JPA repositories in DEFAULT mode. "
-timestamp="2025-12-22 21:38:29.173", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ClienteRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 21:38:29.175", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ConvBandeiraRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 21:38:29.176", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ConvModoEntradaRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 21:38:29.279", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ConvProdutoRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 21:38:29.281", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ConvTransacoesRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 21:38:29.282", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.LojaRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 21:38:29.284", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.SitRedeRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 21:38:29.677", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationDelegate", thread="main", log="Finished Spring Data repository scanning in 1899 ms. Found 6 JPA repository interfaces. "
-timestamp="2025-12-22 21:38:39.875", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.b.w.e.tomcat.TomcatWebServer", thread="main", log="Tomcat initialized with port 8083 (http) "
-2025-12-22 21:38:40.075  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-timestamp="2025-12-22 21:38:40.075", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.a.catalina.core.StandardService", thread="main", log="Starting service [Tomcat] "
-2025-12-22 21:38:40.281  INFO 1 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.49]
-timestamp="2025-12-22 21:38:40.281", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.a.catalina.core.StandardEngine", thread="main", log="Starting Servlet engine: [Apache Tomcat/10.1.49] "
-2025-12-22 21:38:41.079  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-timestamp="2025-12-22 21:38:41.079", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.a.c.c.C.[Tomcat].[localhost].[/]", thread="main", log="Initializing Spring embedded WebApplicationContext "
-timestamp="2025-12-22 21:38:41.080", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.b.w.s.c.ServletWebServerApplicationContext", thread="main", log="Root WebApplicationContext: initialization completed in 28404 ms "
-timestamp="2025-12-22 21:38:53.674", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="com.zaxxer.hikari.HikariDataSource", thread="main", log="HikariPool-1 - Starting... "
-2025-12-22 21:38:55.576  INFO 1 --- [           main] net.snowflake.client.core.SFSession      : Opening session with server: https://sz68910.sa-east-1.aws.privatelink.snowflakecomputing.com:443/, account: sz68910, user: OMNIDATA_USER_LOWER, password is not provided, role: null, database: DB_DEV_RAW_APM0011753_OMNIDATA, schema: SCH_OMINIDATA_HOSPEDADO, warehouse: WH_DEV_OMNIDATA_ETL, validate default parameters: null, authenticator: SNOWFLAKE_JWT, ocsp mode: FAIL_OPEN, passcode in password: null, passcode is not provided, private key is not provided, disable socks proxy: null, application: null, app id: JDBC, app version: 3.27.0, login timeout: null, retry timeout: null, network timeout: null, query timeout: null, connection timeout: null, socket timeout: null, tracing: null, private key file: /opt/booter/snowflake-certs/OMNIDATA_LOWER_SRVACCT_rsa_key.p8, private key base 64: not provided, private key pwd is provided, enable_diagnostics: null, diagnostics_allowlist_path: null, session parameters: client store temporary credential: null, gzip disabled: null, browser response timeout: null
-timestamp="2025-12-22 21:38:55.576", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="net.snowflake.client.core.SFSession", thread="main", log="Opening session with server: https://sz68910.sa-east-1.aws.privatelink.snowflakecomputing.com:443/, account: sz68910, user: OMNIDATA_USER_LOWER, password is not provided, role: null, database: DB_DEV_RAW_APM0011753_OMNIDATA, schema: SCH_OMINIDATA_HOSPEDADO, warehouse: WH_DEV_OMNIDATA_ETL, validate default parameters: null, authenticator: SNOWFLAKE_JWT, ocsp mode: FAIL_OPEN, passcode in password: null, passcode is not provided, private key is not provided, disable socks proxy: null, application: null, app id: JDBC, app version: 3.27.0, login timeout: null, retry timeout: null, network timeout: null, query timeout: null, connection timeout: null, socket timeout: null, tracing: null, private key file: /opt/booter/snowflake-certs/OMNIDATA_LOWER_SRVACCT_rsa_key.p8, private key base 64: not provided, private key pwd is provided, enable_diagnostics: null, diagnostics_allowlist_path: null, session parameters: client store temporary credential: null, gzip disabled: null, browser response timeout: null "
-2025-12-22 21:38:55.580  INFO 1 --- [           main] net.snowflake.client.core.SFSession      : Connecting to GLOBAL Snowflake domain
-timestamp="2025-12-22 21:38:55.580", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="net.snowflake.client.core.SFSession", thread="main", log="Connecting to GLOBAL Snowflake domain "
-2025-12-22 21:38:58.176  WARN 1 --- [           main] net.snowflake.client.core.FileUtil       : Extract private key from file: File /opt/booter/snowflake-certs/OMNIDATA_LOWER_SRVACCT_rsa_key.p8 is accessible by others to: read
-timestamp="2025-12-22 21:38:58.176", apm="0011753", appname="TransactionDataRulesV2", level="WARN", logger="net.snowflake.client.core.FileUtil", thread="main", log="Extract private key from file: File /opt/booter/snowflake-certs/OMNIDATA_LOWER_SRVACCT_rsa_key.p8 is accessible by others to: read "
-2025-12-22 21:39:05.074 ERROR 1 --- [           main] net.snowflake.client.core.SessionUtil    : Failed to open new session for user: OMNIDATA_USER_LOWER, host: sz68910.sa-east-1.aws.privatelink.snowflakecomputing.com. Error: JWT token is invalid. [18007fc5-2b67-411f-bc44-a53b409aac27]
-timestamp="2025-12-22 21:39:05.074", apm="0011753", appname="TransactionDataRulesV2", level="ERROR", logger="n.snowflake.client.core.SessionUtil", thread="main", log="Failed to open new session for user: OMNIDATA_USER_LOWER, host: sz68910.sa-east-1.aws.privatelink.snowflakecomputing.com. Error: JWT token is invalid. [18007fc5-2b67-411f-bc44-a53b409aac27] "
-timestamp="2025-12-22 21:39:06.181", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.h.jpa.internal.util.LogHelper", thread="main", log="HHH000204: Processing PersistenceUnitInfo [name: default] "
-timestamp="2025-12-22 21:39:08.321", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="org.hibernate.Version", thread="main", log="HHH000412: Hibernate ORM core version 6.6.36.Final "
-bash-5.2# kubectl get pods -n omnidata
-NAME                                                       READY   STATUS    RESTARTS      AGE
-transaction-data-parquet-dev-java-chart-8468dfcd8d-x4sx6   1/1     Running   0             2d19h
-transaction-rules-v2-dev-java-chart-688b86cc7f-hbklf       1/1     Running   1 (21s ago)   96s
-bash-5.2# kubectl get pods -n omnidata
+PAIRS="$(
+  printf "wvcAp11753=%s***kafka-truststore=%s***snowflake-cert=%s\n" \
+    "$(b64_1line "$WVC_P12")" \
+    "$(b64_1line "$KAFKA_TRUSTSTORE")" \
+    "$(b64_1line "$SNOWFLAKE_CERT")"
+)"
+
+echo "$PAIRS"
+echo
+echo "Tamanho PAIRS: ${#PAIRS} chars"
