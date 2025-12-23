@@ -1,158 +1,628 @@
-bash-5.2# kubectl logs transaction-rules-v2-dev-java-chart-688b86cc7f-wsngw -f -n omnidata
+#!/usr/bin/env bash
+set -euo pipefail
 
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
+# =========================================================
+# DEFAULTS / INPUTS DO HARNESS
+# =========================================================
+BRANCH="${BRANCH:-develop-testes}"
+STRATEGY="${STRATEGY:-deploy}"        # deploy | rollback
+GIT_TAG="${GIT_TAG:-}"
+MACHINES="${MACHINES:-${MACHINE:-}}"
 
- :: Spring Boot ::                (v3.5.8)
+# >>> CORREÇÃO DO ERRO (unbound variable)
+FILESTORE_ENV="${FILESTORE_ENV:-dev}"
+FILESTORE_BASE_DIR="${FILESTORE_BASE_DIR:-${FILESTORE_ENV}/${GIT_TAG}}"
 
-timestamp="2025-12-22 22:00:51.639", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="c.f.e.TransactionDataRulesApplication", thread="main", log="Starting TransactionDataRulesApplication v2.0.0-SNAPSHOT using Java 21.0.8 with PID 1 (/opt/booter/transaction-data-rules.jar started by booter in /opt/booter) "
-timestamp="2025-12-22 22:00:51.641", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="c.f.e.TransactionDataRulesApplication", thread="main", log="No active profile set, falling back to 1 default profile: "default" "
-timestamp="2025-12-22 22:01:07.138", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationDelegate", thread="main", log="Multiple Spring Data modules found, entering strict repository configuration mode "
-timestamp="2025-12-22 22:01:07.140", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationDelegate", thread="main", log="Bootstrapping Spring Data JPA repositories in DEFAULT mode. "
-timestamp="2025-12-22 22:01:08.837", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ClienteRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 22:01:08.838", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ConvBandeiraRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 22:01:08.839", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ConvModoEntradaRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 22:01:08.840", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ConvProdutoRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 22:01:08.841", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.ConvTransacoesRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 22:01:08.842", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.LojaRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 22:01:08.843", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationExtensionSupport", thread="main", log="Spring Data JPA - Could not safely identify store assignment for repository candidate interface com.fiserv.expdatarules.adapters.outbound.database.redis.repositories.SitRedeRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository "
-timestamp="2025-12-22 22:01:09.380", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.d.r.c.RepositoryConfigurationDelegate", thread="main", log="Finished Spring Data repository scanning in 2139 ms. Found 6 JPA repository interfaces. "
-timestamp="2025-12-22 22:01:19.542", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.b.w.e.tomcat.TomcatWebServer", thread="main", log="Tomcat initialized with port 8083 (http) "
-2025-12-22 22:01:19.781  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-timestamp="2025-12-22 22:01:19.781", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.a.catalina.core.StandardService", thread="main", log="Starting service [Tomcat] "
-2025-12-22 22:01:19.978  INFO 1 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.49]
-timestamp="2025-12-22 22:01:19.978", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.a.catalina.core.StandardEngine", thread="main", log="Starting Servlet engine: [Apache Tomcat/10.1.49] "
-2025-12-22 22:01:20.678  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-timestamp="2025-12-22 22:01:20.678", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.a.c.c.C.[Tomcat].[localhost].[/]", thread="main", log="Initializing Spring embedded WebApplicationContext "
-timestamp="2025-12-22 22:01:20.679", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="o.s.b.w.s.c.ServletWebServerApplicationContext", thread="main", log="Root WebApplicationContext: initialization completed in 28595 ms "
-timestamp="2025-12-22 22:01:32.742", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="com.zaxxer.hikari.HikariDataSource", thread="main", log="HikariPool-1 - Starting... "
-2025-12-22 22:01:34.539  INFO 1 --- [           main] net.snowflake.client.core.SFSession      : Opening session with server: https://sz68910.sa-east-1.aws.privatelink.snowflakecomputing.com:443/, account: sz68910, user: OMNIDATA_USER_LOWER, password is not provided, role: null, database: DB_DEV_RAW_APM0011753_OMNIDATA, schema: SCH_OMINIDATA_HOSPEDADO, warehouse: WH_DEV_OMNIDATA_ETL, validate default parameters: null, authenticator: SNOWFLAKE_JWT, ocsp mode: FAIL_OPEN, passcode in password: null, passcode is not provided, private key is not provided, disable socks proxy: null, application: null, app id: JDBC, app version: 3.27.0, login timeout: null, retry timeout: null, network timeout: null, query timeout: null, connection timeout: null, socket timeout: null, tracing: null, private key file: /opt/booter/snowflake-certs/OMNIDATA_LOWER_SRVACCT_rsa_key.p8, private key base 64: not provided, private key pwd is provided, enable_diagnostics: null, diagnostics_allowlist_path: null, session parameters: client store temporary credential: null, gzip disabled: null, browser response timeout: null
-timestamp="2025-12-22 22:01:34.539", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="net.snowflake.client.core.SFSession", thread="main", log="Opening session with server: https://sz68910.sa-east-1.aws.privatelink.snowflakecomputing.com:443/, account: sz68910, user: OMNIDATA_USER_LOWER, password is not provided, role: null, database: DB_DEV_RAW_APM0011753_OMNIDATA, schema: SCH_OMINIDATA_HOSPEDADO, warehouse: WH_DEV_OMNIDATA_ETL, validate default parameters: null, authenticator: SNOWFLAKE_JWT, ocsp mode: FAIL_OPEN, passcode in password: null, passcode is not provided, private key is not provided, disable socks proxy: null, application: null, app id: JDBC, app version: 3.27.0, login timeout: null, retry timeout: null, network timeout: null, query timeout: null, connection timeout: null, socket timeout: null, tracing: null, private key file: /opt/booter/snowflake-certs/OMNIDATA_LOWER_SRVACCT_rsa_key.p8, private key base 64: not provided, private key pwd is provided, enable_diagnostics: null, diagnostics_allowlist_path: null, session parameters: client store temporary credential: null, gzip disabled: null, browser response timeout: null "
-2025-12-22 22:01:34.542  INFO 1 --- [           main] net.snowflake.client.core.SFSession      : Connecting to GLOBAL Snowflake domain
-timestamp="2025-12-22 22:01:34.542", apm="0011753", appname="TransactionDataRulesV2", level="INFO", logger="net.snowflake.client.core.SFSession", thread="main", log="Connecting to GLOBAL Snowflake domain "
-2025-12-22 22:01:37.240  WARN 1 --- [           main] net.snowflake.client.core.FileUtil       : Extract private key from file: File /opt/booter/snowflake-certs/OMNIDATA_LOWER_SRVACCT_rsa_key.p8 is accessible by others to: read
-timestamp="2025-12-22 22:01:37.240", apm="0011753", appname="TransactionDataRulesV2", level="WARN", logger="net.snowflake.client.core.FileUtil", thread="main", log="Extract private key from file: File /opt/booter/snowflake-certs/OMNIDATA_LOWER_SRVACCT_rsa_key.p8 is accessible by others to: read "
-bash-5.2# 
+# =========================================================
+# GIT / HARNESS
+# =========================================================
+GIT_TOKEN="xXAiJyF1Hx4noamrBSdV"
+REPO_URL="https://harness:${GIT_TOKEN}@gitlab.onefiserv.net/latam/latam/merchant-latam/LAC/aws-cd-configuration/elastic-compute-cloud-sitef.git"
 
+HARNESS_X_API_KEY="${HARNESS_X_API_KEY:-pat.fgDto6qoTT6ctfZS9eWbEw.693f147c43bfca2e849b46f4.WtMpaUZG5pxwDZcIkzl0}"
 
+# =========================================================
+# HEADER
+# =========================================================
+echo "== DEPLOY PIPELINE =="
+echo "BRANCH            : ${BRANCH}"
+echo "STRATEGY          : ${STRATEGY}"
+echo "GIT_TAG           : ${GIT_TAG}"
+echo "MACHINES          : ${MACHINES}"
+echo "FILESTORE_ENV     : ${FILESTORE_ENV}"
+echo "FILESTORE_BASEDIR : ${FILESTORE_BASE_DIR}"
+echo
 
+# =========================================================
+# VALIDAÇÕES
+# =========================================================
+if [[ -z "${GIT_TAG}" ]]; then
+  echo "ERRO: GIT_TAG nao informado"
+  exit 1
+fi
 
-secretEnv:
-  - name: DB_URL
-    secretName: transaction-data-rules-v2-env
-    secretKey: DB_URL
-  - name: DB_USERNAME
-    secretName: transaction-data-rules-v2-env
-    secretKey: DB_USERNAME
-  - name: DB_PRIVATE_KEY_PASSWORD
-    secretName: transaction-data-rules-v2-env
-    secretKey: DB_PRIVATE_KEY_PASSWORD
-  - name: KAFKA_KEYSTORE_PASSWORD
-    secretName: transaction-data-rules-v2-env
-    secretKey: KAFKA_KEYSTORE_PASSWORD
-  - name: KAFKA_TRUSTSTORE_PASSWORD
-    secretName: transaction-data-rules-v2-env
-    secretKey: KAFKA_TRUSTSTORE_PASSWORD
+if [[ -z "${MACHINES}" ]]; then
+  echo "ERRO: MACHINES/MACHINE vazio"
+  exit 1
+fi
 
-# Mantém seu volume/volumeMount (agora o Secret "application-certs" vem do ExternalSecret)
-volumes:
-  - name: kafka-certs
-    secret:
-      secretName: application-certs
-      items:
-        - key: wvcAp11753
-          path: wvc-ap11753-me-kpc-d.1dc.com.p12
-        - key: kafka-truststore
-          path: kafka-truststore.p12
-  - name: snowflake-certs
-    secret:
-      secretName: application-certs
-      items:
-        - key: snowflake-cert
-          path: OMNIDATA_LOWER_SRVACCT_rsa_key.p8
+# =========================================================
+# NORMALIZA LISTA DE MÁQUINAS
+# - aceita .yml/.yaml
+# - aceita espaço ou vírgula
+# =========================================================
+MACHINES_CLEAN=""
+for m in ${MACHINES//,/ }; do
+  m="${m%.yml}"
+  m="${m%.yaml}"
+  MACHINES_CLEAN+="${m} "
+done
 
-volumeMounts:
-  - name: kafka-certs
-    mountPath: /opt/booter/kafka-certs
-    readOnly: true
-  - name: snowflake-certs
-    mountPath: /opt/booter/snowflake-certs
-    readOnly: true
+echo "MACHINES_NORMALIZADAS: ${MACHINES_CLEAN}"
+echo
 
-serviceAccount:
-  create: true
-  automount: true
-  annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::909139952102:role/omnidata-irsa-sqs-full-access
+# =========================================================
+# CLONE DO REPO
+# =========================================================
+WORKDIR="$(mktemp -d)"
+echo "Clonando repo em ${WORKDIR}..."
+git clone -b "${BRANCH}" "${REPO_URL}" "${WORKDIR}/elastic-compute-cloud-sitef"
+cd "${WORKDIR}/elastic-compute-cloud-sitef"
 
-resources:
-  limits:
-    cpu: 200m
-    memory: 256Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
+# =========================================================
+# LOOP POR MÁQUINA
+# =========================================================
+for m in ${MACHINES_CLEAN}; do
+  echo "===================================================="
+  echo "== ${STRATEGY^^} -> ${m}"
+  echo "===================================================="
+
+  ansible-playbook \
+    -i localhost, \
+    ansible/deploy_from_status.yml \
+    -e "machine_name=${m}" \
+    -e "deployment_ref=${GIT_TAG}" \
+    -e "deploy_action=${STRATEGY}" \
+    -e "filestore_env=${FILESTORE_ENV}" \
+    -e "filestore_base_dir=${FILESTORE_BASE_DIR}" \
+    -e "harness_x_api_key=${HARNESS_X_API_KEY}"
+
+done
+
+echo
+echo "== Pipeline finalizada com sucesso =="
 
 
-## External Secrets ##
-# 1) ExternalSecrets que GERAM os secrets no cluster
-externalSecrets:
-  enabled: true
-  storeRef:
-    name: omnidata-external-secrets-clustersecretstore
-    kind: ClusterSecretStore  # ou ClusterSecretStore
-  secrets:
-    # Secret para variáveis sensíveis (env)
-    - name: app-env
-      refreshInterval: 1m
-      target:
-        name: transaction-data-rules-v2-env
-      data:
-        - secretKey: KAFKA_KEYSTORE_PASSWORD
-          remoteRef:
-            key: "omnidata/dev/transaction-rules-v2/envs"
-            property: "KAFKA_KEYSTORE_PASSWORD"
-        - secretKey: DB_URL
-          remoteRef:
-            key: "omnidata/dev/transaction-rules-v2/envs"
-            property: "DB_URL"
-        - secretKey: DB_USERNAME
-          remoteRef:
-            key: "omnidata/dev/transaction-rules-v2/envs"
-            property: "DB_USERNAME"
-        - secretKey: DB_PRIVATE_KEY_PASSWORD
-          remoteRef:
-            key: "omnidata/dev/transaction-rules-v2/envs"
-            property: "DB_PRIVATE_KEY_PASSWORD"
-        - secretKey: KAFKA_TRUSTSTORE_PASSWORD
-          remoteRef:
-            key: "omnidata/dev/transaction-rules-v2/envs"
-            property: "KAFKA_TRUSTSTORE_PASSWORD"
+---
+# =====================================================================================
+# DEPLOY POR MÁQUINA
+# Chamado por deploy_from_status.yml (PIPELINE 2)
+# =====================================================================================
 
-    # Secret para certificados (volume/arquivos)
-    - name: application-certs
-      refreshInterval: 1m
-      target:
-        name: application-certs
-      data:
-        # Se você armazenar no AWS como BASE64 (string),
-        # use decodingStrategy Base64 para virar binário no Secret do K8s
-        - secretKey: wvcAp11753
-          remoteRef:
-            key: "omnidata/dev/transaction-rules-v2/envs"
-            property: "wvcAp11753"
-            decodingStrategy: Base64
-        - secretKey: kafka-truststore
-          remoteRef:
-            key: "omnidata/dev/transaction-rules-v2/envs"
-            property: "kafka-truststore"
-            decodingStrategy: Base64
-        - secretKey: snowflake-cert
-          remoteRef:
-            key: "omnidata/dev/transaction-rules-v2/envs"
-            property: "snowflake-cert"
-            decodingStrategy: Base64
+# -----------------------------------------------------------------------------
+# 1) Paths e defaults
+# -----------------------------------------------------------------------------
+- name: "Deploy | Definir caminhos para {{ machine_name }}"
+  ansible.builtin.set_fact:
+    repo_root_safe: "{{ repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..')) }}"
+    current_machine: "{{ (machine_name | string | trim) }}"
+    host_deploy_scripts: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
+    host_deploy_init_log: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/init_deploy.log"
+
+- name: "Deploy | Definir diretórios principais do repositório"
+  ansible.builtin.set_fact:
+    execution_dir: "{{ repo_root_safe }}/execution"
+    machines_dir: "{{ repo_root_safe }}/machines"
+    packages_dir: "{{ repo_root_safe }}/packages"
+
+# -----------------------------------------------------------------------------
+# 2) Resolver machine_file
+# -----------------------------------------------------------------------------
+- name: "Deploy | Definir candidatos de arquivo da máquina"
+  ansible.builtin.set_fact:
+    candidate_machine_files:
+      - "{{ execution_dir }}/machines/{{ current_machine }}.yml"
+      - "{{ execution_dir }}/{{ current_machine }}.yml"
+      - "{{ machines_dir }}/{{ current_machine }}.yml"
+      - "{{ repo_root_safe }}/inventory/machines/{{ current_machine }}.yml"
+
+- name: "Deploy | Verificar candidatos"
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop: "{{ candidate_machine_files }}"
+  register: machine_candidates_stat
+
+- name: "Deploy | Selecionar machine_file existente"
+  ansible.builtin.set_fact:
+    machine_file: "{{ item.item }}"
+  when:
+    - item.stat.exists
+    - machine_file is not defined
+  loop: "{{ machine_candidates_stat.results }}"
+
+- name: "Deploy | Falhar se arquivo da máquina não existir"
+  ansible.builtin.fail:
+    msg: |
+      [deploy] Arquivo de máquina não encontrado para {{ current_machine }}.
+      Caminhos testados:
+      {{ candidate_machine_files | to_nice_yaml }}
+  when: machine_file is not defined
+
+# -----------------------------------------------------------------------------
+# 3) Carregar machine_cfg + package_cfg
+# -----------------------------------------------------------------------------
+- name: "Deploy | Carregar config da máquina {{ current_machine }}"
+  ansible.builtin.include_vars:
+    file: "{{ machine_file }}"
+    name: machine_cfg
+
+- name: "Deploy | Validar package definido"
+  ansible.builtin.assert:
+    that:
+      - machine_cfg is defined
+      - machine_cfg.package is defined
+      - (machine_cfg.package | string | trim) | length > 0
+    fail_msg: "machine_cfg.package não definido em {{ machine_file }}"
+
+- name: "Deploy | Carregar config do pacote {{ machine_cfg.package }}"
+  ansible.builtin.include_vars:
+    file: "{{ packages_dir }}/{{ machine_cfg.package }}.yml"
+    name: package_cfg
+
+# -----------------------------------------------------------------------------
+# 4) SSH e host dinâmico
+# -----------------------------------------------------------------------------
+- name: "Deploy | Definir usuário alvo padrão"
+  ansible.builtin.set_fact:
+    target_user: "{{ machine_cfg.user | default(machine_cfg.target_user | default('ec2-user')) }}"
+
+- name: "Deploy | Definir ssh_common_args padrão"
+  ansible.builtin.set_fact:
+    target_ssh_common_args: >-
+      {{
+        machine_cfg.ssh_common_args
+          | default('-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null')
+      }}
+
+- name: "Deploy | Aplicar ProxyJump via bastion (quando necessário)"
+  ansible.builtin.set_fact:
+    target_ssh_common_args: >-
+      {{ target_ssh_common_args }}
+      -o ProxyJump={{ machine_cfg.bastion_user | default(target_user) }}@{{ machine_cfg.bastion_host }}
+  when:
+    - machine_cfg.bastion_host is defined
+    - (machine_cfg.bastion_host | string | length) > 0
+
+- name: "Deploy | Registrar host dinâmico"
+  ansible.builtin.add_host:
+    name: "{{ current_machine }}"
+    ansible_host: "{{ machine_cfg.host | default(machine_cfg.ip | default('')) }}"
+    ansible_user: "{{ target_user }}"
+    ansible_connection: ssh
+    ansible_ssh_common_args: "{{ target_ssh_common_args }}"
+  changed_when: true
+
+# -----------------------------------------------------------------------------
+# 5) Montar env final (pacote + máquina + extras)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Montar env final"
+  ansible.builtin.set_fact:
+    effective_env: >-
+      {{
+        (package_cfg.env_vars | default({}))
+        | combine(machine_cfg.env_vars | default({}), recursive=True)
+        | combine({
+            'SITEF_MACHINE': current_machine,
+            'SITEF_HOST': (machine_cfg.host | default(machine_cfg.ip | default(''))),
+            'DEPLOYMENT_REF': (deployment_ref | default('')),
+            'PACKAGE_NAME': (machine_cfg.package | default('')),
+            'ROLLBACK_PACKAGE': (machine_cfg.rollback | default(''))
+          }, recursive=True)
+      }}
+
+# -----------------------------------------------------------------------------
+# 6) Status file local + paths lógicos do filestore  (FIX: split set_fact)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Definir deployment_ref_lower (fix ansible set_fact)"
+  ansible.builtin.set_fact:
+    deployment_ref_lower: "{{ deployment_ref | lower }}"
+
+- name: "Deploy | Definir arquivos de status/log local"
+  ansible.builtin.set_fact:
+    machine_status_dir: "{{ status_dir }}/{{ current_machine }}"
+    status_file: "{{ status_dir }}/{{ current_machine }}/status.json"
+    pipeline_log_file: "{{ status_dir }}/{{ current_machine }}/pipeline.log"
+
+    env_folder: "{{ filestore_env | lower }}"
+    deployment_ref_folder: "{{ deployment_ref }}"
+
+    filestore_json_path: "{{ filestore_base_dir }}/{{ deployment_ref_lower }}-{{ current_machine }}-{{ filestore_env }}.json"
+    filestore_log_path: "{{ filestore_base_dir }}/{{ deployment_ref_lower }}-{{ current_machine }}-{{ filestore_env }}.log"
+
+- name: "Deploy | Garantir diretório de status da máquina"
+  ansible.builtin.file:
+    path: "{{ machine_status_dir }}"
+    state: directory
+    mode: "0755"
+
+# -----------------------------------------------------------------------------
+# 6.1) Ler status existente (pra append no JSON)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Verificar se status.json já existe (para append)"
+  ansible.builtin.stat:
+    path: "{{ status_file }}"
+  register: status_stat
+
+- name: "Deploy | Ler status.json existente (se existir)"
+  ansible.builtin.slurp:
+    path: "{{ status_file }}"
+  register: status_slurp
+  when: status_stat.stat.exists
+
+- name: "Deploy | Parse do status existente (ou base vazio)"
+  ansible.builtin.set_fact:
+    status_obj: >-
+      {{
+        (status_slurp.content | b64decode | from_json)
+          if (status_stat.stat.exists | default(false))
+          else {}
+      }}
+
+# -----------------------------------------------------------------------------
+# 6.2) Escrever/atualizar status inicial (deploy:queued) + append no history[]
+# -----------------------------------------------------------------------------
+- name: "Deploy | Atualizar status (deploy:queued) com append em history"
+  ansible.builtin.copy:
+    dest: "{{ status_file }}"
+    mode: "0644"
+    content: >-
+      {{
+        (
+          status_obj
+          | combine({
+              "machine": current_machine,
+              "host": (machine_cfg.host | default(machine_cfg.ip | default(''))),
+              "package": (machine_cfg.package | default('')),
+              "rollback": (machine_cfg.rollback | default('')),
+              "deployment_ref": (deployment_ref | default('')),
+              "log_path": filestore_log_path,
+              "status": "deploy:queued",
+              "timestamp": ansible_date_time.iso8601,
+              "history": (
+                (status_obj.history | default([]))
+                + [ {
+                      "stage": "deploy",
+                      "status": "deploy:queued",
+                      "timestamp": ansible_date_time.iso8601
+                    } ]
+              )
+            }, recursive=True)
+        ) | to_nice_json
+      }}
+  changed_when: true
+
+# -----------------------------------------------------------------------------
+# 7) Verificar script e executar deploy (com tee -a no host)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Verificar init_deploy.sh no host"
+  become: true
+  ansible.builtin.stat:
+    path: "{{ host_deploy_scripts }}/init_deploy.sh"
+  delegate_to: "{{ current_machine }}"
+  register: deploy_script_stat
+
+- name: "Deploy | Falhar se init_deploy.sh não existir"
+  ansible.builtin.fail:
+    msg: "init_deploy.sh não encontrado em {{ host_deploy_scripts }}. Rode o predeploy antes."
+  when: not deploy_script_stat.stat.exists
+
+- name: "Deploy | Executar init_deploy.sh no host (com tee)"
+  become: true
+  ansible.builtin.shell: |
+    set -o pipefail
+    cd "{{ host_deploy_scripts }}"
+    /usr/bin/stdbuf -oL -eL /bin/bash -x ./init_deploy.sh 2>&1 | tee -a "{{ host_deploy_init_log }}"
+    exit ${PIPESTATUS[0]}
+  args:
+    executable: /bin/bash
+  delegate_to: "{{ current_machine }}"
+  environment: "{{ effective_env }}"
+  register: deploy_result
+  ignore_errors: true
+  changed_when: true
+
+- name: "Deploy | Ler deploy.txt do host (se existir)"
+  become: true
+  ansible.builtin.shell: |
+    cat "{{ host_deploy_scripts }}/deploy.txt" 2>/dev/null || echo "deploy.txt nao existe"
+  args:
+    executable: /bin/bash
+  delegate_to: "{{ current_machine }}"
+  register: deploy_txt
+  changed_when: false
+  failed_when: false
+
+- name: "Deploy | Ler init_deploy.log do host (se existir)"
+  become: true
+  ansible.builtin.shell: |
+    tail -n 2000 "{{ host_deploy_init_log }}" 2>/dev/null || echo "init_deploy.log nao existe"
+  args:
+    executable: /bin/bash
+  delegate_to: "{{ current_machine }}"
+  register: deploy_init_log_tail
+  changed_when: false
+  failed_when: false
+
+# -----------------------------------------------------------------------------
+# 8) Montar conteúdo do log padronizado (pipeline deploy)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Montar conteúdo do log do DEPLOY"
+  ansible.builtin.set_fact:
+    deploy_log_content: |
+      ---- pipeline deploy ----
+      deployment_ref={{ deployment_ref | default('') }}
+      machine={{ current_machine }}
+      host={{ machine_cfg.host | default(machine_cfg.ip | default('')) }}
+      stage=deploy
+      rc={{ deploy_result.rc | default('') }}
+      ts={{ ansible_date_time.iso8601 }}
+
+      ---- stdout (ansible) ----
+      {{ deploy_result.stdout | default('') }}
+
+      ---- stderr (ansible) ----
+      {{ deploy_result.stderr | default('') }}
+
+      ---- init_deploy.log (tail) ----
+      {{ deploy_init_log_tail.stdout | default('') }}
+
+      ---- deploy.txt ----
+      {{ deploy_txt.stdout | default('') }}
+      ---- pipeline deploy ----
+
+# -----------------------------------------------------------------------------
+# 9) Atualizar status final (deploy:ok / deploy:error) com append em history[]
+# -----------------------------------------------------------------------------
+- name: "Deploy | Ler status.json atual (antes do append final)"
+  ansible.builtin.slurp:
+    path: "{{ status_file }}"
+  register: status_after_queued_slurp
+
+- name: "Deploy | Parse do status atual"
+  ansible.builtin.set_fact:
+    status_now: "{{ status_after_queued_slurp.content | b64decode | from_json }}"
+
+- name: "Deploy | Atualizar status final (append em history)"
+  ansible.builtin.copy:
+    dest: "{{ status_file }}"
+    mode: "0644"
+    content: >-
+      {{
+        (
+          status_now
+          | combine({
+              "status": ("deploy:ok" if (deploy_result.rc | default(1)) == 0 else "deploy:error"),
+              "timestamp": ansible_date_time.iso8601,
+              "rc": (deploy_result.rc | default(1)),
+              "history": (
+                (status_now.history | default([]))
+                + [ {
+                      "stage": "deploy",
+                      "status": ("deploy:ok" if (deploy_result.rc | default(1)) == 0 else "deploy:error"),
+                      "rc": (deploy_result.rc | default(1)),
+                      "timestamp": ansible_date_time.iso8601
+                    } ]
+              )
+            }, recursive=True)
+        ) | to_nice_json
+      }}
+  changed_when: true
+
+# -----------------------------------------------------------------------------
+# 9.5) Append no LOG cumulativo local (controller) e preparar conteúdo p/ upload
+# -----------------------------------------------------------------------------
+- name: "Deploy | Garantir arquivo de log cumulativo"
+  ansible.builtin.file:
+    path: "{{ pipeline_log_file }}"
+    state: touch
+    mode: "0644"
+
+- name: "Deploy | Append do bloco de log do deploy no log cumulativo"
+  ansible.builtin.blockinfile:
+    path: "{{ pipeline_log_file }}"
+    marker: ""
+    insertafter: EOF
+    block: |
+      {{ deploy_log_content }}
+  changed_when: true
+
+- name: "Deploy | Carregar conteúdo completo do log cumulativo (para upload)"
+  ansible.builtin.set_fact:
+    log_content_to_upload: "{{ lookup('ansible.builtin.file', pipeline_log_file) }}"
+
+# -----------------------------------------------------------------------------
+# 10) Upload JSON + LOG para Harness File Store
+# -----------------------------------------------------------------------------
+- name: "Deploy | Upload JSON + LOG para Harness File Store"
+  ansible.builtin.include_tasks: harness_filestore_upload.yml
+  vars:
+    current_machine: "{{ current_machine }}"
+    machine_status_file: "{{ status_file }}"
+    log_content: "{{ log_content_to_upload }}"
+    env_folder: "{{ env_folder }}"
+    deployment_ref_folder: "{{ deployment_ref }}"
+    status_tag_value: >-
+      {{ (deployment_ref | lower) ~ ':deploy:' ~ ('ok' if (deploy_result.rc | default(1)) == 0 else 'error') }}
+    extra_tags: []
+
+# -----------------------------------------------------------------------------
+# 11) Falhar pipeline se deploy retornou erro (depois do upload)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Falhar pipeline se init_deploy.sh retornou erro"
+  ansible.builtin.fail:
+    msg: "DEPLOY falhou em {{ current_machine }} (host {{ machine_cfg.host | default(machine_cfg.ip | default('')) }})"
+  when: (deploy_result.rc | default(1)) != 0
+
+---
+# PIPELINE 2 - DEPLOY / ROLLBACK
+# - Recebe machine_name (ou lista via loop externo no script do Harness)
+# - Usa TAG (deployment_ref) como referência da execução
+# - Para deploy:
+#     - Reusa área /opt/SoftwareExpress/sitef-pipeline/deploy/scripts preparada no predeploy
+#     - Executa init_deploy.sh
+# - Para rollback:
+#     - Prepara /opt/SoftwareExpress/sitef-pipeline/rollback
+#     - Baixa componentes do Nexus
+#     - Executa init_rollback.sh
+# - Atualiza status em JSON por máquina
+# - Faz upload de JSON + LOG para Harness File Store
+
+- name: "Deploy/Rollback por máquina"
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  vars:
+    # TAG da execução (vem do GIT_TAG no Harness)
+    deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
+
+    # Nome lógico da máquina (ex: sitef-01)
+    machine_name: "{{ machine_name | default('') }}"
+
+    # Ação solicitada: deploy ou rollback (vem do STRATEGY/ACTION no Harness)
+    deploy_action: "{{ deploy_action | default('deploy') }}"
+
+    # Paths do repositório
+    repo_root_resolved: "{{ playbook_dir }}/.."
+    status_dir_resolved: "{{ repo_root_resolved }}/status/{{ deployment_ref }}"
+
+    # URL default do Nexus (evita recursão)
+    nexus_base_url_default: "https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev"
+
+  tasks:
+    # -------------------------------------------------------------------
+    # Normalizar deploy_action (deploy/rollback)
+    # -------------------------------------------------------------------
+    - name: "Normalizar deploy_action (deploy/rollback)"
+      ansible.builtin.set_fact:
+        deploy_action_resolved: >-
+          {{
+            (deploy_action | string | lower | trim)
+              if (deploy_action is defined and (deploy_action | string | trim) | length > 0)
+              else 'deploy'
+          }}
+
+    # -------------------------------------------------------------------
+    # Resolver filestore_env e filestore_base_dir sem recursão
+    # -------------------------------------------------------------------
+    - name: "Resolver filestore_env e filestore_base_dir (deploy/rollback)"
+      ansible.builtin.set_fact:
+        filestore_env_resolved: >-
+          {{
+            (filestore_env | string | trim)
+              if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
+              else 'dev'
+          }}
+        filestore_base_dir_resolved: >-
+          {{
+            (filestore_base_dir | string | trim)
+              if (filestore_base_dir is defined and (filestore_base_dir | string | trim) | length > 0)
+              else (
+                (
+                  (filestore_env | string | trim)
+                    if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
+                    else 'dev'
+                ) ~ '/' ~ deployment_ref
+              )
+          }}
+
+    # -------------------------------------------------------------------
+    # Resolver Nexus (base_url, user, password) sem recursão
+    # -------------------------------------------------------------------
+    - name: "Resolver Nexus (base_url, user, password)"
+      ansible.builtin.set_fact:
+        nexus_base_url_resolved: >-
+          {{
+            (nexus_base_url | string | trim)
+              if (nexus_base_url is defined and (nexus_base_url | string | trim) | length > 0)
+              else nexus_base_url_default
+          }}
+        nexus_user_resolved: >-
+          {{
+            (nexus_user | string | trim)
+              if (nexus_user is defined)
+              else ''
+          }}
+        nexus_password_resolved: >-
+          {{
+            (nexus_password | string | trim)
+              if (nexus_password is defined)
+              else ''
+          }}
+
+    # -------------------------------------------------------------------
+    # Debug das principais variáveis de entrada / resolvidas
+    # -------------------------------------------------------------------
+    - name: "Mostrar variáveis de entrada e resolvidas (deploy/rollback)"
+      ansible.builtin.debug:
+        msg:
+          - "deployment_ref               = {{ deployment_ref }}"
+          - "machine_name                 = {{ machine_name }}"
+          - "deploy_action                = {{ deploy_action }}"
+          - "deploy_action_resolved       = {{ deploy_action_resolved }}"
+          - "repo_root_resolved           = {{ repo_root_resolved }}"
+          - "status_dir_resolved          = {{ status_dir_resolved }}"
+          - "nexus_base_url_resolved      = {{ nexus_base_url_resolved }}"
+          - "nexus_user_resolved          = {{ '***' if (nexus_user_resolved | length) > 0 else '(vazio)' }}"
+          - "filestore_env_resolved       = {{ filestore_env_resolved }}"
+          - "filestore_base_dir_resolved  = {{ filestore_base_dir_resolved }}"
+
+    # -------------------------------------------------------------------
+    # Garantir diretório base de status da TAG
+    # -------------------------------------------------------------------
+    - name: "Garantir diretório de status da TAG"
+      ansible.builtin.file:
+        path: "{{ status_dir_resolved }}"
+        state: directory
+        mode: "0755"
+
+    # -------------------------------------------------------------------
+    # Validar machine_name
+    # -------------------------------------------------------------------
+    - name: "Validar machine_name"
+      ansible.builtin.assert:
+        that:
+          - machine_name is defined
+          - (machine_name | string | trim) | length > 0
+        fail_msg: "machine_name não informado"
+
+    # -------------------------------------------------------------------
+    # Branch de DEPLOY
+    # -------------------------------------------------------------------
+    - name: "Incluir deploy por máquina"
+      ansible.builtin.include_tasks: deploy_per_machine.yml
+      when: deploy_action_resolved == 'deploy'
+      vars:
+        deployment_ref: "{{ deployment_ref }}"
+        machine_name: "{{ machine_name | string | trim }}"
+        repo_root: "{{ repo_root_resolved }}"
+        status_dir: "{{ status_dir_resolved }}"
+        filestore_env: "{{ filestore_env_resolved }}"
+        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
+
+    # -------------------------------------------------------------------
+    # Branch de ROLLBACK
+    # -------------------------------------------------------------------
+    - name: "Incluir rollback por máquina"
+      ansible.builtin.include_tasks: rollback_per_machine.yml
+      when: deploy_action_resolved == 'rollback'
+      vars:
+        deployment_ref: "{{ deployment_ref }}"
+        machine_name: "{{ machine_name | string | trim }}"
+        repo_root: "{{ repo_root_resolved }}"
+        status_dir: "{{ status_dir_resolved }}"
+        nexus_base_url: "{{ nexus_base_url_resolved }}"
+        nexus_user: "{{ nexus_user_resolved }}"
+        nexus_password: "{{ nexus_password_resolved }}"
+        filestore_env: "{{ filestore_env_resolved }}"
+        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
