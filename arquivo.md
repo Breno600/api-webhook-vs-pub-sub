@@ -1,552 +1,753 @@
-Exec using JSCH
-Connecting to 10.218.238.144 ....
-Connection to 10.218.238.144 established
-Executing command ...
-export MACHINES=sitef-02
-export MACHINE=sitef-02
-export ACTION=deploy
-export GIT_TAG=DEV000003
-export STRATEGY=deploy
-== DEPLOY PIPELINE ==
-BRANCH            : develop-testes
-STRATEGY          : deploy
-GIT_TAG           : DEV000003
-MACHINES          : sitef-02
-FILESTORE_ENV     : dev
-FILESTORE_BASEDIR : dev/DEV000003
-MACHINES_NORMALIZADAS: sitef-02 
-Clonando repo em /tmp/tmp.8JjiC1Pw36...
-Cloning into '/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef'...
-remote: Enumerating objects: 938, done.
-remote: Counting objects:   0% (1/888)
-remote: Counting objects:   1% (9/888)
-remote: Counting objects:   2% (18/888)
-remote: Counting objects:   3% (27/888)
-remote: Counting objects:   4% (36/888)
-remote: Counting objects:   5% (45/888)
-remote: Counting objects:   6% (54/888)
-remote: Counting objects:   7% (63/888)
-remote: Counting objects:   8% (72/888)
-remote: Counting objects:   9% (80/888)
-remote: Counting objects:  10% (89/888)
-remote: Counting objects:  11% (98/888)
-remote: Counting objects:  12% (107/888)
-remote: Counting objects:  13% (116/888)
-remote: Counting objects:  14% (125/888)
-remote: Counting objects:  15% (134/888)
-remote: Counting objects:  16% (143/888)
-remote: Counting objects:  17% (151/888)
-remote: Counting objects:  18% (160/888)
-remote: Counting objects:  19% (169/888)
-remote: Counting objects:  20% (178/888)
-remote: Counting objects:  21% (187/888)
-remote: Counting objects:  22% (196/888)
-remote: Counting objects:  23% (205/888)
-remote: Counting objects:  24% (214/888)
-remote: Counting objects:  25% (222/888)
-remote: Counting objects:  26% (231/888)
-remote: Counting objects:  27% (240/888)
-remote: Counting objects:  28% (249/888)
-remote: Counting objects:  29% (258/888)
-remote: Counting objects:  30% (267/888)
-remote: Counting objects:  31% (276/888)
-remote: Counting objects:  32% (285/888)
-remote: Counting objects:  33% (294/888)
-remote: Counting objects:  34% (302/888)
-remote: Counting objects:  35% (311/888)
-remote: Counting objects:  36% (320/888)
-remote: Counting objects:  37% (329/888)
-remote: Counting objects:  38% (338/888)
-remote: Counting objects:  39% (347/888)
-remote: Counting objects:  40% (356/888)
-remote: Counting objects:  41% (365/888)
-remote: Counting objects:  42% (373/888)
-remote: Counting objects:  43% (382/888)
-remote: Counting objects:  44% (391/888)
-remote: Counting objects:  45% (400/888)
-remote: Counting objects:  46% (409/888)
-remote: Counting objects:  47% (418/888)
-remote: Counting objects:  48% (427/888)
-remote: Counting objects:  49% (436/888)
-remote: Counting objects:  50% (444/888)
-remote: Counting objects:  51% (453/888)
-remote: Counting objects:  52% (462/888)
-remote: Counting objects:  53% (471/888)
-remote: Counting objects:  54% (480/888)
-remote: Counting objects:  55% (489/888)
-remote: Counting objects:  56% (498/888)
-remote: Counting objects:  57% (507/888)
-remote: Counting objects:  58% (516/888)
-remote: Counting objects:  59% (524/888)
-remote: Counting objects:  60% (533/888)
-remote: Counting objects:  61% (542/888)
-remote: Counting objects:  62% (551/888)
-remote: Counting objects:  63% (560/888)
-remote: Counting objects:  64% (569/888)
-remote: Counting objects:  65% (578/888)
-remote: Counting objects:  66% (587/888)
-remote: Counting objects:  67% (595/888)
-remote: Counting objects:  68% (604/888)
-remote: Counting objects:  69% (613/888)
-remote: Counting objects:  70% (622/888)
-remote: Counting objects:  71% (631/888)
-remote: Counting objects:  72% (640/888)
-remote: Counting objects:  73% (649/888)
-remote: Counting objects:  74% (658/888)
-remote: Counting objects:  75% (666/888)
-remote: Counting objects:  76% (675/888)
-remote: Counting objects:  77% (684/888)
-remote: Counting objects:  78% (693/888)
-remote: Counting objects:  79% (702/888)
-remote: Counting objects:  80% (711/888)
-remote: Counting objects:  81% (720/888)
-remote: Counting objects:  82% (729/888)
-remote: Counting objects:  83% (738/888)
-remote: Counting objects:  84% (746/888)
-remote: Counting objects:  85% (755/888)
-remote: Counting objects:  86% (764/888)
-remote: Counting objects:  87% (773/888)
-remote: Counting objects:  88% (782/888)
-remote: Counting objects:  89% (791/888)
-remote: Counting objects:  90% (800/888)
-remote: Counting objects:  91% (809/888)
-remote: Counting objects:  92% (817/888)
-remote: Counting objects:  93% (826/888)
-remote: Counting objects:  94% (835/888)
-remote: Counting objects:  95% (844/888)
-remote: Counting objects:  96% (853/888)
-remote: Counting objects:  97% (862/888)
-remote: Counting objects:  98% (871/888)
-remote: Counting objects:  99% (880/888)
-remote: Counting objects: 100% (888/888)
-remote: Counting objects: 100% (888/888), done.
-remote: Compressing objects:   0% (1/873)
-remote: Compressing objects:   1% (9/873)
-remote: Compressing objects:   2% (18/873)
-remote: Compressing objects:   3% (27/873)
-remote: Compressing objects:   4% (35/873)
-remote: Compressing objects:   5% (44/873)
-remote: Compressing objects:   6% (53/873)
-remote: Compressing objects:   7% (62/873)
-remote: Compressing objects:   8% (70/873)
-remote: Compressing objects:   9% (79/873)
-remote: Compressing objects:  10% (88/873)
-remote: Compressing objects:  11% (97/873)
-remote: Compressing objects:  12% (105/873)
-remote: Compressing objects:  13% (114/873)
-remote: Compressing objects:  14% (123/873)
-remote: Compressing objects:  15% (131/873)
-remote: Compressing objects:  16% (140/873)
-remote: Compressing objects:  17% (149/873)
-remote: Compressing objects:  18% (158/873)
-remote: Compressing objects:  19% (166/873)
-remote: Compressing objects:  20% (175/873)
-remote: Compressing objects:  21% (184/873)
-remote: Compressing objects:  22% (193/873)
-remote: Compressing objects:  23% (201/873)
-remote: Compressing objects:  24% (210/873)
-remote: Compressing objects:  25% (219/873)
-remote: Compressing objects:  26% (227/873)
-remote: Compressing objects:  27% (236/873)
-remote: Compressing objects:  28% (245/873)
-remote: Compressing objects:  29% (254/873)
-remote: Compressing objects:  30% (262/873)
-remote: Compressing objects:  31% (271/873)
-remote: Compressing objects:  32% (280/873)
-remote: Compressing objects:  33% (289/873)
-remote: Compressing objects:  34% (297/873)
-remote: Compressing objects:  35% (306/873)
-remote: Compressing objects:  36% (315/873)
-remote: Compressing objects:  37% (324/873)
-remote: Compressing objects:  38% (332/873)
-remote: Compressing objects:  39% (341/873)
-remote: Compressing objects:  40% (350/873)
-remote: Compressing objects:  41% (358/873)
-remote: Compressing objects:  42% (367/873)
-remote: Compressing objects:  43% (376/873)
-remote: Compressing objects:  44% (385/873)
-remote: Compressing objects:  45% (393/873)
-remote: Compressing objects:  46% (402/873)
-remote: Compressing objects:  47% (411/873)
-remote: Compressing objects:  48% (420/873)
-remote: Compressing objects:  49% (428/873)
-remote: Compressing objects:  50% (437/873)
-remote: Compressing objects:  51% (446/873)
-remote: Compressing objects:  52% (454/873)
-remote: Compressing objects:  53% (463/873)
-remote: Compressing objects:  54% (472/873)
-remote: Compressing objects:  55% (481/873)
-remote: Compressing objects:  56% (489/873)
-remote: Compressing objects:  57% (498/873)
-remote: Compressing objects:  58% (507/873)
-remote: Compressing objects:  59% (516/873)
-remote: Compressing objects:  60% (524/873)
-remote: Compressing objects:  61% (533/873)
-remote: Compressing objects:  62% (542/873)
-remote: Compressing objects:  63% (550/873)
-remote: Compressing objects:  64% (559/873)
-remote: Compressing objects:  65% (568/873)
-remote: Compressing objects:  66% (577/873)
-remote: Compressing objects:  67% (585/873)
-remote: Compressing objects:  68% (594/873)
-remote: Compressing objects:  69% (603/873)
-remote: Compressing objects:  70% (612/873)
-remote: Compressing objects:  71% (620/873)
-remote: Compressing objects:  72% (629/873)
-remote: Compressing objects:  73% (638/873)
-remote: Compressing objects:  74% (647/873)
-remote: Compressing objects:  75% (655/873)
-remote: Compressing objects:  76% (664/873)
-remote: Compressing objects:  77% (673/873)
-remote: Compressing objects:  78% (681/873)
-remote: Compressing objects:  79% (690/873)
-remote: Compressing objects:  80% (699/873)
-remote: Compressing objects:  81% (708/873)
-remote: Compressing objects:  82% (716/873)
-remote: Compressing objects:  83% (725/873)
-remote: Compressing objects:  84% (734/873)
-remote: Compressing objects:  85% (743/873)
-remote: Compressing objects:  86% (751/873)
-remote: Compressing objects:  87% (760/873)
-remote: Compressing objects:  88% (769/873)
-remote: Compressing objects:  89% (777/873)
-remote: Compressing objects:  90% (786/873)
-remote: Compressing objects:  91% (795/873)
-remote: Compressing objects:  92% (804/873)
-remote: Compressing objects:  93% (812/873)
-remote: Compressing objects:  94% (821/873)
-remote: Compressing objects:  95% (830/873)
-remote: Compressing objects:  96% (839/873)
-remote: Compressing objects:  97% (847/873)
-remote: Compressing objects:  98% (856/873)
-remote: Compressing objects:  99% (865/873)
-remote: Compressing objects: 100% (873/873)
-remote: Compressing objects: 100% (873/873), done.
-Receiving objects:   0% (1/938)
-Receiving objects:   1% (10/938)
-Receiving objects:   2% (19/938)
-Receiving objects:   3% (29/938)
-Receiving objects:   4% (38/938)
-Receiving objects:   5% (47/938)
-Receiving objects:   6% (57/938)
-Receiving objects:   7% (66/938)
-Receiving objects:   8% (76/938)
-Receiving objects:   9% (85/938)
-Receiving objects:  10% (94/938)
-Receiving objects:  11% (104/938)
-Receiving objects:  12% (113/938)
-Receiving objects:  13% (122/938)
-Receiving objects:  14% (132/938)
-Receiving objects:  15% (141/938)
-Receiving objects:  16% (151/938)
-Receiving objects:  17% (160/938)
-Receiving objects:  18% (169/938)
-Receiving objects:  19% (179/938)
-Receiving objects:  20% (188/938)
-Receiving objects:  21% (197/938)
-Receiving objects:  22% (207/938)
-Receiving objects:  23% (216/938)
-Receiving objects:  24% (226/938)
-Receiving objects:  25% (235/938)
-Receiving objects:  26% (244/938)
-Receiving objects:  27% (254/938)
-Receiving objects:  28% (263/938)
-Receiving objects:  29% (273/938)
-Receiving objects:  30% (282/938)
-Receiving objects:  31% (291/938)
-Receiving objects:  32% (301/938)
-Receiving objects:  33% (310/938)
-Receiving objects:  34% (319/938)
-Receiving objects:  35% (329/938)
-Receiving objects:  36% (338/938)
-Receiving objects:  37% (348/938)
-Receiving objects:  38% (357/938)
-Receiving objects:  39% (366/938)
-Receiving objects:  40% (376/938)
-Receiving objects:  41% (385/938)
-Receiving objects:  42% (394/938)
-Receiving objects:  43% (404/938)
-Receiving objects:  44% (413/938)
-Receiving objects:  45% (423/938)
-Receiving objects:  46% (432/938)
-Receiving objects:  47% (441/938)
-Receiving objects:  48% (451/938)
-Receiving objects:  49% (460/938)
-Receiving objects:  50% (469/938)
-Receiving objects:  51% (479/938)
-Receiving objects:  52% (488/938)
-Receiving objects:  53% (498/938)
-Receiving objects:  54% (507/938)
-Receiving objects:  55% (516/938)
-Receiving objects:  56% (526/938)
-Receiving objects:  57% (535/938)
-Receiving objects:  58% (545/938)
-Receiving objects:  59% (554/938)
-Receiving objects:  60% (563/938)
-Receiving objects:  61% (573/938)
-Receiving objects:  62% (582/938)
-Receiving objects:  63% (591/938)
-Receiving objects:  64% (601/938)
-Receiving objects:  65% (610/938)
-Receiving objects:  66% (620/938)
-Receiving objects:  67% (629/938)
-Receiving objects:  68% (638/938)
-Receiving objects:  69% (648/938)
-Receiving objects:  70% (657/938)
-Receiving objects:  71% (666/938)
-Receiving objects:  72% (676/938)
-Receiving objects:  73% (685/938)
-Receiving objects:  74% (695/938)
-Receiving objects:  75% (704/938)
-Receiving objects:  76% (713/938)
-Receiving objects:  77% (723/938)
-Receiving objects:  78% (732/938)
-Receiving objects:  79% (742/938)
-Receiving objects:  80% (751/938)
-Receiving objects:  81% (760/938)
-Receiving objects:  82% (770/938)
-Receiving objects:  83% (779/938)
-Receiving objects:  84% (788/938)
-remote: Total 938 (delta 603), reused 0 (delta 0), pack-reused 50
-Receiving objects:  85% (798/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  86% (807/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  87% (817/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  88% (826/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  89% (835/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  90% (845/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  91% (854/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  92% (863/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  93% (873/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  94% (882/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  95% (892/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  96% (901/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  97% (910/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  98% (920/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects:  99% (929/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects: 100% (938/938), 707.77 KiB | 1.35 MiB/s
-Receiving objects: 100% (938/938), 937.56 KiB | 1.70 MiB/s, done.
-Resolving deltas:   0% (0/622)
-Resolving deltas:   1% (7/622)
-Resolving deltas:   2% (13/622)
-Resolving deltas:   3% (19/622)
-Resolving deltas:   4% (25/622)
-Resolving deltas:   5% (32/622)
-Resolving deltas:   6% (38/622)
-Resolving deltas:   7% (44/622)
-Resolving deltas:   8% (50/622)
-Resolving deltas:   9% (56/622)
-Resolving deltas:  10% (63/622)
-Resolving deltas:  11% (69/622)
-Resolving deltas:  12% (75/622)
-Resolving deltas:  13% (81/622)
-Resolving deltas:  14% (88/622)
-Resolving deltas:  15% (94/622)
-Resolving deltas:  16% (100/622)
-Resolving deltas:  17% (106/622)
-Resolving deltas:  18% (112/622)
-Resolving deltas:  19% (119/622)
-Resolving deltas:  20% (125/622)
-Resolving deltas:  21% (131/622)
-Resolving deltas:  22% (137/622)
-Resolving deltas:  23% (144/622)
-Resolving deltas:  24% (150/622)
-Resolving deltas:  25% (156/622)
-Resolving deltas:  26% (162/622)
-Resolving deltas:  27% (168/622)
-Resolving deltas:  28% (175/622)
-Resolving deltas:  29% (181/622)
-Resolving deltas:  30% (187/622)
-Resolving deltas:  31% (193/622)
-Resolving deltas:  32% (200/622)
-Resolving deltas:  33% (206/622)
-Resolving deltas:  34% (212/622)
-Resolving deltas:  35% (219/622)
-Resolving deltas:  36% (224/622)
-Resolving deltas:  37% (231/622)
-Resolving deltas:  38% (237/622)
-Resolving deltas:  39% (243/622)
-Resolving deltas:  40% (249/622)
-Resolving deltas:  41% (256/622)
-Resolving deltas:  42% (262/622)
-Resolving deltas:  43% (268/622)
-Resolving deltas:  44% (274/622)
-Resolving deltas:  45% (280/622)
-Resolving deltas:  46% (287/622)
-Resolving deltas:  47% (293/622)
-Resolving deltas:  48% (299/622)
-Resolving deltas:  49% (305/622)
-Resolving deltas:  50% (312/622)
-Resolving deltas:  51% (318/622)
-Resolving deltas:  52% (324/622)
-Resolving deltas:  53% (330/622)
-Resolving deltas:  54% (336/622)
-Resolving deltas:  55% (343/622)
-Resolving deltas:  56% (349/622)
-Resolving deltas:  57% (355/622)
-Resolving deltas:  58% (361/622)
-Resolving deltas:  59% (367/622)
-Resolving deltas:  60% (374/622)
-Resolving deltas:  61% (380/622)
-Resolving deltas:  62% (386/622)
-Resolving deltas:  63% (392/622)
-Resolving deltas:  64% (399/622)
-Resolving deltas:  65% (405/622)
-Resolving deltas:  66% (411/622)
-Resolving deltas:  67% (417/622)
-Resolving deltas:  68% (423/622)
-Resolving deltas:  69% (430/622)
-Resolving deltas:  70% (436/622)
-Resolving deltas:  71% (442/622)
-Resolving deltas:  72% (448/622)
-Resolving deltas:  73% (455/622)
-Resolving deltas:  74% (461/622)
-Resolving deltas:  75% (467/622)
-Resolving deltas:  76% (473/622)
-Resolving deltas:  77% (479/622)
-Resolving deltas:  78% (486/622)
-Resolving deltas:  79% (492/622)
-Resolving deltas:  80% (498/622)
-Resolving deltas:  81% (504/622)
-Resolving deltas:  82% (511/622)
-Resolving deltas:  83% (517/622)
-Resolving deltas:  84% (523/622)
-Resolving deltas:  85% (529/622)
-Resolving deltas:  86% (535/622)
-Resolving deltas:  87% (542/622)
-Resolving deltas:  88% (548/622)
-Resolving deltas:  89% (554/622)
-Resolving deltas:  90% (560/622)
-Resolving deltas:  91% (567/622)
-Resolving deltas:  92% (573/622)
-Resolving deltas:  93% (579/622)
-Resolving deltas:  94% (585/622)
-Resolving deltas:  95% (591/622)
-Resolving deltas:  96% (598/622)
-Resolving deltas:  97% (604/622)
-Resolving deltas:  98% (611/622)
-Resolving deltas:  99% (616/622)
-Resolving deltas: 100% (622/622)
-Resolving deltas: 100% (622/622), done.
-====================================================
-== DEPLOY -> sitef-02
-====================================================
-PLAY [Deploy/Rollback por máquina] *********************************************
-TASK [Gathering Facts] *********************************************************
-ok: [localhost]
-TASK [Normalizar deploy_action (deploy/rollback)] ******************************
-ok: [localhost]
-TASK [Resolver filestore_env e filestore_base_dir (deploy/rollback)] ***********
-ok: [localhost]
-TASK [Resolver Nexus (base_url, user, password)] *******************************
-ok: [localhost]
-TASK [Mostrar variáveis de entrada e resolvidas (deploy/rollback)] *************
-ok: [localhost] => {
-    "msg": [
-        "deployment_ref               = DEV000003",
-        "machine_name                 = sitef-02",
-        "deploy_action                = deploy",
-        "deploy_action_resolved       = deploy",
-        "repo_root_resolved           = /tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/..",
-        "status_dir_resolved          = /tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../status/DEV000003",
-        "nexus_base_url_resolved      = https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev",
-        "nexus_user_resolved          = (vazio)",
-        "filestore_env_resolved       = dev",
-        "filestore_base_dir_resolved  = dev/DEV000003"
-    ]
-}
-TASK [Garantir diretório de status da TAG] *************************************
-changed: [localhost]
-TASK [Validar machine_name] ****************************************************
-ok: [localhost] => {
-    "changed": false,
-    "msg": "All assertions passed"
-}
-TASK [Incluir deploy por máquina] **********************************************
-included: /tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/deploy_per_machine.yml for localhost
-TASK [Deploy | Definir caminhos para sitef-02] *********************************
-ok: [localhost]
-TASK [Deploy | Definir diretórios principais do repositório] *******************
-ok: [localhost]
-TASK [Deploy | Definir candidatos de arquivo da máquina] ***********************
-ok: [localhost]
-TASK [Deploy | Verificar candidatos] *******************************************
-ok: [localhost] => (item=/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml)
-TASK [Deploy | Selecionar machine_file existente] ******************************
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 248, 'inode': 6306828, 'dev': 64775, 'nlink': 1, 'atime': 1766602243.286341, 'mtime': 1766602243.286341, 'ctime': 1766602243.286341, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': '005e3367129d5aefc77f49fd9fe62b4e58c51cd5', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '3326443523', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-TASK [Deploy | Falhar se arquivo da máquina não existir] ***********************
-skipping: [localhost]
-TASK [Deploy | Carregar config da máquina sitef-02] ****************************
-ok: [localhost]
-TASK [Deploy | Validar package definido] ***************************************
-ok: [localhost] => {
-    "changed": false,
-    "msg": "All assertions passed"
-}
-TASK [Deploy | Carregar config do pacote sitef-core-0.0.1-0] *******************
-ok: [localhost]
-TASK [Deploy | Definir usuário alvo padrão] ************************************
-ok: [localhost]
-TASK [Deploy | Definir ssh_common_args padrão] *********************************
-ok: [localhost]
-TASK [Deploy | Aplicar ProxyJump via bastion (quando necessário)] **************
-skipping: [localhost]
-TASK [Deploy | Registrar host dinâmico] ****************************************
-changed: [localhost]
-TASK [Deploy | Montar env final] ***********************************************
-ok: [localhost]
-TASK [Deploy | Definir deployment_ref_lower (fix ansible set_fact)] ************
-ok: [localhost]
-TASK [Deploy | Definir arquivos de status/log local] ***************************
-ok: [localhost]
-TASK [Deploy | Garantir diretório de status da máquina] ************************
-changed: [localhost]
-TASK [Deploy | Verificar se status.json já existe (para append)] ***************
-ok: [localhost]
-TASK [Deploy | Ler status.json existente (se existir)] *************************
-skipping: [localhost]
-TASK [Deploy | Parse do status existente (ou base vazio)] **********************
-ok: [localhost]
-TASK [Deploy | Atualizar status (deploy:queued) com append em history] *********
-changed: [localhost]
-TASK [Deploy | Verificar init_deploy.sh no host] *******************************
-ok: [localhost -> sitef-02(100.99.57.128)]
-TASK [Deploy | Falhar se init_deploy.sh não existir] ***************************
-skipping: [localhost]
-TASK [Deploy | Executar init_deploy.sh no host (com tee)] **********************
-changed: [localhost -> sitef-02(100.99.57.128)]
-TASK [Deploy | Ler deploy.txt do host (se existir)] ****************************
-ok: [localhost -> sitef-02(100.99.57.128)]
-TASK [Deploy | Ler init_deploy.log do host (se existir)] ***********************
-ok: [localhost -> sitef-02(100.99.57.128)]
-TASK [Deploy | Montar conteúdo do log do DEPLOY] *******************************
-ok: [localhost]
-TASK [Deploy | Ler status.json atual (antes do append final)] ******************
-ok: [localhost]
-TASK [Deploy | Parse do status atual] ******************************************
-ok: [localhost]
-TASK [Deploy | Atualizar status final (append em history)] *********************
-changed: [localhost]
-TASK [Deploy | Garantir arquivo de log cumulativo] *****************************
-changed: [localhost]
-TASK [Deploy | Append do bloco de log do deploy no log cumulativo] *************
-changed: [localhost]
-TASK [Deploy | Carregar conteúdo completo do log cumulativo (para upload)] *****
-ok: [localhost]
-TASK [Deploy | Upload JSON + LOG para Harness File Store] **********************
-included: /tmp/tmp.8JjiC1Pw36/elastic-compute-cloud-sitef/ansible/harness_filestore_upload.yml for localhost
-TASK [Harness | Ler envs (MACHINE/MACHINES) e normalizar] **********************
-ok: [localhost]
-TASK [Harness | Resolver current_machine (força override sem recursão)] ********
-ok: [localhost]
-TASK [Harness | Validar vars mínimas] ******************************************
-fatal: [localhost]: FAILED! => {"msg": "The conditional check 'current_machine is defined' failed. The error was: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_mach
-ine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: recursive loop detected in template string: {{ current_machine }}. maximum recursion depth exceeded while calling a Python object"}
-PLAY RECAP *********************************************************************
-localhost                  : ok=40   changed=8    unreachable=0    failed=1    skipped=4    rescued=0    ignored=0   
-Command finished with status FAILURE
+## harness_filestore_upload.yml
+---
+# =====================================================================================
+# HARNESS FILE STORE - UPLOAD (por máquina)
+# - Cria (se não existir) pasta raiz -> env -> deployment_ref
+# - Faz UPSERT do status.json e do log da máquina
+# - Tags enviadas com quoting seguro (evita 500 por multipart quebrado)
+#
+# SEGREDO (NÃO NO REPO):
+#   HARNESS_X_API_KEY (env var)
+#
+# CORREÇÕES:
+# 1) Harness: folder/arquivo já existe pode vir como 400 + code=DUPLICATE_FIELD (não 409).
+#    -> normaliza 400+DUPLICATE_FIELD para 409 (idempotência).
+# 2) Ansible: alguns repositórios têm current_machine = "{{ current_machine }}" (recursivo).
+#    -> sobrescreve current_machine de forma segura (env MACHINE > var machine_name > fallback).
+# =====================================================================================
+
+# -----------------------------------------------------------------------------
+# 0) Blindagem contra current_machine recursivo
+# -----------------------------------------------------------------------------
+- name: "Harness | Ler envs (MACHINE/MACHINES) e normalizar"
+  ansible.builtin.set_fact:
+    _env_MACHINE: "{{ lookup('ansible.builtin.env', 'MACHINE') | default('', true) | string | trim }}"
+    _env_MACHINES: "{{ lookup('ansible.builtin.env', 'MACHINES') | default('', true) | string | trim }}"
+    _machine_name: "{{ machine_name | default('') | string | trim }}"
+
+- name: "Harness | Resolver current_machine (força override sem recursão)"
+  ansible.builtin.set_fact:
+    current_machine: >-
+      {{
+        (lookup('env','MACHINE') | default('') | string | trim)
+        if (lookup('env','MACHINE') | default('') | string | trim) | length > 0
+        else
+          (
+            (lookup('env','MACHINES') | default('') | string | trim).split(',')[0] | trim
+            if (lookup('env','MACHINES') | default('') | string | trim) | length > 0
+            else ''
+          )
+      }}
+
+
+- name: "Harness | Validar vars mínimas"
+  ansible.builtin.assert:
+    that:
+      - current_machine is defined
+      - (current_machine | string | trim | length) > 0
+      - deployment_ref is defined
+      - filestore_env is defined
+      - machine_status_file is defined
+      - log_content is defined
+      - status_tag_value is defined
+    fail_msg: "Faltam vars obrigatórias para harness_filestore_upload.yml (ou current_machine veio vazio)."
+
+- name: "Harness | Definir defaults + normalizações"
+  ansible.builtin.set_fact:
+    harness_account_id_resolved: "{{ harness_account_id | default('fgDto6qoTT6ctfZS9eWbEw') }}"
+    harness_org_id_resolved: "{{ harness_org_id | default('Fiserv') }}"
+    harness_project_id_resolved: "{{ harness_project_id | default('sitef') }}"
+    harness_filestore_root_identifier_resolved: "{{ harness_filestore_root_identifier | default('Root') }}"
+    harness_api_base: "https://harness.onefiserv.net/ng/api/file-store"
+
+    env_lower: "{{ (filestore_env | string | trim | lower) }}"
+    deployment_ref_folder: "{{ (deployment_ref_folder | default(deployment_ref)) | string | trim }}"
+    deployment_ref_lower: "{{ (deployment_ref | string | trim | lower) }}"
+
+- name: "Harness | Identifiers SAFE (HARNESS RULE: [A-Za-z][A-Za-z0-9_]{0,127})"
+  ansible.builtin.set_fact:
+    env_identifier: "{{ env_lower | regex_replace('[^A-Za-z0-9_]', '_') }}"
+    deployment_ref_identifier: "{{ (deployment_ref_folder | string | trim | lower) | regex_replace('[^A-Za-z0-9_]', '_') }}"
+    machine_identifier: "{{ (current_machine | string | trim | lower) | regex_replace('[^A-Za-z0-9_]', '_') }}"
+
+- name: "Harness | Resolver token (vars > env)"
+  ansible.builtin.set_fact:
+    harness_x_api_key: >-
+      {{
+        (harness_x_api_key | default('') | string | trim)
+          if (harness_x_api_key is defined and (harness_x_api_key | string | trim) | length > 0)
+          else (lookup('ansible.builtin.env', 'HARNESS_X_API_KEY') | default('', true))
+      }}
+  no_log: true
+
+- name: "Harness | Falhar se token não está no ambiente"
+  ansible.builtin.fail:
+    msg: "HARNESS_X_API_KEY não definido no ambiente. Exporte no step do Harness antes de rodar o Ansible."
+  when: (harness_x_api_key | length) == 0
+
+- name: "Harness | Montar tags base"
+  ansible.builtin.set_fact:
+    harness_tags:
+      - { key: "env",        value: "{{ env_lower }}" }
+      - { key: "deployment", value: "{{ deployment_ref_lower }}" }
+      - { key: "machine",    value: "{{ current_machine | lower }}" }
+      - { key: "tag",        value: "{{ status_tag_value }}" }
+
+- name: "Harness | Adicionar extra_tags como tag=..."
+  ansible.builtin.set_fact:
+    harness_tags: "{{ harness_tags + [ {'key':'tag','value': (item | string | trim)} ] }}"
+  loop: "{{ extra_tags | default([]) }}"
+  when: (item | string | trim | length) > 0
+
+- name: "Harness | Definir http_codes aceitos"
+  ansible.builtin.set_fact:
+    hfs_ok_create_codes: ["200","201","202","204", "409"]
+    hfs_ok_update_codes: ["200","201","202","204"]
+
+- name: "Harness | Render tags JSON"
+  ansible.builtin.set_fact:
+    harness_tags_json: "{{ harness_tags | to_json }}"
+
+# -----------------------------------------------------------------------------
+# 1) Garantir folder ENV (filestore_env) embaixo da raiz
+# -----------------------------------------------------------------------------
+- name: "Harness | Garantir folder ENV (POST) com debug"
+  ansible.builtin.shell: |
+    set -euo pipefail
+    http="$(curl -sS -o /tmp/hfs_env_create.out -w "%{http_code}" \
+      --request POST \
+      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+      -H "x-api-key: {{ harness_x_api_key }}" \
+      -F "name={{ env_lower }}" \
+      -F "type=FOLDER" \
+      -F "parentIdentifier={{ harness_filestore_root_identifier_resolved }}" \
+      -F "identifier={{ env_identifier }}" \
+      -F 'tags={{ harness_tags_json }}' \
+    )"
+    if [ "${http}" = "400" ] && grep -q 'DUPLICATE_FIELD' /tmp/hfs_env_create.out; then
+      echo "409"
+    else
+      echo "${http}"
+    fi
+  args:
+    executable: /bin/bash
+  register: hfs_env_create_http
+  changed_when: hfs_env_create_http.stdout in ['200','201']
+  failed_when: false
+
+- name: "Harness | DEBUG ENV (se falhar)"
+  ansible.builtin.shell: "sed -n '1,220p' /tmp/hfs_env_create.out || true"
+  register: hfs_env_create_body
+  changed_when: false
+  failed_when: false
+  when: (hfs_env_create_http.stdout | default('')) not in hfs_ok_create_codes
+
+- name: "Harness | Falhar ENV (com body)"
+  ansible.builtin.fail:
+    msg: |
+      Falha ao criar/garantir folder ENV no Harness.
+      http_code={{ hfs_env_create_http.stdout | default('') }}
+      body={{ hfs_env_create_body.stdout | default('') }}
+  when: (hfs_env_create_http.stdout | default('')) not in hfs_ok_create_codes
+
+# -----------------------------------------------------------------------------
+# 2) Garantir folder DEPLOYMENT_REF embaixo do ENV
+# -----------------------------------------------------------------------------
+- name: "Harness | Garantir folder DEPLOYMENT_REF (POST) com debug"
+  ansible.builtin.shell: |
+    set -euo pipefail
+    http="$(curl -sS -o /tmp/hfs_ref_create.out -w "%{http_code}" \
+      --request POST \
+      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+      -H "x-api-key: {{ harness_x_api_key }}" \
+      -F "name={{ deployment_ref_folder }}" \
+      -F "type=FOLDER" \
+      -F "parentIdentifier={{ env_identifier }}" \
+      -F "identifier={{ deployment_ref_identifier }}" \
+      -F 'tags={{ harness_tags_json }}' \
+    )"
+    if [ "${http}" = "400" ] && grep -q 'DUPLICATE_FIELD' /tmp/hfs_ref_create.out; then
+      echo "409"
+    else
+      echo "${http}"
+    fi
+  args:
+    executable: /bin/bash
+  register: hfs_ref_create_http
+  changed_when: hfs_ref_create_http.stdout in ['200','201']
+  failed_when: false
+
+- name: "Harness | DEBUG REF (se falhar)"
+  ansible.builtin.shell: "sed -n '1,220p' /tmp/hfs_ref_create.out || true"
+  register: hfs_ref_create_body
+  changed_when: false
+  failed_when: false
+  when: (hfs_ref_create_http.stdout | default('')) not in hfs_ok_create_codes
+
+- name: "Harness | Falhar REF (com body)"
+  ansible.builtin.fail:
+    msg: |
+      Falha ao criar/garantir folder DEPLOYMENT_REF no Harness.
+      http_code={{ hfs_ref_create_http.stdout | default('') }}
+      body={{ hfs_ref_create_body.stdout | default('') }}
+  when: (hfs_ref_create_http.stdout | default('')) not in hfs_ok_create_codes
+
+# -----------------------------------------------------------------------------
+# 3) Upload/Upsert STATUS JSON (POST -> se 409 faz PUT) + retry em 500
+# -----------------------------------------------------------------------------
+- name: "Harness | Definir nome/identifier do STATUS JSON"
+  ansible.builtin.set_fact:
+    hfs_status_name: "{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}.json"
+    hfs_status_identifier: "{{ deployment_ref_identifier }}_{{ machine_identifier }}_{{ env_identifier }}_json"
+    hfs_status_parent_identifier: "{{ deployment_ref_identifier }}"
+
+- name: "Harness | CREATE status (retry se 500)"
+  ansible.builtin.shell: |
+    set -euo pipefail
+    http="$(curl -sS -o /tmp/hfs_status_create.out -w "%{http_code}" \
+      --request POST \
+      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+      -H "x-api-key: {{ harness_x_api_key }}" \
+      -F "name={{ hfs_status_name }}" \
+      -F "type=FILE" \
+      -F "parentIdentifier={{ hfs_status_parent_identifier }}" \
+      -F "identifier={{ hfs_status_identifier }}" \
+      -F 'tags={{ harness_tags_json }}' \
+      -F "content=@{{ machine_status_file }}" \
+    )"
+    if [ "${http}" = "400" ] && grep -q 'DUPLICATE_FIELD' /tmp/hfs_status_create.out; then
+      echo "409"
+    else
+      echo "${http}"
+    fi
+  args:
+    executable: /bin/bash
+  register: hfs_status_create_http
+  changed_when: (hfs_status_create_http.stdout | default('')) is match('^2..$')
+  failed_when: false
+  no_log: true
+  retries: 4
+  delay: 2
+  until: (hfs_status_create_http.stdout | default('')) != '500'
+
+- name: "Harness | UPDATE status (se create retornou 409) (retry se 500)"
+  ansible.builtin.shell: |
+    set -euo pipefail
+    http="$(curl -sS -o /tmp/hfs_status_update.out -w "%{http_code}" \
+      --request PUT \
+      "{{ harness_api_base }}/{{ hfs_status_identifier }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+      -H "x-api-key: {{ harness_x_api_key }}" \
+      -F "name={{ hfs_status_name }}" \
+      -F "type=FILE" \
+      -F "parentIdentifier={{ hfs_status_parent_identifier }}" \
+      -F "identifier={{ hfs_status_identifier }}" \
+      -F 'tags={{ harness_tags_json }}' \
+      -F "content=@{{ machine_status_file }}" \
+    )"
+    echo "${http}"
+  args:
+    executable: /bin/bash
+  register: hfs_status_update_http
+  when: (hfs_status_create_http.stdout | default('')) == '409'
+  changed_when: (hfs_status_update_http.stdout | default('')) is match('^2..$')
+  failed_when: false
+  no_log: true
+  retries: 4
+  delay: 2
+  until: (hfs_status_update_http.stdout | default('')) != '500'
+
+- name: "Harness | DEBUG body STATUS (quando falhar)"
+  ansible.builtin.shell: |
+    echo "CREATE:"; sed -n '1,260p' /tmp/hfs_status_create.out || true
+    echo "UPDATE:"; sed -n '1,260p' /tmp/hfs_status_update.out || true
+  register: hfs_status_body
+  changed_when: false
+  failed_when: false
+  when:
+    - (hfs_status_create_http.stdout | default('')) not in hfs_ok_create_codes
+      or ((hfs_status_create_http.stdout | default('')) == '409' and (hfs_status_update_http.stdout | default('')) not in hfs_ok_update_codes)
+
+- name: "Harness | Falhar STATUS (com correlationId/body)"
+  ansible.builtin.fail:
+    msg: |
+      Falha no upload do STATUS no Harness File Store.
+      STATUS create http_code={{ hfs_status_create_http.stdout | default('') }}
+      STATUS update http_code={{ hfs_status_update_http.stdout | default('') }}
+      {{ hfs_status_body.stdout | default('') }}
+  when:
+    - (hfs_status_create_http.stdout | default('')) not in hfs_ok_create_codes
+      or ((hfs_status_create_http.stdout | default('')) == '409' and (hfs_status_update_http.stdout | default('')) not in hfs_ok_update_codes)
+
+# -----------------------------------------------------------------------------
+# 4) Upload/Upsert LOG (POST -> se 409 faz PUT) + retry em 500
+# -----------------------------------------------------------------------------
+- name: "Harness | Definir nome/identifier do LOG"
+  ansible.builtin.set_fact:
+    hfs_log_name: "{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}.log"
+    hfs_log_identifier: "{{ deployment_ref_identifier }}_{{ machine_identifier }}_{{ env_identifier }}_log"
+    hfs_log_parent_identifier: "{{ deployment_ref_identifier }}"
+
+- name: "Harness | Upload do LOG (create/update) com cleanup garantido"
+  block:
+    - name: "Harness | Criar arquivo temporário do log no controller"
+      ansible.builtin.copy:
+        dest: "/tmp/{{ hfs_log_name }}"
+        mode: "0600"
+        content: "{{ log_content }}"
+
+    - name: "Harness | CREATE log (retry se 500)"
+      ansible.builtin.shell: |
+        set -euo pipefail
+        http="$(curl -sS -o /tmp/hfs_log_create.out -w "%{http_code}" \
+          --request POST \
+          "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+          -H "x-api-key: {{ harness_x_api_key }}" \
+          -F "name={{ hfs_log_name }}" \
+          -F "type=FILE" \
+          -F "parentIdentifier={{ hfs_log_parent_identifier }}" \
+          -F "identifier={{ hfs_log_identifier }}" \
+          -F 'tags={{ harness_tags_json }}' \
+          -F "content=@/tmp/{{ hfs_log_name }}" \
+        )"
+        if [ "${http}" = "400" ] && grep -q 'DUPLICATE_FIELD' /tmp/hfs_log_create.out; then
+          echo "409"
+        else
+          echo "${http}"
+        fi
+      args:
+        executable: /bin/bash
+      register: hfs_log_create_http
+      changed_when: (hfs_log_create_http.stdout | default('')) is match('^2..$')
+      failed_when: false
+      no_log: true
+      retries: 4
+      delay: 2
+      until: (hfs_log_create_http.stdout | default('')) != '500'
+
+    - name: "Harness | UPDATE log (se create retornou 409) (retry se 500)"
+      ansible.builtin.shell: |
+        set -euo pipefail
+        http="$(curl -sS -o /tmp/hfs_log_update.out -w "%{http_code}" \
+          --request PUT \
+          "{{ harness_api_base }}/{{ hfs_log_identifier }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+          -H "x-api-key: {{ harness_x_api_key }}" \
+          -F "name={{ hfs_log_name }}" \
+          -F "type=FILE" \
+          -F "parentIdentifier={{ hfs_log_parent_identifier }}" \
+          -F "identifier={{ hfs_log_identifier }}" \
+          -F 'tags={{ harness_tags_json }}' \
+          -F "content=@/tmp/{{ hfs_log_name }}" \
+        )"
+        echo "${http}"
+      args:
+        executable: /bin/bash
+      register: hfs_log_update_http
+      when: (hfs_log_create_http.stdout | default('')) == '409'
+      changed_when: (hfs_log_update_http.stdout | default('')) is match('^2..$')
+      failed_when: false
+      no_log: true
+      retries: 4
+      delay: 2
+      until: (hfs_log_update_http.stdout | default('')) != '500'
+
+    - name: "Harness | DEBUG body LOG (quando falhar)"
+      ansible.builtin.shell: |
+        echo "CREATE:"; sed -n '1,260p' /tmp/hfs_log_create.out || true
+        echo "UPDATE:"; sed -n '1,260p' /tmp/hfs_log_update.out || true
+      register: hfs_log_body
+      changed_when: false
+      failed_when: false
+      when:
+        - (hfs_log_create_http.stdout | default('')) not in hfs_ok_create_codes
+          or ((hfs_log_create_http.stdout | default('')) == '409' and (hfs_log_update_http.stdout | default('')) not in hfs_ok_update_codes)
+
+    - name: "Harness | Falhar LOG (com correlationId/body)"
+      ansible.builtin.fail:
+        msg: |
+          Falha no upload do LOG no Harness File Store.
+          LOG create http_code={{ hfs_log_create_http.stdout | default('') }}
+          LOG update http_code={{ hfs_log_update_http.stdout | default('') }}
+          {{ hfs_log_body.stdout | default('') }}
+      when:
+        - (hfs_log_create_http.stdout | default('')) not in hfs_ok_create_codes
+          or ((hfs_log_create_http.stdout | default('')) == '409' and (hfs_log_update_http.stdout | default('')) not in hfs_ok_update_codes)
+
+  always:
+    - name: "Harness | Limpar arquivo temporário do log"
+      ansible.builtin.file:
+        path: "/tmp/{{ hfs_log_name }}"
+        state: absent
+      changed_when: false
+      failed_when: false
+
+
+## deploy_per_machine.yml
+---
+# =====================================================================================
+# DEPLOY POR MÁQUINA
+# Chamado por deploy_from_status.yml (PIPELINE 2)
+# =====================================================================================
+
+# -----------------------------------------------------------------------------
+# 1) Paths e defaults
+# -----------------------------------------------------------------------------
+- name: "Deploy | Definir caminhos para {{ machine_name }}"
+  ansible.builtin.set_fact:
+    repo_root_safe: "{{ repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..')) }}"
+    current_machine: "{{ (machine_name | string | trim) }}"
+    host_deploy_scripts: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
+    host_deploy_init_log: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/init_deploy.log"
+
+- name: "Deploy | Definir diretórios principais do repositório"
+  ansible.builtin.set_fact:
+    execution_dir: "{{ repo_root_safe }}/execution"
+    machines_dir: "{{ repo_root_safe }}/machines"
+    packages_dir: "{{ repo_root_safe }}/packages"
+
+# -----------------------------------------------------------------------------
+# 2) Resolver machine_file
+# -----------------------------------------------------------------------------
+- name: "Deploy | Definir candidatos de arquivo da máquina"
+  ansible.builtin.set_fact:
+    candidate_machine_files:
+      - "{{ execution_dir }}/machines/{{ current_machine }}.yml"
+      - "{{ execution_dir }}/{{ current_machine }}.yml"
+      - "{{ machines_dir }}/{{ current_machine }}.yml"
+      - "{{ repo_root_safe }}/inventory/machines/{{ current_machine }}.yml"
+
+- name: "Deploy | Verificar candidatos"
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop: "{{ candidate_machine_files }}"
+  register: machine_candidates_stat
+
+- name: "Deploy | Selecionar machine_file existente"
+  ansible.builtin.set_fact:
+    machine_file: "{{ item.item }}"
+  when:
+    - item.stat.exists
+    - machine_file is not defined
+  loop: "{{ machine_candidates_stat.results }}"
+
+- name: "Deploy | Falhar se arquivo da máquina não existir"
+  ansible.builtin.fail:
+    msg: |
+      [deploy] Arquivo de máquina não encontrado para {{ current_machine }}.
+      Caminhos testados:
+      {{ candidate_machine_files | to_nice_yaml }}
+  when: machine_file is not defined
+
+# -----------------------------------------------------------------------------
+# 3) Carregar machine_cfg + package_cfg
+# -----------------------------------------------------------------------------
+- name: "Deploy | Carregar config da máquina {{ current_machine }}"
+  ansible.builtin.include_vars:
+    file: "{{ machine_file }}"
+    name: machine_cfg
+
+- name: "Deploy | Validar package definido"
+  ansible.builtin.assert:
+    that:
+      - machine_cfg is defined
+      - machine_cfg.package is defined
+      - (machine_cfg.package | string | trim) | length > 0
+    fail_msg: "machine_cfg.package não definido em {{ machine_file }}"
+
+- name: "Deploy | Carregar config do pacote {{ machine_cfg.package }}"
+  ansible.builtin.include_vars:
+    file: "{{ packages_dir }}/{{ machine_cfg.package }}.yml"
+    name: package_cfg
+
+# -----------------------------------------------------------------------------
+# 4) SSH e host dinâmico
+# -----------------------------------------------------------------------------
+- name: "Deploy | Definir usuário alvo padrão"
+  ansible.builtin.set_fact:
+    target_user: "{{ machine_cfg.user | default(machine_cfg.target_user | default('ec2-user')) }}"
+
+- name: "Deploy | Definir ssh_common_args padrão"
+  ansible.builtin.set_fact:
+    target_ssh_common_args: >-
+      {{
+        machine_cfg.ssh_common_args
+          | default('-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null')
+      }}
+
+- name: "Deploy | Aplicar ProxyJump via bastion (quando necessário)"
+  ansible.builtin.set_fact:
+    target_ssh_common_args: >-
+      {{ target_ssh_common_args }}
+      -o ProxyJump={{ machine_cfg.bastion_user | default(target_user) }}@{{ machine_cfg.bastion_host }}
+  when:
+    - machine_cfg.bastion_host is defined
+    - (machine_cfg.bastion_host | string | length) > 0
+
+- name: "Deploy | Registrar host dinâmico"
+  ansible.builtin.add_host:
+    name: "{{ current_machine }}"
+    ansible_host: "{{ machine_cfg.host | default(machine_cfg.ip | default('')) }}"
+    ansible_user: "{{ target_user }}"
+    ansible_connection: ssh
+    ansible_ssh_common_args: "{{ target_ssh_common_args }}"
+  changed_when: true
+
+# -----------------------------------------------------------------------------
+# 5) Montar env final (pacote + máquina + extras)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Montar env final"
+  ansible.builtin.set_fact:
+    effective_env: >-
+      {{
+        (package_cfg.env_vars | default({}))
+        | combine(machine_cfg.env_vars | default({}), recursive=True)
+        | combine({
+            'SITEF_MACHINE': current_machine,
+            'SITEF_HOST': (machine_cfg.host | default(machine_cfg.ip | default(''))),
+            'DEPLOYMENT_REF': (deployment_ref | default('')),
+            'PACKAGE_NAME': (machine_cfg.package | default('')),
+            'ROLLBACK_PACKAGE': (machine_cfg.rollback | default(''))
+          }, recursive=True)
+      }}
+
+# -----------------------------------------------------------------------------
+# 6) Status file local + paths lógicos do filestore  (FIX: split set_fact)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Definir deployment_ref_lower (fix ansible set_fact)"
+  ansible.builtin.set_fact:
+    deployment_ref_lower: "{{ deployment_ref | lower }}"
+
+- name: "Deploy | Definir arquivos de status/log local"
+  ansible.builtin.set_fact:
+    machine_status_dir: "{{ status_dir }}/{{ current_machine }}"
+    status_file: "{{ status_dir }}/{{ current_machine }}/status.json"
+    pipeline_log_file: "{{ status_dir }}/{{ current_machine }}/pipeline.log"
+
+    env_folder: "{{ filestore_env | lower }}"
+    deployment_ref_folder: "{{ deployment_ref }}"
+
+    filestore_json_path: "{{ filestore_base_dir }}/{{ deployment_ref_lower }}-{{ current_machine }}-{{ filestore_env }}.json"
+    filestore_log_path: "{{ filestore_base_dir }}/{{ deployment_ref_lower }}-{{ current_machine }}-{{ filestore_env }}.log"
+
+- name: "Deploy | Garantir diretório de status da máquina"
+  ansible.builtin.file:
+    path: "{{ machine_status_dir }}"
+    state: directory
+    mode: "0755"
+
+# -----------------------------------------------------------------------------
+# 6.1) Ler status existente (pra append no JSON)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Verificar se status.json já existe (para append)"
+  ansible.builtin.stat:
+    path: "{{ status_file }}"
+  register: status_stat
+
+- name: "Deploy | Ler status.json existente (se existir)"
+  ansible.builtin.slurp:
+    path: "{{ status_file }}"
+  register: status_slurp
+  when: status_stat.stat.exists
+
+- name: "Deploy | Parse do status existente (ou base vazio)"
+  ansible.builtin.set_fact:
+    status_obj: >-
+      {{
+        (status_slurp.content | b64decode | from_json)
+          if (status_stat.stat.exists | default(false))
+          else {}
+      }}
+
+# -----------------------------------------------------------------------------
+# 6.2) Escrever/atualizar status inicial (deploy:queued) + append no history[]
+# -----------------------------------------------------------------------------
+- name: "Deploy | Atualizar status (deploy:queued) com append em history"
+  ansible.builtin.copy:
+    dest: "{{ status_file }}"
+    mode: "0644"
+    content: >-
+      {{
+        (
+          status_obj
+          | combine({
+              "machine": current_machine,
+              "host": (machine_cfg.host | default(machine_cfg.ip | default(''))),
+              "package": (machine_cfg.package | default('')),
+              "rollback": (machine_cfg.rollback | default('')),
+              "deployment_ref": (deployment_ref | default('')),
+              "log_path": filestore_log_path,
+              "status": "deploy:queued",
+              "timestamp": ansible_date_time.iso8601,
+              "history": (
+                (status_obj.history | default([]))
+                + [ {
+                      "stage": "deploy",
+                      "status": "deploy:queued",
+                      "timestamp": ansible_date_time.iso8601
+                    } ]
+              )
+            }, recursive=True)
+        ) | to_nice_json
+      }}
+  changed_when: true
+
+# -----------------------------------------------------------------------------
+# 7) Verificar script e executar deploy (com tee -a no host)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Verificar init_deploy.sh no host"
+  become: true
+  ansible.builtin.stat:
+    path: "{{ host_deploy_scripts }}/init_deploy.sh"
+  delegate_to: "{{ current_machine }}"
+  register: deploy_script_stat
+
+- name: "Deploy | Falhar se init_deploy.sh não existir"
+  ansible.builtin.fail:
+    msg: "init_deploy.sh não encontrado em {{ host_deploy_scripts }}. Rode o predeploy antes."
+  when: not deploy_script_stat.stat.exists
+
+- name: "Deploy | Executar init_deploy.sh no host (com tee)"
+  become: true
+  ansible.builtin.shell: |
+    set -o pipefail
+    cd "{{ host_deploy_scripts }}"
+    /usr/bin/stdbuf -oL -eL /bin/bash -x ./init_deploy.sh 2>&1 | tee -a "{{ host_deploy_init_log }}"
+    exit ${PIPESTATUS[0]}
+  args:
+    executable: /bin/bash
+  delegate_to: "{{ current_machine }}"
+  environment: "{{ effective_env }}"
+  register: deploy_result
+  ignore_errors: true
+  changed_when: true
+
+- name: "Deploy | Ler deploy.txt do host (se existir)"
+  become: true
+  ansible.builtin.shell: |
+    cat "{{ host_deploy_scripts }}/deploy.txt" 2>/dev/null || echo "deploy.txt nao existe"
+  args:
+    executable: /bin/bash
+  delegate_to: "{{ current_machine }}"
+  register: deploy_txt
+  changed_when: false
+  failed_when: false
+
+- name: "Deploy | Ler init_deploy.log do host (se existir)"
+  become: true
+  ansible.builtin.shell: |
+    tail -n 2000 "{{ host_deploy_init_log }}" 2>/dev/null || echo "init_deploy.log nao existe"
+  args:
+    executable: /bin/bash
+  delegate_to: "{{ current_machine }}"
+  register: deploy_init_log_tail
+  changed_when: false
+  failed_when: false
+
+# -----------------------------------------------------------------------------
+# 8) Montar conteúdo do log padronizado (pipeline deploy)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Montar conteúdo do log do DEPLOY"
+  ansible.builtin.set_fact:
+    deploy_log_content: |
+      ---- pipeline deploy ----
+      deployment_ref={{ deployment_ref | default('') }}
+      machine={{ current_machine }}
+      host={{ machine_cfg.host | default(machine_cfg.ip | default('')) }}
+      stage=deploy
+      rc={{ deploy_result.rc | default('') }}
+      ts={{ ansible_date_time.iso8601 }}
+
+      ---- stdout (ansible) ----
+      {{ deploy_result.stdout | default('') }}
+
+      ---- stderr (ansible) ----
+      {{ deploy_result.stderr | default('') }}
+
+      ---- init_deploy.log (tail) ----
+      {{ deploy_init_log_tail.stdout | default('') }}
+
+      ---- deploy.txt ----
+      {{ deploy_txt.stdout | default('') }}
+      ---- pipeline deploy ----
+
+# -----------------------------------------------------------------------------
+# 9) Atualizar status final (deploy:ok / deploy:error) com append em history[]
+# -----------------------------------------------------------------------------
+- name: "Deploy | Ler status.json atual (antes do append final)"
+  ansible.builtin.slurp:
+    path: "{{ status_file }}"
+  register: status_after_queued_slurp
+
+- name: "Deploy | Parse do status atual"
+  ansible.builtin.set_fact:
+    status_now: "{{ status_after_queued_slurp.content | b64decode | from_json }}"
+
+- name: "Deploy | Atualizar status final (append em history)"
+  ansible.builtin.copy:
+    dest: "{{ status_file }}"
+    mode: "0644"
+    content: >-
+      {{
+        (
+          status_now
+          | combine({
+              "status": ("deploy:ok" if (deploy_result.rc | default(1)) == 0 else "deploy:error"),
+              "timestamp": ansible_date_time.iso8601,
+              "rc": (deploy_result.rc | default(1)),
+              "history": (
+                (status_now.history | default([]))
+                + [ {
+                      "stage": "deploy",
+                      "status": ("deploy:ok" if (deploy_result.rc | default(1)) == 0 else "deploy:error"),
+                      "rc": (deploy_result.rc | default(1)),
+                      "timestamp": ansible_date_time.iso8601
+                    } ]
+              )
+            }, recursive=True)
+        ) | to_nice_json
+      }}
+  changed_when: true
+
+# -----------------------------------------------------------------------------
+# 9.5) Append no LOG cumulativo local (controller) e preparar conteúdo p/ upload
+# -----------------------------------------------------------------------------
+- name: "Deploy | Garantir arquivo de log cumulativo"
+  ansible.builtin.file:
+    path: "{{ pipeline_log_file }}"
+    state: touch
+    mode: "0644"
+
+- name: "Deploy | Append do bloco de log do deploy no log cumulativo"
+  ansible.builtin.blockinfile:
+    path: "{{ pipeline_log_file }}"
+    marker: ""
+    insertafter: EOF
+    block: |
+      {{ deploy_log_content }}
+  changed_when: true
+
+- name: "Deploy | Carregar conteúdo completo do log cumulativo (para upload)"
+  ansible.builtin.set_fact:
+    log_content_to_upload: "{{ lookup('ansible.builtin.file', pipeline_log_file) }}"
+
+# -----------------------------------------------------------------------------
+# 10) Upload JSON + LOG para Harness File Store
+# -----------------------------------------------------------------------------
+- name: "Deploy | Upload JSON + LOG para Harness File Store"
+  ansible.builtin.include_tasks: harness_filestore_upload.yml
+  vars:
+    current_machine: "{{ current_machine }}"
+    machine_status_file: "{{ status_file }}"
+    log_content: "{{ log_content_to_upload }}"
+    env_folder: "{{ env_folder }}"
+    deployment_ref_folder: "{{ deployment_ref }}"
+    status_tag_value: >-
+      {{ (deployment_ref | lower) ~ ':deploy:' ~ ('ok' if (deploy_result.rc | default(1)) == 0 else 'error') }}
+    extra_tags: []
+
+# -----------------------------------------------------------------------------
+# 11) Falhar pipeline se deploy retornou erro (depois do upload)
+# -----------------------------------------------------------------------------
+- name: "Deploy | Falhar pipeline se init_deploy.sh retornou erro"
+  ansible.builtin.fail:
+    msg: "DEPLOY falhou em {{ current_machine }} (host {{ machine_cfg.host | default(machine_cfg.ip | default('')) }})"
+  when: (deploy_result.rc | default(1)) != 0
