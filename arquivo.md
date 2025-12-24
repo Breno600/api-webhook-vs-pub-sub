@@ -1,460 +1,274 @@
-# predeploy_per_machine.yml
+# harness_filestore_upload.yml
 ---
 # =====================================================================================
-# PREDEPLOY POR MÁQUINA (COMPLETO / CORRIGIDO)
-# Chamado por: predeploy_from_execution.yml
+# HARNESS FILESTORE UPLOAD (ROBUSTO / SEM QUEBRAR PIPELINE)
+#
+# Espera receber (via include_tasks vars):
+# - log_content (string)
+# - machine_status_file (path local controller)
+# - hf_stage_name (opcional, default: unknown)
+# - current_machine (string)
+# - deployment_ref
+# - filestore_env
+# - filestore_base_dir
+# - filestore_log_path (opcional)
+# - filestore_status_path (opcional)
+# - status_tag_value (string)
+# - extra_tags (list)
+#
+# Credenciais (preferência vars Ansible; fallback env):
+# - harness_endpoint / HARNESS_ENDPOINT
+# - harness_account_id / HARNESS_ACCOUNT_ID
+# - harness_org_id / HARNESS_ORG_ID
+# - harness_project_id / HARNESS_PROJECT_ID
+# - harness_api_key / HARNESS_API_KEY   (PAT)
+#   também aceita: harness_x_api_key / HARNESS_X_API_KEY
 # =====================================================================================
 
 # -----------------------------------------------------------------------------
-# 0) Resolver nome da máquina atual + stage
+# 1) Resolver entradas (tratando variável vazia como "não definida")
 # -----------------------------------------------------------------------------
-- name: "Predeploy | Resolver nome da máquina atual"
+- name: "Harness | Resolver entradas (safe locals)"
   ansible.builtin.set_fact:
-    stage_name: "predeploy"
-    current_machine: "{{ (machine_name | default(item) | default('')) | string | trim }}"
+    hf_stage_name_resolved: "{{ (hf_stage_name | default('unknown')) | string | trim }}"
+    hf_machine: "{{ (current_machine | default(machine_name | default(''))) | string | trim }}"
+    hf_deployment_ref: "{{ (deployment_ref | default(lookup('env','GIT_TAG') | default(''))) | string | trim }}"
+    hf_env: "{{ (filestore_env | default('dev')) | string | trim | lower }}"
+    hf_base_dir: "{{ (filestore_base_dir | default((filestore_env | default('dev')) ~ '/' ~ (deployment_ref | default('')))) | string | trim }}"
 
-- name: "Predeploy | Validar vars mínimas"
-  ansible.builtin.assert:
-    that:
-      - (current_machine | length) > 0
-      - deployment_ref is defined
-      - (deployment_ref | string | trim | length) > 0
-      - filestore_env is defined
-      - (filestore_env | string | trim | length) > 0
-      - filestore_base_dir is defined
-      - (filestore_base_dir | string | trim | length) > 0
-      - status_dir is defined
-      - (status_dir | string | trim | length) > 0
-      - nexus_base_url is defined
-      - (nexus_base_url | string | trim | length) > 0
-    fail_msg: "Faltam variáveis obrigatórias para o predeploy_per_machine.yml"
-
-# -----------------------------------------------------------------------------
-# 1) Paths base do repositório
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Definir paths base do repositório"
-  ansible.builtin.set_fact:
-    repo_root_safe: "{{ repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..')) }}"
-    execution_dir: "{{ (repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..'))) }}/execution"
-    machines_dir: "{{ (repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..'))) }}/machines"
-    packages_dir: "{{ (repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..'))) }}/packages"
-    scripts_root_dir: "{{ (repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..'))) }}/scripts"
-
-# -----------------------------------------------------------------------------
-# 2) Resolver machine_file
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Definir candidatos de arquivo da máquina"
-  ansible.builtin.set_fact:
-    candidate_machine_files:
-      - "{{ execution_dir }}/machines/{{ current_machine }}.yml"
-      - "{{ execution_dir }}/{{ current_machine }}.yml"
-      - "{{ machines_dir }}/{{ current_machine }}.yml"
-      - "{{ repo_root_safe }}/inventory/machines/{{ current_machine }}.yml"
-
-- name: "Predeploy | Verificar candidatos"
-  ansible.builtin.stat:
-    path: "{{ item }}"
-  loop: "{{ candidate_machine_files }}"
-  register: machine_candidates_stat
-
-- name: "Predeploy | Selecionar machine_file existente"
-  ansible.builtin.set_fact:
-    machine_file: "{{ item.item }}"
-  when:
-    - item.stat.exists
-    - machine_file is not defined
-  loop: "{{ machine_candidates_stat.results }}"
-
-- name: "Predeploy | Falhar se arquivo da máquina não existir"
-  ansible.builtin.fail:
-    msg: |
-      [predeploy] Arquivo de máquina não encontrado para {{ current_machine }}.
-      Caminhos testados:
-      {{ candidate_machine_files | to_nice_yaml }}
-  when: machine_file is not defined
-
-# -----------------------------------------------------------------------------
-# 3) Carregar machine_cfg + package_cfg
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Carregar config da máquina {{ current_machine }}"
-  ansible.builtin.include_vars:
-    file: "{{ machine_file }}"
-    name: machine_cfg
-
-- name: "Predeploy | Validar package definido"
-  ansible.builtin.assert:
-    that:
-      - machine_cfg is defined
-      - machine_cfg.package is defined
-      - (machine_cfg.package | string | trim | length) > 0
-    fail_msg: "machine_cfg.package não definido em {{ machine_file }}"
-
-- name: "Predeploy | Carregar config do pacote {{ machine_cfg.package }}"
-  ansible.builtin.include_vars:
-    file: "{{ packages_dir }}/{{ machine_cfg.package }}.yml"
-    name: package_cfg
-
-- name: "Predeploy | Validar components do pacote"
-  ansible.builtin.assert:
-    that:
-      - package_cfg is defined
-      - package_cfg.components is defined
-      - (package_cfg.components | length) > 0
-    fail_msg: "components ausente/vazio no pacote {{ machine_cfg.package }}"
-
-- name: "Predeploy | Validar script do pacote"
-  ansible.builtin.assert:
-    that:
-      - package_cfg.script is defined
-      - (package_cfg.script | string | trim | length) > 0
-    fail_msg: "package_cfg.script ausente/vazio no pacote {{ machine_cfg.package }}"
-
-# -----------------------------------------------------------------------------
-# 4) SSH e host dinâmico
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Definir usuário alvo padrão"
-  ansible.builtin.set_fact:
-    target_user: "{{ machine_cfg.user | default(machine_cfg.target_user | default('root')) }}"
-
-- name: "Predeploy | Definir ssh_common_args padrão"
-  ansible.builtin.set_fact:
-    ssh_common_args: "{{ machine_cfg.ssh_common_args | default('-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null') }}"
-
-- name: "Predeploy | Aplicar ProxyJump via bastion (quando necessário)"
-  ansible.builtin.set_fact:
-    ssh_common_args: >-
-      {{ ssh_common_args }}
-      -o ProxyJump={{ machine_cfg.bastion_user | default(target_user) }}@{{ machine_cfg.bastion_host }}
-  when:
-    - machine_cfg.bastion_host is defined
-    - (machine_cfg.bastion_host | string | length) > 0
-
-- name: "Predeploy | Registrar host dinâmico para {{ current_machine }}"
-  ansible.builtin.add_host:
-    name: "{{ current_machine }}"
-    ansible_host: "{{ machine_cfg.host | default(machine_cfg.ip | default('')) }}"
-    ansible_user: "{{ target_user }}"
-    ansible_ssh_common_args: "{{ ssh_common_args }}"
-    ansible_connection: ssh
-  changed_when: true
-
-# -----------------------------------------------------------------------------
-# 5) Montar env final (package base + machine override) + extras
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Montar env final (package base + machine override)"
-  ansible.builtin.set_fact:
-    merged_env_vars: >-
+    hf_endpoint: >-
       {{
-        (package_cfg.env_vars | default({}))
-        | combine(machine_cfg.env_vars | default({}), recursive=True)
-        | combine({
-            'SITEF_MACHINE': current_machine,
-            'SITEF_HOST': (machine_cfg.host | default(machine_cfg.ip | default(''))),
-            'DEPLOYMENT_REF': (deployment_ref | default('')),
-            'PACKAGE_NAME': (machine_cfg.package | default('')),
-            'ROLLBACK_PACKAGE': (machine_cfg.rollback | default(''))
-          }, recursive=True)
+        (harness_endpoint | string | trim)
+          if (harness_endpoint is defined and (harness_endpoint | string | trim | length) > 0)
+          else (
+            (lookup('env','HARNESS_ENDPOINT') | string | trim)
+              if ((lookup('env','HARNESS_ENDPOINT') | string | trim | length) > 0)
+              else 'https://harness.onefiserv.net'
+          )
       }}
 
-# -----------------------------------------------------------------------------
-# 6) Normalizações + run_id
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Normalizações"
-  ansible.builtin.set_fact:
-    deployment_ref_lower: "{{ (deployment_ref | string | trim | lower) }}"
-    env_lower: "{{ (filestore_env | string | trim | lower) }}"
-    machine_lower: "{{ (current_machine | string | trim | lower) }}"
+    hf_account: >-
+      {{
+        (harness_account_id | string | trim)
+          if (harness_account_id is defined and (harness_account_id | string | trim | length) > 0)
+          else (
+            (lookup('env','HARNESS_ACCOUNT_ID') | string | trim)
+              if ((lookup('env','HARNESS_ACCOUNT_ID') | string | trim | length) > 0)
+              else 'fgDto6qoTT6ctfZS9eWbEw'
+          )
+      }}
 
-- name: "Predeploy | Gerar run_id"
-  ansible.builtin.set_fact:
-    run_id: "{{ deployment_ref_lower ~ '-' ~ machine_lower ~ '-' ~ env_lower ~ '-' ~ stage_name ~ '-' ~ ansible_date_time.epoch }}"
+    hf_org: >-
+      {{
+        (harness_org_id | string | trim)
+          if (harness_org_id is defined and (harness_org_id | string | trim | length) > 0)
+          else (
+            (lookup('env','HARNESS_ORG_ID') | string | trim)
+              if ((lookup('env','HARNESS_ORG_ID') | string | trim | length) > 0)
+              else 'Fiserv'
+          )
+      }}
 
-# -----------------------------------------------------------------------------
-# 7) Paths local (controller) + paths remotos do pipeline
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Definir arquivos/diretórios locais"
-  ansible.builtin.set_fact:
-    machine_status_dir: "{{ status_dir }}/{{ current_machine }}"
-    machine_status_file: "{{ status_dir }}/{{ current_machine }}/status.json"
-    pipeline_log_file: "{{ status_dir }}/{{ current_machine }}/pipeline.log"
+    hf_project: >-
+      {{
+        (harness_project_id | string | trim)
+          if (harness_project_id is defined and (harness_project_id | string | trim | length) > 0)
+          else (
+            (lookup('env','HARNESS_PROJECT_ID') | string | trim)
+              if ((lookup('env','HARNESS_PROJECT_ID') | string | trim | length) > 0)
+              else 'sitef'
+          )
+      }}
 
-- name: "Predeploy | Definir paths lógicos (File Store) SEPARADOS POR STAGE"
-  ansible.builtin.set_fact:
-    filestore_log_path: "{{ filestore_base_dir }}/{{ deployment_ref_lower }}-{{ machine_lower }}-{{ env_lower }}-{{ stage_name }}.log"
-    filestore_status_path: "{{ filestore_base_dir }}/{{ deployment_ref_lower }}-{{ machine_lower }}-{{ env_lower }}-{{ stage_name }}.json"
-
-- name: "Predeploy | Garantir diretório de status local"
-  ansible.builtin.file:
-    path: "{{ machine_status_dir }}"
-    state: directory
-    mode: "0755"
-
-- name: "Predeploy | Garantir arquivo pipeline.log (cumulativo local)"
-  ansible.builtin.file:
-    path: "{{ pipeline_log_file }}"
-    state: touch
-    mode: "0644"
-
-# -----------------------------------------------------------------------------
-# 8) Status.json com history (append) - queued
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Verificar se status.json já existe"
-  ansible.builtin.stat:
-    path: "{{ machine_status_file }}"
-  register: status_stat
-
-- name: "Predeploy | Ler status.json existente (se existir)"
-  ansible.builtin.slurp:
-    path: "{{ machine_status_file }}"
-  register: status_slurp
-  when: status_stat.stat.exists
-
-- name: "Predeploy | Parse do status existente (ou base vazio)"
-  ansible.builtin.set_fact:
-    status_obj: "{{ (status_slurp.content | b64decode | from_json) if (status_stat.stat.exists | default(false)) else {} }}"
-
-- name: "Predeploy | Escrever status inicial (predeploy:queued) com history append"
-  ansible.builtin.copy:
-    dest: "{{ machine_status_file }}"
-    mode: "0644"
-    content: >-
+    hf_pat: >-
       {{
         (
-          status_obj
-          | combine({
-              "run_id": run_id,
-              "stage": stage_name,
-              "machine": current_machine,
-              "host": (machine_cfg.host | default(machine_cfg.ip | default(''))),
-              "package": (machine_cfg.package | default('')),
-              "rollback": (machine_cfg.rollback | default('')),
-              "deployment_ref": (deployment_ref | default('')),
-              "log_path": filestore_log_path,
-              "status": "predeploy:queued",
-              "timestamp": ansible_date_time.iso8601,
-              "history": (
-                (status_obj.history | default([]))
-                + [ {
-                      "run_id": run_id,
-                      "stage": stage_name,
-                      "status": "predeploy:queued",
-                      "timestamp": ansible_date_time.iso8601
-                    } ]
-              )
-            }, recursive=True)
-        ) | to_nice_json
+          (harness_api_key | string | trim)
+            if (harness_api_key is defined and (harness_api_key | string | trim | length) > 0)
+            else (
+              (harness_x_api_key | string | trim)
+                if (harness_x_api_key is defined and (harness_x_api_key | string | trim | length) > 0)
+                else (
+                  (lookup('env','HARNESS_API_KEY') | string | trim)
+                    if ((lookup('env','HARNESS_API_KEY') | string | trim | length) > 0)
+                    else (
+                      (lookup('env','HARNESS_X_API_KEY') | string | trim)
+                        if ((lookup('env','HARNESS_X_API_KEY') | string | trim | length) > 0)
+                        else ''
+                    )
+                )
+            )
+        )
       }}
-  changed_when: true
 
-# -----------------------------------------------------------------------------
-# 9) Preparar diretórios no host remoto
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Definir diretórios remotos do pipeline"
+- name: "Harness | Calcular se pode fazer upload"
   ansible.builtin.set_fact:
-    deploy_base_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/components"
-    deploy_scripts_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
-    deploy_scripts_package_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package"
+    hf_can_upload: >-
+      {{
+        (hf_pat | length) > 0
+        and (hf_account | length) > 0
+        and (hf_org | length) > 0
+        and (hf_project | length) > 0
+        and (hf_endpoint | length) > 0
+        and (hf_deployment_ref | length) > 0
+        and (hf_machine | length) > 0
+      }}
 
-- name: "Predeploy | Garantir base do pipeline no host"
-  become: true
-  ansible.builtin.file:
-    path: "{{ item }}"
+- name: "Harness | Validar mínimos (debug)"
+  ansible.builtin.debug:
+    msg:
+      - "hf_can_upload={{ hf_can_upload }}"
+      - "hf_endpoint={{ hf_endpoint }}"
+      - "hf_account={{ hf_account }}"
+      - "hf_org={{ hf_org }}"
+      - "hf_project={{ hf_project }}"
+      - "hf_deployment_ref={{ hf_deployment_ref }}"
+      - "hf_machine={{ hf_machine }}"
+      - "hf_stage={{ hf_stage_name_resolved }}"
+      - "hf_env={{ hf_env }}"
+  changed_when: false
+
+- name: "Harness | Pular upload se faltar credenciais"
+  ansible.builtin.debug:
+    msg: "Harness creds ausentes/incompletas. Pulando upload sem falhar pipeline."
+  when: not hf_can_upload
+  changed_when: false
+
+# -----------------------------------------------------------------------------
+# 2) Construir nomes seguros para os arquivos
+# -----------------------------------------------------------------------------
+- name: "Harness | Resolver paths lógicos (fallback) + nomes safe"
+  ansible.builtin.set_fact:
+    hf_log_path: >-
+      {{
+        filestore_log_path
+          | default(hf_base_dir ~ '/' ~ (hf_deployment_ref | lower) ~ '-' ~ (hf_machine | lower) ~ '-' ~ hf_env ~ '-' ~ hf_stage_name_resolved ~ '.log')
+      }}
+    hf_status_path: >-
+      {{
+        filestore_status_path
+          | default(hf_base_dir ~ '/' ~ (hf_deployment_ref | lower) ~ '-' ~ (hf_machine | lower) ~ '-' ~ hf_env ~ '-' ~ hf_stage_name_resolved ~ '.json')
+      }}
+    hf_log_name: "{{ (hf_log_path | regex_replace('^/+','')) | replace('/','__') }}"
+    hf_status_name: "{{ (hf_status_path | regex_replace('^/+','')) | replace('/','__') }}"
+  when: hf_can_upload
+
+# -----------------------------------------------------------------------------
+# 3) Tags (string única)
+# -----------------------------------------------------------------------------
+- name: "Harness | Montar tags"
+  ansible.builtin.set_fact:
+    hf_tags_list: >-
+      {{
+        (
+          [ status_tag_value | default('') ]
+          + (extra_tags | default([]))
+          + [
+              (hf_deployment_ref | lower) ~ ':stage:' ~ hf_stage_name_resolved,
+              (hf_deployment_ref | lower) ~ ':machine:' ~ (hf_machine | lower),
+              (hf_deployment_ref | lower) ~ ':env:' ~ hf_env
+            ]
+        )
+        | map('string')
+        | map('trim')
+        | reject('equalto','')
+        | list
+        | unique
+      }}
+    hf_tags: "{{ hf_tags_list | join(',') }}"
+  when: hf_can_upload
+
+# -----------------------------------------------------------------------------
+# 4) Criar arquivos temporários (controller)
+# -----------------------------------------------------------------------------
+- name: "Harness | Criar temp dir (controller)"
+  ansible.builtin.tempfile:
     state: directory
-    mode: "0755"
-  delegate_to: "{{ current_machine }}"
-  loop:
-    - "{{ deploy_base_dir }}"
-    - "{{ deploy_scripts_dir }}"
-    - "{{ deploy_scripts_package_dir }}"
+    suffix: hf_upload
+  register: hf_tmpdir
+  when: hf_can_upload
 
-# -----------------------------------------------------------------------------
-# 10) Limpar pasta do package scripts e recriar
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Limpar pasta de scripts do pacote"
-  become: true
-  ansible.builtin.file:
-    path: "{{ deploy_scripts_package_dir }}"
-    state: absent
-  delegate_to: "{{ current_machine }}"
-
-- name: "Predeploy | Recriar pasta de scripts do pacote"
-  become: true
-  ansible.builtin.file:
-    path: "{{ deploy_scripts_package_dir }}"
-    state: directory
-    mode: "0755"
-  delegate_to: "{{ current_machine }}"
-
-# -----------------------------------------------------------------------------
-# 11) Copiar package.yml para /deploy/scripts/package/
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Copiar package.yml para o host"
-  become: true
+- name: "Harness | Escrever LOG temp (controller)"
   ansible.builtin.copy:
-    src: "{{ packages_dir }}/{{ machine_cfg.package }}.yml"
-    dest: "{{ deploy_scripts_package_dir }}/{{ machine_cfg.package }}.yml"
+    dest: "{{ hf_tmpdir.path }}/{{ hf_log_name }}"
     mode: "0644"
-  delegate_to: "{{ current_machine }}"
+    content: "{{ log_content | default('') }}"
+  when: hf_tmpdir is defined and hf_tmpdir.path is defined
 
-# -----------------------------------------------------------------------------
-# 12) Garantir diretórios dos componentes + baixar do Nexus
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Garantir diretórios dos componentes no host"
-  become: true
-  ansible.builtin.file:
-    path: "{{ deploy_base_dir }}/{{ item | dirname }}"
-    state: directory
-    mode: "0755"
-  loop: "{{ package_cfg.components }}"
-  delegate_to: "{{ current_machine }}"
+- name: "Harness | Ler status.json (controller)"
+  ansible.builtin.slurp:
+    path: "{{ machine_status_file }}"
+  register: hf_status_slurp
+  when:
+    - hf_tmpdir is defined and hf_tmpdir.path is defined
+    - machine_status_file is defined
 
-- name: "Predeploy | Baixar componentes do Nexus"
-  become: true
-  ansible.builtin.get_url:
-    url: "{{ nexus_base_url.rstrip('/') }}/{{ item }}"
-    dest: "{{ deploy_base_dir }}/{{ item }}"
-    mode: "0644"
-    url_username: "{{ nexus_user | default(omit) }}"
-    url_password: "{{ nexus_password | default(omit) }}"
-  loop: "{{ package_cfg.components }}"
-  delegate_to: "{{ current_machine }}"
-
-# -----------------------------------------------------------------------------
-# 13) Copiar scripts do pacote para /deploy/scripts
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Copiar scripts do pacote para o host"
-  become: true
+- name: "Harness | Escrever STATUS temp (controller)"
   ansible.builtin.copy:
-    src: "{{ scripts_root_dir }}/{{ package_cfg.script }}/"
-    dest: "{{ deploy_scripts_dir }}/"
-    mode: "0755"
-  delegate_to: "{{ current_machine }}"
+    dest: "{{ hf_tmpdir.path }}/{{ hf_status_name }}"
+    mode: "0644"
+    content: "{{ (hf_status_slurp.content | b64decode) if (hf_status_slurp is defined and hf_status_slurp.content is defined) else '{}' }}"
+  when: hf_tmpdir is defined and hf_tmpdir.path is defined
 
 # -----------------------------------------------------------------------------
-# 14) Executar init_parallel.sh na máquina alvo (com tee -a)
+# 5) Upload LOG e STATUS (NÃO falha pipeline se Harness der erro)
 # -----------------------------------------------------------------------------
-- name: "Predeploy | Executar init_parallel.sh no host (com log + stdout)"
-  become: true
+- name: "Harness | Upload LOG"
   ansible.builtin.shell: |
-    set -o pipefail
-    cd "{{ deploy_scripts_dir }}"
-    /usr/bin/stdbuf -oL -eL /bin/bash -x ./init_parallel.sh 2>&1 | tee -a "{{ deploy_scripts_dir }}/init_parallel.log"
-    exit ${PIPESTATUS[0]}
+    set -euo pipefail
+    API="{{ hf_endpoint.rstrip('/') }}/ng/api/file-store?accountIdentifier={{ hf_account }}&orgIdentifier={{ hf_org }}&projectIdentifier={{ hf_project }}"
+    FILE="{{ hf_tmpdir.path }}/{{ hf_log_name }}"
+    RESP="{{ hf_tmpdir.path }}/resp_log.json"
+
+    code=$(curl -sS -o "$RESP" -w "%{http_code}" -X POST "$API" \
+      -H "x-api-key: {{ hf_pat }}" \
+      -F "parentIdentifier=Root" \
+      -F "name={{ hf_log_name }}" \
+      -F "type=FILE" \
+      -F "tags={{ hf_tags }}" \
+      -F "file=@${FILE};type=text/plain" \
+    || true)
+
+    echo "HTTP_CODE=${code}"
+    echo "RESPONSE=$(cat "$RESP" 2>/dev/null || true)"
+    exit 0
   args:
     executable: /bin/bash
-  environment: "{{ merged_env_vars }}"
-  delegate_to: "{{ current_machine }}"
-  register: init_parallel_result
-  ignore_errors: true
-  changed_when: true
-
-- name: "Predeploy | Tail do init_parallel.log (sempre)"
-  become: true
-  ansible.builtin.shell: |
-    echo "===== tail -n 800 {{ deploy_scripts_dir }}/init_parallel.log ====="
-    tail -n 800 "{{ deploy_scripts_dir }}/init_parallel.log" 2>/dev/null || echo "log não encontrado"
-  args:
-    executable: /bin/bash
-  delegate_to: "{{ current_machine }}"
-  register: predeploy_tail
+  register: hf_upload_log
   changed_when: false
   failed_when: false
+  when: hf_tmpdir is defined and hf_tmpdir.path is defined
 
-# -----------------------------------------------------------------------------
-# 15) Montar bloco de log + append no pipeline.log (controller)
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Montar conteúdo do log (bloco predeploy)"
-  ansible.builtin.set_fact:
-    predeploy_log_block: |
-      ---- pipeline predeploy ----
-      run_id={{ run_id }}
-      deployment_ref={{ deployment_ref | default('') }}
-      machine={{ current_machine }}
-      host={{ machine_cfg.host | default(machine_cfg.ip | default('')) }}
-      stage={{ stage_name }}
-      rc={{ init_parallel_result.rc | default(1) }}
-      ts={{ ansible_date_time.iso8601 }}
+- name: "Harness | Upload STATUS"
+  ansible.builtin.shell: |
+    set -euo pipefail
+    API="{{ hf_endpoint.rstrip('/') }}/ng/api/file-store?accountIdentifier={{ hf_account }}&orgIdentifier={{ hf_org }}&projectIdentifier={{ hf_project }}"
+    FILE="{{ hf_tmpdir.path }}/{{ hf_status_name }}"
+    RESP="{{ hf_tmpdir.path }}/resp_status.json"
 
-      ---- stdout (ansible) ----
-      {{ init_parallel_result.stdout | default('') }}
+    code=$(curl -sS -o "$RESP" -w "%{http_code}" -X POST "$API" \
+      -H "x-api-key: {{ hf_pat }}" \
+      -F "parentIdentifier=Root" \
+      -F "name={{ hf_status_name }}" \
+      -F "type=FILE" \
+      -F "tags={{ hf_tags }}" \
+      -F "file=@${FILE};type=application/json" \
+    || true)
 
-      ---- stderr (ansible) ----
-      {{ init_parallel_result.stderr | default('') }}
+    echo "HTTP_CODE=${code}"
+    echo "RESPONSE=$(cat "$RESP" 2>/dev/null || true)"
+    exit 0
+  args:
+    executable: /bin/bash
+  register: hf_upload_status
+  changed_when: false
+  failed_when: false
+  when: hf_tmpdir is defined and hf_tmpdir.path is defined
 
-      ---- init_parallel.log (tail) ----
-      {{ predeploy_tail.stdout | default('') }}
-      ---- pipeline predeploy ----
-
-- name: "Predeploy | Append do bloco no pipeline.log (controller)"
-  ansible.builtin.blockinfile:
-    path: "{{ pipeline_log_file }}"
-    marker: ""
-    insertafter: EOF
-    block: |
-      {{ predeploy_log_block }}
-  changed_when: true
-
-- name: "Predeploy | Carregar conteúdo completo do pipeline.log (controller)"
-  ansible.builtin.set_fact:
-    pipeline_log_content_full: "{{ lookup('ansible.builtin.file', pipeline_log_file) }}"
-
-# -----------------------------------------------------------------------------
-# 16) Atualizar status final (predeploy:ok / predeploy:error) com history append
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Ler status.json atual"
-  ansible.builtin.slurp:
-    path: "{{ machine_status_file }}"
-  register: status_after_queued_slurp
-
-- name: "Predeploy | Parse do status atual"
-  ansible.builtin.set_fact:
-    status_now: "{{ status_after_queued_slurp.content | b64decode | from_json }}"
-
-- name: "Predeploy | Atualizar status final (append em history)"
-  ansible.builtin.copy:
-    dest: "{{ machine_status_file }}"
-    mode: "0644"
-    content: >-
-      {{
-        (
-          status_now
-          | combine({
-              "run_id": run_id,
-              "stage": stage_name,
-              "status": ("predeploy:ok" if (init_parallel_result.rc | default(1)) == 0 else "predeploy:error"),
-              "timestamp": ansible_date_time.iso8601,
-              "rc": (init_parallel_result.rc | default(1)),
-              "history": (
-                (status_now.history | default([]))
-                + [ {
-                      "run_id": run_id,
-                      "stage": stage_name,
-                      "status": ("predeploy:ok" if (init_parallel_result.rc | default(1)) == 0 else "predeploy:error"),
-                      "rc": (init_parallel_result.rc | default(1)),
-                      "timestamp": ansible_date_time.iso8601
-                    } ]
-              )
-            }, recursive=True)
-        ) | to_nice_json
-      }}
-  changed_when: true
-
-# -----------------------------------------------------------------------------
-# 17) Upload para Harness File Store (SEMPRE) - não pode quebrar a pipeline
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Upload JSON + LOG para Harness File Store (sempre)"
-  ansible.builtin.include_tasks: harness_filestore_upload.yml
-  vars:
-    hf_stage_name: "{{ stage_name }}"
-    machine_status_file: "{{ machine_status_file }}"
-    log_content: "{{ pipeline_log_content_full }}"
-    status_tag_value: "{{ deployment_ref_lower ~ ':predeploy:' ~ ('ok' if (init_parallel_result.rc | default(1)) == 0 else 'error') }}"
-    extra_tags: "{{ [ deployment_ref_lower ~ ':deploy:pending' ] if (init_parallel_result.rc | default(1)) == 0 else [] }}"
-
-# -----------------------------------------------------------------------------
-# 18) Falhar pipeline se predeploy deu erro (DEPOIS do upload)
-# -----------------------------------------------------------------------------
-- name: "Predeploy | Falhar se init_parallel.sh retornou erro (depois do upload)"
-  ansible.builtin.fail:
-    msg: "PREDEPLOY falhou em {{ current_machine }} (rc={{ init_parallel_result.rc | default(1) }})"
-  when: (init_parallel_result.rc | default(1)) != 0
+- name: "Harness | Resultado upload (debug)"
+  ansible.builtin.debug:
+    msg:
+      - "upload_log: {{ (hf_upload_log.stdout_lines | default([])) }}"
+      - "upload_status: {{ (hf_upload_status.stdout_lines | default([])) }}"
+  changed_when: false
+  when: hf_tmpdir is defined and hf_tmpdir.path is defined
