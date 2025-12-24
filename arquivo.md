@@ -1,24 +1,12 @@
-## segue log
+## Fui rodar o pre deploy novamente e esta dando erro no momento de jogar o json e logs no harness, realmente ja existe a pasta pois eu ja fiz outros pre deploy antes, ent se tem a pasta deveria seguir.
 
 Exec using JSCH
 Connecting to 10.218.238.144 ....
 Connection to 10.218.238.144 established
 Executing command ...
-export MACHINES=sitef-02
-export MACHINE=sitef-02
-export ACTION=deploy
-export GIT_TAG=DEV000001
-export STRATEGY=deploy
-== DEPLOY PIPELINE ==
-BRANCH            : develop-testes
-STRATEGY          : deploy
-GIT_TAG           : DEV000001
-MACHINES          : sitef-02
-FILESTORE_ENV     : dev
-FILESTORE_BASEDIR : dev/DEV000001
-MACHINES_NORMALIZADAS: sitef-02 
-Clonando repo em /tmp/tmp.XE485gOFMU...
-Cloning into '/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef'...
+export GIT_TAG=DEV000002
+Clonando repo em /tmp/tmp.1YZSOgOL7J...
+Cloning into '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef'...
 remote: Enumerating objects: 915, done.
 remote: Counting objects:   0% (1/865)
 remote: Counting objects:   1% (9/865)
@@ -309,258 +297,975 @@ Receiving objects:  81% (742/915)
 Receiving objects:  82% (751/915)
 Receiving objects:  83% (760/915)
 Receiving objects:  84% (769/915)
-remote: Total 915 (delta 584), reused 0 (delta 0), pack-reused 50
-Receiving objects:  85% (778/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  86% (787/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  87% (797/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  88% (806/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  89% (815/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  90% (824/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  91% (833/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  92% (842/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  93% (851/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  94% (861/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  95% (870/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  96% (879/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  97% (888/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  98% (897/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects:  99% (906/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects: 100% (915/915), 451.86 KiB | 739.00 KiB/s
-Receiving objects: 100% (915/915), 934.43 KiB | 1.26 MiB/s, done.
-Resolving deltas:   0% (0/603)
-Resolving deltas:   1% (7/603)
-Resolving deltas:   2% (13/603)
-Resolving deltas:   3% (19/603)
-Resolving deltas:   4% (25/603)
-Resolving deltas:   5% (31/603)
-Resolving deltas:   6% (37/603)
-Resolving deltas:   7% (43/603)
-Resolving deltas:   8% (49/603)
-Resolving deltas:   9% (55/603)
-Resolving deltas:  10% (61/603)
-Resolving deltas:  11% (67/603)
-Resolving deltas:  12% (73/603)
-Resolving deltas:  13% (79/603)
-Resolving deltas:  14% (85/603)
-Resolving deltas:  15% (91/603)
-Resolving deltas:  16% (97/603)
-Resolving deltas:  17% (103/603)
-Resolving deltas:  18% (109/603)
-Resolving deltas:  19% (115/603)
-Resolving deltas:  20% (121/603)
-Resolving deltas:  21% (127/603)
-Resolving deltas:  22% (133/603)
-Resolving deltas:  23% (139/603)
-Resolving deltas:  24% (145/603)
-Resolving deltas:  25% (151/603)
-Resolving deltas:  26% (157/603)
-Resolving deltas:  27% (163/603)
-Resolving deltas:  28% (169/603)
-Resolving deltas:  29% (175/603)
-Resolving deltas:  30% (181/603)
-Resolving deltas:  31% (187/603)
-Resolving deltas:  32% (193/603)
-Resolving deltas:  33% (199/603)
-Resolving deltas:  34% (206/603)
-Resolving deltas:  35% (212/603)
-Resolving deltas:  36% (218/603)
-Resolving deltas:  37% (224/603)
-Resolving deltas:  38% (230/603)
-Resolving deltas:  39% (236/603)
-Resolving deltas:  40% (242/603)
-Resolving deltas:  41% (248/603)
-Resolving deltas:  42% (254/603)
-Resolving deltas:  43% (260/603)
-Resolving deltas:  44% (266/603)
-Resolving deltas:  45% (272/603)
-Resolving deltas:  46% (278/603)
-Resolving deltas:  47% (284/603)
-Resolving deltas:  48% (290/603)
-Resolving deltas:  49% (296/603)
-Resolving deltas:  50% (302/603)
-Resolving deltas:  51% (308/603)
-Resolving deltas:  52% (314/603)
-Resolving deltas:  53% (320/603)
-Resolving deltas:  54% (326/603)
-Resolving deltas:  55% (332/603)
-Resolving deltas:  56% (338/603)
-Resolving deltas:  57% (344/603)
-Resolving deltas:  58% (350/603)
-Resolving deltas:  59% (356/603)
-Resolving deltas:  60% (362/603)
-Resolving deltas:  61% (368/603)
-Resolving deltas:  62% (374/603)
-Resolving deltas:  63% (380/603)
-Resolving deltas:  64% (386/603)
-Resolving deltas:  65% (392/603)
-Resolving deltas:  66% (398/603)
-Resolving deltas:  67% (405/603)
-Resolving deltas:  68% (411/603)
-Resolving deltas:  69% (417/603)
-Resolving deltas:  70% (423/603)
-Resolving deltas:  71% (429/603)
-Resolving deltas:  72% (435/603)
-Resolving deltas:  73% (441/603)
-Resolving deltas:  74% (447/603)
-Resolving deltas:  75% (453/603)
-Resolving deltas:  76% (459/603)
-Resolving deltas:  77% (465/603)
-Resolving deltas:  78% (471/603)
-Resolving deltas:  79% (477/603)
-Resolving deltas:  80% (483/603)
-Resolving deltas:  81% (489/603)
-Resolving deltas:  82% (495/603)
-Resolving deltas:  83% (501/603)
-Resolving deltas:  84% (507/603)
-Resolving deltas:  85% (513/603)
-Resolving deltas:  86% (519/603)
-Resolving deltas:  87% (525/603)
-Resolving deltas:  88% (531/603)
-Resolving deltas:  89% (537/603)
-Resolving deltas:  90% (543/603)
-Resolving deltas:  91% (549/603)
-Resolving deltas:  92% (555/603)
-Resolving deltas:  93% (561/603)
-Resolving deltas:  94% (567/603)
-Resolving deltas:  95% (573/603)
-Resolving deltas:  96% (579/603)
-Resolving deltas:  97% (585/603)
-Resolving deltas:  98% (591/603)
-Resolving deltas:  99% (597/603)
-Resolving deltas: 100% (603/603)
-Resolving deltas: 100% (603/603), done.
-====================================================
-== DEPLOY -> sitef-02
-====================================================
-PLAY [Deploy/Rollback por máquina] *********************************************
+remote: Total 915 (delta 583), reused 0 (delta 0), pack-reused 50
+Receiving objects:  85% (778/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  86% (787/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  87% (797/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  88% (806/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  89% (815/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  90% (824/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  91% (833/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  92% (842/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  93% (851/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  94% (861/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  95% (870/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  96% (879/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  97% (888/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  98% (897/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects:  99% (906/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects: 100% (915/915), 707.77 KiB | 1.35 MiB/s
+Receiving objects: 100% (915/915), 934.60 KiB | 1.78 MiB/s, done.
+Resolving deltas:   0% (0/602)
+Resolving deltas:   1% (7/602)
+Resolving deltas:   2% (13/602)
+Resolving deltas:   3% (19/602)
+Resolving deltas:   4% (25/602)
+Resolving deltas:   5% (31/602)
+Resolving deltas:   6% (37/602)
+Resolving deltas:   7% (43/602)
+Resolving deltas:   8% (49/602)
+Resolving deltas:   9% (55/602)
+Resolving deltas:  10% (61/602)
+Resolving deltas:  11% (67/602)
+Resolving deltas:  12% (73/602)
+Resolving deltas:  13% (79/602)
+Resolving deltas:  14% (85/602)
+Resolving deltas:  15% (91/602)
+Resolving deltas:  16% (97/602)
+Resolving deltas:  17% (103/602)
+Resolving deltas:  18% (109/602)
+Resolving deltas:  19% (115/602)
+Resolving deltas:  20% (121/602)
+Resolving deltas:  21% (127/602)
+Resolving deltas:  22% (133/602)
+Resolving deltas:  23% (139/602)
+Resolving deltas:  24% (145/602)
+Resolving deltas:  25% (151/602)
+Resolving deltas:  26% (157/602)
+Resolving deltas:  27% (163/602)
+Resolving deltas:  28% (169/602)
+Resolving deltas:  29% (175/602)
+Resolving deltas:  30% (181/602)
+Resolving deltas:  31% (187/602)
+Resolving deltas:  32% (193/602)
+Resolving deltas:  33% (199/602)
+Resolving deltas:  34% (205/602)
+Resolving deltas:  35% (211/602)
+Resolving deltas:  36% (217/602)
+Resolving deltas:  37% (223/602)
+Resolving deltas:  38% (229/602)
+Resolving deltas:  39% (235/602)
+Resolving deltas:  40% (241/602)
+Resolving deltas:  41% (247/602)
+Resolving deltas:  42% (253/602)
+Resolving deltas:  43% (259/602)
+Resolving deltas:  44% (265/602)
+Resolving deltas:  45% (271/602)
+Resolving deltas:  46% (277/602)
+Resolving deltas:  47% (283/602)
+Resolving deltas:  48% (289/602)
+Resolving deltas:  49% (295/602)
+Resolving deltas:  50% (301/602)
+Resolving deltas:  51% (308/602)
+Resolving deltas:  52% (314/602)
+Resolving deltas:  53% (320/602)
+Resolving deltas:  54% (326/602)
+Resolving deltas:  55% (332/602)
+Resolving deltas:  56% (338/602)
+Resolving deltas:  57% (344/602)
+Resolving deltas:  58% (350/602)
+Resolving deltas:  59% (356/602)
+Resolving deltas:  60% (362/602)
+Resolving deltas:  61% (368/602)
+Resolving deltas:  62% (374/602)
+Resolving deltas:  63% (380/602)
+Resolving deltas:  64% (386/602)
+Resolving deltas:  65% (392/602)
+Resolving deltas:  66% (398/602)
+Resolving deltas:  67% (404/602)
+Resolving deltas:  68% (410/602)
+Resolving deltas:  69% (416/602)
+Resolving deltas:  70% (422/602)
+Resolving deltas:  71% (428/602)
+Resolving deltas:  72% (434/602)
+Resolving deltas:  73% (440/602)
+Resolving deltas:  74% (446/602)
+Resolving deltas:  75% (452/602)
+Resolving deltas:  76% (458/602)
+Resolving deltas:  77% (464/602)
+Resolving deltas:  78% (470/602)
+Resolving deltas:  79% (476/602)
+Resolving deltas:  80% (482/602)
+Resolving deltas:  81% (488/602)
+Resolving deltas:  82% (494/602)
+Resolving deltas:  83% (500/602)
+Resolving deltas:  84% (506/602)
+Resolving deltas:  85% (512/602)
+Resolving deltas:  86% (518/602)
+Resolving deltas:  87% (524/602)
+Resolving deltas:  88% (530/602)
+Resolving deltas:  89% (536/602)
+Resolving deltas:  90% (542/602)
+Resolving deltas:  91% (548/602)
+Resolving deltas:  92% (554/602)
+Resolving deltas:  93% (560/602)
+Resolving deltas:  94% (566/602)
+Resolving deltas:  95% (573/602)
+Resolving deltas:  96% (578/602)
+Resolving deltas:  97% (584/602)
+Resolving deltas:  98% (590/602)
+Resolving deltas:  99% (596/602)
+Resolving deltas: 100% (602/602)
+Resolving deltas: 100% (602/602), done.
+== PIPELINE PREDEPLOY ==
+TAG   : DEV000002
+EXEC  : execution/machine_list_dev.yml
+BRANCH: develop-testes
+[WARNING]: Unable to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/localhost as an inventory source
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/deploy_from_status.yml with auto plugin: no root 'plugin' key
+found, '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/deploy_from_status.yml' is not a valid YAML inventory plugin
+config file
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/deploy_from_status.yml with yaml plugin: YAML inventory has
+invalid structure, it should be a dictionary, got: &lt;class
+'ansible.parsing.yaml.objects.AnsibleSequence'>
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/deploy_from_status.yml with ini plugin: Invalid host pattern
+'---' supplied, '---' is normally a sign this is a YAML file.
+[WARNING]: Unable to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/deploy_from_status.yml as an inventory source
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/deploy_per_machine.yml with auto plugin: no root 'plugin' key
+found, '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/deploy_per_machine.yml' is not a valid YAML inventory plugin
+config file
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/deploy_per_machine.yml with yaml plugin: YAML inventory has
+invalid structure, it should be a dictionary, got: &lt;class
+'ansible.parsing.yaml.objects.AnsibleSequence'>
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/deploy_per_machine.yml with ini plugin: Invalid host pattern
+'---' supplied, '---' is normally a sign this is a YAML file.
+[WARNING]: Unable to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/deploy_per_machine.yml as an inventory source
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/harness_filestore_upload.yml with auto plugin: no root 'plugin'
+key found, '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/harness_filestore_upload.yml' is not a valid YAML inventory
+plugin config file
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/harness_filestore_upload.yml with yaml plugin: YAML inventory has
+invalid structure, it should be a dictionary, got: &lt;class
+'ansible.parsing.yaml.objects.AnsibleSequence'>
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/harness_filestore_upload.yml with ini plugin: Invalid host
+pattern '---' supplied, '---' is normally a sign this is a YAML file.
+[WARNING]: Unable to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/harness_filestore_upload.yml as an inventory source
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/predeploy_from_execution.yml with auto plugin: no root 'plugin'
+key found, '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/predeploy_from_execution.yml' is not a valid YAML inventory
+plugin config file
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/predeploy_from_execution.yml with yaml plugin: YAML inventory has
+invalid structure, it should be a dictionary, got: &lt;class
+'ansible.parsing.yaml.objects.AnsibleSequence'>
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/predeploy_from_execution.yml with ini plugin:
+/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/predeploy_from_execution.yml:5: Expected key=value host variable
+assignment, got: name:
+[WARNING]: Unable to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/predeploy_from_execution.yml as an inventory source
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/predeploy_per_machine.yml with auto plugin: no root 'plugin' key
+found, '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/predeploy_per_machine.yml' is not a valid YAML inventory plugin
+config file
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/predeploy_per_machine.yml with yaml plugin: YAML inventory has
+invalid structure, it should be a dictionary, got: &lt;class
+'ansible.parsing.yaml.objects.AnsibleSequence'>
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/predeploy_per_machine.yml with ini plugin: Invalid host pattern
+'---' supplied, '---' is normally a sign this is a YAML file.
+[WARNING]: Unable to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/predeploy_per_machine.yml as an inventory source
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/rollback_from_status.yml with auto plugin: no root 'plugin' key
+found, '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/rollback_from_status.yml' is not a valid YAML inventory plugin
+config file
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/rollback_from_status.yml with yaml plugin: YAML inventory has
+invalid structure, it should be a dictionary, got: &lt;class
+'ansible.parsing.yaml.objects.AnsibleSequence'>
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/rollback_from_status.yml with ini plugin:
+/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/rollback_from_status.yml:5: Expected key=value host variable
+assignment, got: name:
+[WARNING]: Unable to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/rollback_from_status.yml as an inventory source
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/rollback_per_machine.yml with auto plugin: no root 'plugin' key
+found, '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/rollback_per_machine.yml' is not a valid YAML inventory plugin
+config file
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/rollback_per_machine.yml with yaml plugin: YAML inventory has
+invalid structure, it should be a dictionary, got: &lt;class
+'ansible.parsing.yaml.objects.AnsibleSequence'>
+[WARNING]:  * Failed to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/rollback_per_machine.yml with ini plugin: Invalid host pattern
+'---' supplied, '---' is normally a sign this is a YAML file.
+[WARNING]: Unable to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible/rollback_per_machine.yml as an inventory source
+[WARNING]: Unable to parse /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-
+sitef/ansible as an inventory source
+[WARNING]: No inventory was parsed, only implicit localhost is available
+[WARNING]: provided hosts list is empty, only localhost is available. Note that
+the implicit localhost does not match 'all'
+PLAY [Predeploy a partir do arquivo de execução] *******************************
 TASK [Gathering Facts] *********************************************************
 ok: [localhost]
-TASK [Normalizar deploy_action (deploy/rollback)] ******************************
+TASK [Resolver filestore_env e filestore_base_dir sem recursão] ****************
 ok: [localhost]
-TASK [Resolver filestore_env e filestore_base_dir (deploy/rollback)] ***********
-ok: [localhost]
-TASK [Resolver Nexus (base_url, user, password)] *******************************
-ok: [localhost]
-TASK [Mostrar variáveis de entrada e resolvidas (deploy/rollback)] *************
+TASK [Mostrar variáveis de entrada e resolvidas] *******************************
 ok: [localhost] => {
     "msg": [
-        "deployment_ref               = DEV000001",
-        "machine_name                 = sitef-02",
-        "deploy_action                = deploy",
-        "deploy_action_resolved       = deploy",
-        "repo_root_resolved           = /tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/..",
-        "status_dir_resolved          = /tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../status/DEV000001",
-        "nexus_base_url_resolved      = https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev",
-        "nexus_user_resolved          = (vazio)",
+        "execution_file_name          = execution/machine_list_dev.yml",
+        "deployment_ref               = DEV000002",
+        "repo_root_resolved           = /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/..",
+        "status_dir_resolved          = /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../status/DEV000002",
         "filestore_env_resolved       = dev",
-        "filestore_base_dir_resolved  = dev/DEV000001"
+        "filestore_base_dir_resolved  = dev/DEV000002",
+        "nexus_base_url               = https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev"
     ]
 }
-TASK [Garantir diretório de status da TAG] *************************************
+TASK [Criar diretório de status da TAG] ****************************************
 changed: [localhost]
-TASK [Validar machine_name] ****************************************************
+TASK [Carregar arquivo de execução] ********************************************
+ok: [localhost]
+TASK [Falhar se não tiver máquinas no arquivo de execução] *********************
+skipping: [localhost]
+TASK [Executar pré-deploy por máquina] *****************************************
+included: /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/predeploy_per_machine.yml for localhost => (item=sitef-02)
+TASK [Resolver nome da máquina atual] ******************************************
+ok: [localhost]
+TASK [Definir paths base do repositório] ***************************************
+ok: [localhost]
+TASK [Definir execution_dir do repositório] ************************************
+ok: [localhost]
+TASK [Definir machines_dir, packages_dir e scripts_dir do repositório] *********
+ok: [localhost]
+TASK [Definir candidatos de arquivo da máquina] ********************************
+ok: [localhost]
+TASK [Verificar candidatos de arquivo da máquina] ******************************
+ok: [localhost] => (item=/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml)
+TASK [Selecionar machine_file existente] ***************************************
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 248, 'inode': 6303742, 'dev': 64775, 'nlink': 1, 'atime': 1766600253.8928084, 'mtime': 1766600253.8828082, 'ctime': 1766600253.8828082, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': '005e3367129d5aefc77f49fd9fe62b4e58c51cd5', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '3798999667', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+TASK [Falhar se arquivo da máquina não existir em nenhum caminho esperado] *****
+skipping: [localhost]
+TASK [Carregar config da máquina sitef-02] *************************************
+ok: [localhost]
+TASK [Validar package definido] ************************************************
 ok: [localhost] => {
     "changed": false,
     "msg": "All assertions passed"
 }
-TASK [Incluir deploy por máquina] **********************************************
-included: /tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/deploy_per_machine.yml for localhost
-TASK [Deploy | Definir caminhos para sitef-02] *********************************
+TASK [Carregar config do pacote sitef-core-0.0.1-0] ****************************
 ok: [localhost]
-TASK [Deploy | Definir diretórios principais do repositório] *******************
-ok: [localhost]
-TASK [Deploy | Definir candidatos de arquivo da máquina] ***********************
-ok: [localhost]
-TASK [Deploy | Verificar candidatos] *******************************************
-ok: [localhost] => (item=/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml)
-TASK [Deploy | Selecionar machine_file existente] ******************************
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 248, 'inode': 2661, 'dev': 64775, 'nlink': 1, 'atime': 1766600074.5909882, 'mtime': 1766600074.580988, 'ctime': 1766600074.580988, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': '005e3367129d5aefc77f49fd9fe62b4e58c51cd5', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '2408972726', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-TASK [Deploy | Falhar se arquivo da máquina não existir] ***********************
-skipping: [localhost]
-TASK [Deploy | Carregar config da máquina sitef-02] ****************************
-ok: [localhost]
-TASK [Deploy | Validar package definido] ***************************************
+TASK [Validar components do pacote] ********************************************
 ok: [localhost] => {
     "changed": false,
     "msg": "All assertions passed"
 }
-TASK [Deploy | Carregar config do pacote sitef-core-0.0.1-0] *******************
+TASK [Calcular env_vars mescladas] *********************************************
 ok: [localhost]
-TASK [Deploy | Definir usuário alvo padrão] ************************************
+TASK [Definir usuário alvo padrão] *********************************************
 ok: [localhost]
-TASK [Deploy | Definir ssh_common_args padrão] *********************************
+TASK [Definir ssh_common_args padrão] ******************************************
 ok: [localhost]
-TASK [Deploy | Aplicar ProxyJump via bastion (quando necessário)] **************
+TASK [Aplicar ProxyJump via bastion (quando necessário)] ***********************
 skipping: [localhost]
-TASK [Deploy | Registrar host dinâmico] ****************************************
+TASK [Registrar host dinâmico para sitef-02] ***********************************
 changed: [localhost]
-TASK [Deploy | Montar env final] ***********************************************
-ok: [localhost]
-TASK [Deploy | Definir deployment_ref_lower (fix ansible set_fact)] ************
-ok: [localhost]
-TASK [Deploy | Definir arquivos de status/log local] ***************************
-ok: [localhost]
-TASK [Deploy | Garantir diretório de status da máquina] ************************
-changed: [localhost]
-TASK [Deploy | Verificar se status.json já existe (para append)] ***************
-ok: [localhost]
-TASK [Deploy | Ler status.json existente (se existir)] *************************
-skipping: [localhost]
-TASK [Deploy | Parse do status existente (ou base vazio)] **********************
-ok: [localhost]
-TASK [Deploy | Atualizar status (deploy:queued) com append em history] *********
-changed: [localhost]
-TASK [Deploy | Verificar init_deploy.sh no host] *******************************
+TASK [Mostrar hostname/IP da máquina alvo (debug)] *****************************
 ok: [localhost -> sitef-02(100.99.57.128)]
-TASK [Deploy | Falhar se init_deploy.sh não existir] ***************************
-skipping: [localhost]
-TASK [Deploy | Executar init_deploy.sh no host (com tee)] **********************
+TASK [Debug target_ident] ******************************************************
+ok: [localhost] => {
+    "msg": [
+        "current_machine = sitef-02",
+        "machine_cfg.host = 100.99.57.128",
+        "machine_cfg.ip   = ",
+        "hostname/ip alvo:",
+        [
+            "100.99.57.128 ",
+            "ip-100-99-57-128"
+        ]
+    ]
+}
+TASK [Definir caminhos de status e deploy] *************************************
+ok: [localhost]
+TASK [Calcular caminhos de status/log] *****************************************
+ok: [localhost]
+TASK [Criar diretório de status da máquina] ************************************
+changed: [localhost]
+TASK [Escrever status inicial (pre-deploy:queued)] *****************************
+changed: [localhost]
+TASK [Garantir base do pipeline no host] ***************************************
+ok: [localhost -> sitef-02(100.99.57.128)] => (item=/opt/SoftwareExpress/sitef-pipeline/deploy/components)
+ok: [localhost -> sitef-02(100.99.57.128)] => (item=/opt/SoftwareExpress/sitef-pipeline/deploy/scripts)
+ok: [localhost -> sitef-02(100.99.57.128)] => (item=/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package)
+TASK [Limpar pasta de scripts do pacote] ***************************************
 changed: [localhost -> sitef-02(100.99.57.128)]
-TASK [Deploy | Ler deploy.txt do host (se existir)] ****************************
+TASK [Recriar pasta de scripts do pacote] **************************************
+changed: [localhost -> sitef-02(100.99.57.128)]
+TASK [Copiar package.yml para o host] ******************************************
+changed: [localhost -> sitef-02(100.99.57.128)]
+TASK [Garantir diretórios dos componentes no host] *****************************
+ok: [localhost -> sitef-02(100.99.57.128)] => (item=packages/linux/sitef-core-0.0.1-0.x86_64.rpm)
+TASK [Baixar componentes do Nexus] *********************************************
+ok: [localhost -> sitef-02(100.99.57.128)] => (item=packages/linux/sitef-core-0.0.1-0.x86_64.rpm)
+TASK [Copiar scripts do pacote para o host] ************************************
+changed: [localhost -> sitef-02(100.99.57.128)]
+TASK [Listar conteúdo de /deploy/scripts (debug)] ******************************
 ok: [localhost -> sitef-02(100.99.57.128)]
-TASK [Deploy | Ler init_deploy.log do host (se existir)] ***********************
+TASK [Mostrar conteúdo de scripts (debug)] *************************************
+ok: [localhost] => {
+    "scripts_ls.stdout_lines": [
+        "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts:",
+        "total 48",
+        "drwxr-xr-x. 3 root root   168 Dec 24 18:17 .",
+        "drwxr-xr-x. 4 root root    39 Dec 15 11:37 ..",
+        "-rw-r-----. 1 root root 12048 Dec 24 18:07 deploy.txt",
+        "-rw-r-----. 1 root root 13686 Dec 24 18:14 init_deploy.log",
+        "-rwxr-xr-x. 1 root root  1149 Dec 24 18:17 init_deploy.sh",
+        "-rw-r-----. 1 root root   684 Dec 24 17:56 init_parallel.log",
+        "-rwxr-xr-x. 1 root root    95 Dec 15 11:37 init_parallel.sh",
+        "-rwxr-xr-x. 1 root root   162 Dec 15 11:37 init.sh",
+        "drwxr-xr-x. 2 root root    36 Dec 24 18:17 package",
+        "-rw-r-----. 1 root root    39 Dec 24 17:56 parallel.txt",
+        "",
+        "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package:",
+        "total 4",
+        "drwxr-xr-x. 2 root root  36 Dec 24 18:17 .",
+        "drwxr-xr-x. 3 root root 168 Dec 24 18:17 ..",
+        "-rw-r--r--. 1 root root  88 Dec 24 18:17 sitef-core-0.0.1-0.yml"
+    ]
+}
+TASK [Executar init_parallel.sh no host (com log + stdout)] ********************
+changed: [localhost -> sitef-02(100.99.57.128)]
+TASK [Mostrar últimas linhas do log do predeploy (sempre)] *********************
 ok: [localhost -> sitef-02(100.99.57.128)]
-TASK [Deploy | Montar conteúdo do log do DEPLOY] *******************************
-ok: [localhost]
-TASK [Deploy | Ler status.json atual (antes do append final)] ******************
-ok: [localhost]
-TASK [Deploy | Parse do status atual] ******************************************
-ok: [localhost]
-TASK [Deploy | Atualizar status final (append em history)] *********************
+TASK [DEBUG predeploy tail] ****************************************************
+ok: [localhost] => {
+    "predeploy_tail.stdout_lines": [
+        "===== tail -n 300 /opt/SoftwareExpress/sitef-pipeline/deploy/scripts/init_parallel.log =====",
+        "+ echo 'Executando backup...'",
+        "+ echo 'Backup finalizado'",
+        "+ echo 'Executando backup...'",
+        "+ echo 'Backup finalizado'",
+        "+ echo 'Executando backup...'",
+        "+ echo 'Backup finalizado'",
+        "+ echo 'Executando backup...'",
+        "+ echo 'Backup finalizado'",
+        "+ echo 'Executando backup...'",
+        "+ echo 'Backup finalizado'",
+        "+ echo 'Executando backup...'",
+        "+ echo 'Backup finalizado'",
+        "+ echo 'Executando backup...'",
+        "+ echo 'Backup finalizado'",
+        "+ echo 'Executando backup...'",
+        "+ echo 'Backup finalizado'",
+        "+ echo 'Executando backup...'",
+        "+ echo 'Backup finalizado'",
+        "+ echo 'Executando backup...'",
+        "+ echo 'Backup finalizado'",
+        "+ echo 'Executando backup...'",
+        "+ echo 'Backup finalizado'",
+        "+ echo 'Executando backup...'",
+        "+ echo 'Backup finalizado'",
+        "+ echo 'Executando backup...'",
+        "+ echo 'Backup finalizado'"
+    ]
+}
+TASK [Atualizar status após execução do init_parallel.sh] **********************
 changed: [localhost]
-TASK [Deploy | Garantir arquivo de log cumulativo] *****************************
-changed: [localhost]
-TASK [Deploy | Append do bloco de log do deploy no log cumulativo] *************
-changed: [localhost]
-TASK [Deploy | Carregar conteúdo completo do log cumulativo (para upload)] *****
-ok: [localhost]
-TASK [Deploy | Upload JSON + LOG para Harness File Store] **********************
-included: /tmp/tmp.XE485gOFMU/elastic-compute-cloud-sitef/ansible/harness_filestore_upload.yml for localhost
+TASK [Upload File Store (predeploy) - SEMPRE] **********************************
+included: /tmp/tmp.1YZSOgOL7J/elastic-compute-cloud-sitef/ansible/harness_filestore_upload.yml for localhost
 TASK [Harness | Validar vars mínimas] ******************************************
-fatal: [localhost]: FAILED! => {"msg": "The conditional check 'current_machine is defined' failed. The error was: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: recursive loop detected in template string: {{ current_machine }}. maximum recursion depth exceeded while calling a Python object"}
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+TASK [Harness | Definir defaults + normalizações] ******************************
+ok: [localhost]
+TASK [Harness | Identifiers SAFE (HARNESS RULE: [A-Za-z][A-Za-z0-9_]{0,127})] ***
+ok: [localhost]
+TASK [Harness | Resolver token (vars > env)] ***********************************
+ok: [localhost]
+TASK [Harness | Falhar se token não está no ambiente] **************************
+skipping: [localhost]
+TASK [Harness | Montar tags base] **********************************************
+ok: [localhost]
+TASK [Harness | Adicionar extra_tags como tag=...] *****************************
+ok: [localhost] => (item=dev000002:deploy:pending)
+TASK [Harness | Definir http_codes aceitos] ************************************
+ok: [localhost]
+TASK [Harness | Render tags JSON] **********************************************
+ok: [localhost]
+TASK [Harness | Garantir folder ENV (POST) com debug] **************************
+ok: [localhost]
+TASK [Harness | DEBUG ENV (se falhar)] *****************************************
+ok: [localhost]
+TASK [Harness | Falhar ENV (com body)] *****************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "Falha ao criar/garantir folder ENV no Harness.\nhttp_code=400\nbody={\"status\":\"ERROR\",\"code\":\"DUPLICATE_FIELD\",\"message\":\"Try another name, folder with name [dev] already exists in the parent folder [Root].\",\"correlationId\":\"08eaaab2-bbf2-4a25-8627-21f1831e322d\",\"detailedMessage\":null,\"responseMessages\":[{\"code\":\"DUPLICATE_FIELD\",\"level\":\"ERROR\",\"message\":\"Try another name, folder with name [dev] already exists in the parent folder [Root].\",\"exception\":null,\"failureTypes\":[],\"additionalInfo\":{}}],\"metadata\":null}\n"}
 PLAY RECAP *********************************************************************
-localhost                  : ok=38   changed=8    unreachable=0    failed=1    skipped=4    rescued=0    ignored=0   
+localhost                  : ok=51   changed=10   unreachable=0    failed=1    skipped=4    rescued=0    ignored=0   
 Command finished with status FAILURE
 
-## segue script na maquina
 
-[root@ip-100-99-57-128 bin]# cat /opt/SoftwareExpress/sitef-pipeline/deploy/scripts/init_deploy.sh
+## predeploy_from_execution.yml
 
-#!/bin/bash
-set -euo pipefail
+# =====================================================================================
+# PIPELINE 1 - PREDEPLOY (a partir do arquivo de execução)
+# =====================================================================================
 
-echo "== Início init_deploy.sh =="
-date
+- name: "Predeploy a partir do arquivo de execução"
+  hosts: localhost
+  connection: local
+  gather_facts: true
 
-echo "Instalacao de dependencias do sistema..."
-echo "Instalacao de dependencias do sistema finalizada."
+  vars:
+    # -------------------------------
+    # Entradas principais
+    # -------------------------------
+    execution_file_name: "{{ execution_file_name | default('execution/machine_list_dev.yml') }}"
+    deployment_ref: "{{ deployment_ref | default('DEV000000001') }}"
 
-echo "== Fim init_deploy.sh =="
-date
-[root@ip-100-99-57-128 bin]#
+    # -------------------------------
+    # Paths do repositório
+    # -------------------------------
+    repo_root_resolved: "{{ playbook_dir }}/.."
+    status_dir_resolved: "{{ (playbook_dir ~ '/..') }}/status/{{ deployment_ref }}"
+
+    # -------------------------------
+    # Nexus (ideal vir de secrets do Harness)
+    # -------------------------------
+    nexus_base_url: "{{ nexus_base_url | default('https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev') }}"
+    nexus_user: "{{ nexus_user | default(omit) }}"
+    nexus_password: "{{ nexus_password | default(omit) }}"
+
+  tasks:
+    # ---------------------------------------
+    # Resolver File Store sem recursão
+    # ---------------------------------------
+    - name: "Resolver filestore_env e filestore_base_dir sem recursão"
+      ansible.builtin.set_fact:
+        filestore_env_resolved: >-
+          {{
+            (filestore_env | string | trim)
+              if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
+              else 'dev'
+          }}
+        filestore_base_dir_resolved: >-
+          {{
+            (filestore_base_dir | string | trim)
+              if (filestore_base_dir is defined and (filestore_base_dir | string | trim) | length > 0)
+              else (
+                (
+                  (filestore_env | string | trim)
+                    if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
+                    else 'dev'
+                ) ~ '/' ~ deployment_ref
+              )
+          }}
+
+    # ---------------------------------------
+    # Mostrar variáveis resolvidas (debug)
+    # ---------------------------------------
+    - name: "Mostrar variáveis de entrada e resolvidas"
+      ansible.builtin.debug:
+        msg:
+          - "execution_file_name          = {{ execution_file_name }}"
+          - "deployment_ref               = {{ deployment_ref }}"
+          - "repo_root_resolved           = {{ repo_root_resolved }}"
+          - "status_dir_resolved          = {{ status_dir_resolved }}"
+          - "filestore_env_resolved       = {{ filestore_env_resolved }}"
+          - "filestore_base_dir_resolved  = {{ filestore_base_dir_resolved }}"
+          - "nexus_base_url               = {{ nexus_base_url }}"
+
+    # ---------------------------------------
+    # Criar diretório base de status local
+    # ---------------------------------------
+    - name: "Criar diretório de status da TAG"
+      ansible.builtin.file:
+        path: "{{ status_dir_resolved }}"
+        state: directory
+        mode: "0755"
+
+    # ---------------------------------------
+    # Carregar arquivo de execução
+    # ---------------------------------------
+    - name: "Carregar arquivo de execução"
+      ansible.builtin.include_vars:
+        file: "{{ repo_root_resolved }}/{{ execution_file_name }}"
+        name: execution_cfg
+
+    # ---------------------------------------
+    # Validar se há máquinas
+    # ---------------------------------------
+    - name: "Falhar se não tiver máquinas no arquivo de execução"
+      ansible.builtin.fail:
+        msg: "Nenhuma máquina encontrada em execution_cfg.machines"
+      when: execution_cfg.machines is not defined or execution_cfg.machines | length == 0
+
+    # ---------------------------------------
+    # Executar PREDEPLOY por máquina
+    # ---------------------------------------
+    - name: "Executar pré-deploy por máquina"
+      ansible.builtin.include_tasks: predeploy_per_machine.yml
+      loop: "{{ execution_cfg.machines }}"
+      loop_control:
+        loop_var: machine_name
+      vars:
+        deployment_ref: "{{ deployment_ref }}"
+        repo_root: "{{ repo_root_resolved }}"
+        status_dir: "{{ status_dir_resolved }}"
+
+        nexus_base_url: "{{ nexus_base_url }}"
+        nexus_user: "{{ nexus_user | default('') }}"
+        nexus_password: "{{ nexus_password | default('') }}"
+
+        filestore_env: "{{ filestore_env_resolved }}"
+        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
+
+
+## predeploy_per_machine.yml
+---
+# =====================================================================================
+# PREDEPLOY POR MÁQUINA
+# Chamado por predeploy_from_execution.yml
+#
+# Responsabilidades:
+# - Carregar machine + package
+# - Mesclar env_vars (machine + package)
+# - Preparar diretórios:
+#     /opt/SoftwareExpress/sitef-pipeline/deploy
+#     /opt/SoftwareExpress/sitef-pipeline/deploy/scripts
+#     /opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package
+# - Copiar package.yml para /deploy/scripts/package/
+# - Baixar components do Nexus para /deploy/<path do componente>
+#   (ex: /deploy/package/linux/sitef-core-0.0.2-0.rpm)
+# - Copiar scripts do pacote para /deploy/scripts
+# - Executar init_parallel.sh na máquina alvo com as env_vars
+# - Gravar status.json local com status + log_path
+# =====================================================================================
+
+# -----------------------------------------------------------------------------
+# 1) Resolver nome da máquina atual
+# -----------------------------------------------------------------------------
+- name: "Resolver nome da máquina atual"
+  ansible.builtin.set_fact:
+    current_machine: >-
+      {{
+        (machine_name | default(item) | default('')) | string | trim
+      }}
+
+# -----------------------------------------------------------------------------
+# 2) Definir paths base do repositório
+# -----------------------------------------------------------------------------
+- name: "Definir paths base do repositório"
+  ansible.builtin.set_fact:
+    repo_root_safe: >-
+      {{
+        repo_root
+          | default(repo_root_resolved | default(playbook_dir ~ '/..'))
+      }}
+
+# -----------------------------------------------------------------------------
+# 3) Definir diretórios principais do repositório
+# -----------------------------------------------------------------------------
+- name: "Definir execution_dir do repositório"
+  ansible.builtin.set_fact:
+    execution_dir: "{{ repo_root_safe }}/execution"
+
+- name: "Definir machines_dir, packages_dir e scripts_dir do repositório"
+  ansible.builtin.set_fact:
+    machines_dir: "{{ repo_root_safe }}/machines"
+    packages_dir: "{{ repo_root_safe }}/packages"
+    scripts_root_dir: "{{ repo_root_safe }}/scripts"
+
+# -----------------------------------------------------------------------------
+# 4) Candidatos de arquivo de máquina
+# -----------------------------------------------------------------------------
+- name: "Definir candidatos de arquivo da máquina"
+  ansible.builtin.set_fact:
+    candidate_machine_files:
+      - "{{ execution_dir }}/machines/{{ current_machine }}.yml"
+      - "{{ execution_dir }}/{{ current_machine }}.yml"
+      - "{{ machines_dir }}/{{ current_machine }}.yml"
+      - "{{ repo_root_safe }}/inventory/machines/{{ current_machine }}.yml"
+
+# -----------------------------------------------------------------------------
+# 5) Verificar quais candidatos existem
+# -----------------------------------------------------------------------------
+- name: "Verificar candidatos de arquivo da máquina"
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop: "{{ candidate_machine_files }}"
+  register: machine_candidates_stat
+
+# -----------------------------------------------------------------------------
+# 6) Selecionar o primeiro arquivo existente
+# -----------------------------------------------------------------------------
+- name: "Selecionar machine_file existente"
+  ansible.builtin.set_fact:
+    machine_file: "{{ item.item }}"
+  when:
+    - item.stat.exists
+    - machine_file is not defined
+  loop: "{{ machine_candidates_stat.results }}"
+
+# -----------------------------------------------------------------------------
+# 7) Falhar se nenhum candidato existir
+# -----------------------------------------------------------------------------
+- name: "Falhar se arquivo da máquina não existir em nenhum caminho esperado"
+  ansible.builtin.fail:
+    msg: |
+      Arquivo de máquina não encontrado para {{ current_machine }}.
+      Caminhos testados:
+      {{ candidate_machine_files | to_nice_yaml }}
+  when: machine_file is not defined
+
+# -----------------------------------------------------------------------------
+# 8) Carregar config da máquina
+# -----------------------------------------------------------------------------
+- name: "Carregar config da máquina {{ current_machine }}"
+  ansible.builtin.include_vars:
+    file: "{{ machine_file }}"
+    name: machine_cfg
+
+# -----------------------------------------------------------------------------
+# 9) Validar package definido
+# -----------------------------------------------------------------------------
+- name: "Validar package definido"
+  ansible.builtin.assert:
+    that:
+      - machine_cfg is defined
+      - machine_cfg.package is defined
+      - (machine_cfg.package | string | trim) | length > 0
+    fail_msg: "machine_cfg.package não definido em {{ machine_file }}"
+
+# -----------------------------------------------------------------------------
+# 10) Carregar config do pacote
+# -----------------------------------------------------------------------------
+- name: "Carregar config do pacote {{ machine_cfg.package }}"
+  ansible.builtin.include_vars:
+    file: "{{ packages_dir }}/{{ machine_cfg.package }}.yml"
+    name: package_cfg
+
+# -----------------------------------------------------------------------------
+# 11) Validações mínimas do pacote
+# -----------------------------------------------------------------------------
+- name: "Validar components do pacote"
+  ansible.builtin.assert:
+    that:
+      - package_cfg is defined
+      - package_cfg.components is defined
+      - package_cfg.components | length > 0
+    fail_msg: "components ausente/vazio no pacote {{ machine_cfg.package }}"
+
+# -----------------------------------------------------------------------------
+# 12) Calcular env_vars mescladas (machine + package + extras)
+# -----------------------------------------------------------------------------
+- name: "Calcular env_vars mescladas"
+  ansible.builtin.set_fact:
+    merged_env_vars: >-
+      {{
+        (machine_cfg.env_vars | default({}))
+        | combine(package_cfg.env_vars | default({}), recursive=True)
+        | combine({
+            'SITEF_MACHINE': current_machine,
+            'SITEF_HOST': machine_cfg.host | default(machine_cfg.ip | default('')),
+            'DEPLOYMENT_REF': deployment_ref | default(''),
+            'PACKAGE_NAME': machine_cfg.package,
+            'ROLLBACK_PACKAGE': machine_cfg.rollback | default('')
+          }, recursive=True)
+      }}
+
+# -----------------------------------------------------------------------------
+# 13) Usuário/SSH defaults
+# -----------------------------------------------------------------------------
+- name: "Definir usuário alvo padrão"
+  ansible.builtin.set_fact:
+    target_user: "{{ machine_cfg.target_user | default('root') }}"
+
+- name: "Definir ssh_common_args padrão"
+  ansible.builtin.set_fact:
+    ssh_common_args: "{{ machine_cfg.ssh_common_args | default('-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null') }}"
+
+- name: "Aplicar ProxyJump via bastion (quando necessário)"
+  ansible.builtin.set_fact:
+    ssh_common_args: >-
+      {{ ssh_common_args }}
+      -o ProxyJump={{ machine_cfg.bastion_user | default(target_user) }}@{{ machine_cfg.bastion_host }}
+  when:
+    - machine_cfg.bastion_host is defined
+    - (machine_cfg.bastion_host | string | length) > 0
+
+# -----------------------------------------------------------------------------
+# 14) Registrar host dinâmico (forçando conexão SSH)
+# -----------------------------------------------------------------------------
+- name: "Registrar host dinâmico para {{ current_machine }}"
+  ansible.builtin.add_host:
+    name: "{{ current_machine }}"
+    ansible_host: "{{ machine_cfg.host | default(machine_cfg.ip | default(machine_cfg.host | default(''))) }}"
+    ansible_user: "{{ target_user }}"
+    ansible_ssh_common_args: "{{ ssh_common_args }}"
+    ansible_connection: ssh
+  changed_when: true
+
+# -----------------------------------------------------------------------------
+# 14.1) Debug: identificar hostname/IP da máquina alvo
+# -----------------------------------------------------------------------------
+- name: "Mostrar hostname/IP da máquina alvo (debug)"
+  ansible.builtin.shell: "hostname -I && hostname"
+  delegate_to: "{{ current_machine }}"
+  register: target_ident
+  changed_when: false
+
+- name: "Debug target_ident"
+  ansible.builtin.debug:
+    msg:
+      - "current_machine = {{ current_machine }}"
+      - "machine_cfg.host = {{ machine_cfg.host | default('') }}"
+      - "machine_cfg.ip   = {{ machine_cfg.ip | default('') }}"
+      - "hostname/ip alvo:"
+      - "{{ target_ident.stdout_lines }}"
+
+# -----------------------------------------------------------------------------
+# 15) Definir caminhos de status e deploy (BASE = /opt/.../deploy)
+# -----------------------------------------------------------------------------
+- name: "Definir caminhos de status e deploy"
+  ansible.builtin.set_fact:
+    machine_status_dir: "{{ status_dir }}/{{ current_machine }}"
+    machine_status_file: "{{ status_dir }}/{{ current_machine }}/status.json"
+
+    deploy_base_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/components"
+    deploy_scripts_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
+    deploy_scripts_package_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package"
+
+# -----------------------------------------------------------------------------
+# 16) Calcular caminhos de status/log "lógicos"
+# -----------------------------------------------------------------------------
+- name: "Calcular caminhos de status/log"
+  ansible.builtin.set_fact:
+    filestore_log_path: >-
+      {{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ current_machine }}-{{ filestore_env }}.log
+    filestore_status_path: >-
+      {{ filestore_base_dir }}/{{ deployment_ref | lower }}-{{ current_machine }}-{{ filestore_env }}.json
+
+# -----------------------------------------------------------------------------
+# 17) Criar diretório de status local e registrar status 'pre-deploy:queued'
+# -----------------------------------------------------------------------------
+- name: "Criar diretório de status da máquina"
+  ansible.builtin.file:
+    path: "{{ machine_status_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: "Escrever status inicial (pre-deploy:queued)"
+  ansible.builtin.copy:
+    dest: "{{ machine_status_file }}"
+    mode: "0644"
+    content: |
+      {
+        "machine": "{{ current_machine }}",
+        "host": "{{ machine_cfg.host | default(machine_cfg.ip | default('')) }}",
+        "package": "{{ machine_cfg.package }}",
+        "rollback": "{{ machine_cfg.rollback | default('') }}",
+        "status": "pre-deploy:queued",
+        "deployment_ref": "{{ deployment_ref | default('') }}",
+        "timestamp": "{{ ansible_date_time.iso8601 }}",
+        "log_path": "{{ filestore_log_path }}"
+      }
+  changed_when: true
+
+# -----------------------------------------------------------------------------
+# 18) Garantir base do pipeline no host remoto
+# -----------------------------------------------------------------------------
+- name: "Garantir base do pipeline no host"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  become: true
+  delegate_to: "{{ current_machine }}"
+  loop:
+    - "{{ deploy_base_dir }}"
+    - "{{ deploy_scripts_dir }}"
+    - "{{ deploy_scripts_package_dir }}"
+
+# -----------------------------------------------------------------------------
+# 19) Limpar pasta de scripts do pacote
+# -----------------------------------------------------------------------------
+- name: "Limpar pasta de scripts do pacote"
+  ansible.builtin.file:
+    path: "{{ deploy_scripts_package_dir }}"
+    state: absent
+  become: true
+  delegate_to: "{{ current_machine }}"
+
+- name: "Recriar pasta de scripts do pacote"
+  ansible.builtin.file:
+    path: "{{ deploy_scripts_package_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+  delegate_to: "{{ current_machine }}"
+
+# -----------------------------------------------------------------------------
+# 20) Copiar package.yml para /deploy/scripts/package/
+# -----------------------------------------------------------------------------
+- name: "Copiar package.yml para o host"
+  ansible.builtin.copy:
+    src: "{{ packages_dir }}/{{ machine_cfg.package }}.yml"
+    dest: "{{ deploy_scripts_package_dir }}/{{ machine_cfg.package }}.yml"
+    mode: "0644"
+  become: true
+  delegate_to: "{{ current_machine }}"
+
+# -----------------------------------------------------------------------------
+# 21) Garantir diretórios dos componentes + baixar do Nexus
+# -----------------------------------------------------------------------------
+- name: "Garantir diretórios dos componentes no host"
+  ansible.builtin.file:
+    path: "{{ deploy_base_dir }}/{{ item | dirname }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ package_cfg.components }}"
+  become: true
+  delegate_to: "{{ current_machine }}"
+
+- name: "Baixar componentes do Nexus"
+  ansible.builtin.get_url:
+    url: "{{ nexus_base_url.rstrip('/') }}/{{ item }}"
+    dest: "{{ deploy_base_dir }}/{{ item }}"
+    mode: "0644"
+    url_username: "{{ nexus_user | default(omit) }}"
+    url_password: "{{ nexus_password | default(omit) }}"
+  loop: "{{ package_cfg.components }}"
+  become: true
+  delegate_to: "{{ current_machine }}"
+
+# -----------------------------------------------------------------------------
+# 22) Copiar scripts do pacote para /deploy/scripts
+# -----------------------------------------------------------------------------
+- name: "Copiar scripts do pacote para o host"
+  ansible.builtin.copy:
+    src: "{{ scripts_root_dir }}/{{ package_cfg.script }}/"
+    dest: "{{ deploy_scripts_dir }}/"
+    mode: "0755"
+  become: true
+  delegate_to: "{{ current_machine }}"
+
+# Debug só para conferência
+- name: "Listar conteúdo de /deploy/scripts (debug)"
+  ansible.builtin.shell: |
+    ls -Ral "{{ deploy_scripts_dir }}" || echo "diretório vazio"
+  become: true
+  delegate_to: "{{ current_machine }}"
+  register: scripts_ls
+  changed_when: false
+
+- name: "Mostrar conteúdo de scripts (debug)"
+  ansible.builtin.debug:
+    var: scripts_ls.stdout_lines
+
+# -----------------------------------------------------------------------------
+# 23) Executar init_parallel.sh na máquina alvo
+# -----------------------------------------------------------------------------
+- name: "Executar init_parallel.sh no host (com log + stdout)"
+  ansible.builtin.shell: |
+    set -o pipefail
+    cd "{{ deploy_scripts_dir }}"
+    /usr/bin/stdbuf -oL -eL /bin/bash -x ./init_parallel.sh 2>&1 | tee -a "{{ deploy_scripts_dir }}/init_parallel.log"
+    exit ${PIPESTATUS[0]}
+  args:
+    executable: /bin/bash
+  environment: "{{ merged_env_vars }}"
+  become: true
+  delegate_to: "{{ current_machine }}"
+  register: init_parallel_result
+  changed_when: true
+
+- name: "Mostrar últimas linhas do log do predeploy (sempre)"
+  ansible.builtin.shell: |
+    echo "===== tail -n 300 {{ deploy_scripts_dir }}/init_parallel.log ====="
+    tail -n 300 "{{ deploy_scripts_dir }}/init_parallel.log" 2>/dev/null || echo "log não encontrado"
+  become: true
+  delegate_to: "{{ current_machine }}"
+  register: predeploy_tail
+  changed_when: false
+
+- name: "DEBUG predeploy tail"
+  ansible.builtin.debug:
+    var: predeploy_tail.stdout_lines
+
+# -----------------------------------------------------------------------------
+# 24) Atualizar status para pre-deploy:ok ou pre-deploy:error
+# -----------------------------------------------------------------------------
+- name: "Atualizar status após execução do init_parallel.sh"
+  ansible.builtin.copy:
+    dest: "{{ machine_status_file }}"
+    mode: "0644"
+    content: |
+      {
+        "machine": "{{ current_machine }}",
+        "host": "{{ machine_cfg.host | default(machine_cfg.ip | default('')) }}",
+        "package": "{{ machine_cfg.package }}",
+        "rollback": "{{ machine_cfg.rollback | default('') }}",
+        "status": "{{ 'pre-deploy:ok' if init_parallel_result.rc == 0 else 'pre-deploy:error' }}",
+        "deployment_ref": "{{ deployment_ref | default('') }}",
+        "timestamp": "{{ ansible_date_time.iso8601 }}",
+        "log_path": "{{ filestore_log_path }}"
+      }
+  changed_when: true
+
+- name: "Upload File Store (predeploy) - SEMPRE"
+  ansible.builtin.include_tasks: harness_filestore_upload.yml
+  vars:
+    log_content: |
+      ---- pipeline pre deploy ----
+      deployment_ref={{ deployment_ref | default('') }}
+      machine={{ current_machine }}
+      host={{ machine_cfg.host | default(machine_cfg.ip | default('')) }}
+      stage=predeploy
+      rc={{ init_parallel_result.rc | default(1) }}
+
+      ---- stdout ----
+      {{ init_parallel_result.stdout | default('') }}
+
+      ---- stderr ----
+      {{ init_parallel_result.stderr | default('') }}
+      ---- pipeline pre deploy ----
+    status_tag_value: "{{ (deployment_ref | lower) ~ ':pre-deploy:' ~ ('ok' if init_parallel_result.rc == 0 else 'error') }}"
+    extra_tags: "{{ [ (deployment_ref | lower) ~ ':deploy:pending' ] if init_parallel_result.rc == 0 else [] }}"
+
+- name: "Falhar se init_parallel.sh retornou erro (DEPOIS do upload)"
+  ansible.builtin.fail:
+    msg: "init_parallel.sh falhou na máquina {{ current_machine }} com rc={{ init_parallel_result.rc }}"
+  when: init_parallel_result.rc != 0
