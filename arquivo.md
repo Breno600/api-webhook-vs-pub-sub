@@ -1,12 +1,15 @@
 ---
 # =====================================================================================
-# HARNESS FILE STORE - UPLOAD (por máquina)
-# - Cria (se não existir) pasta raiz -> env -> deployment_ref
-# - Faz UPSERT do status.json e do log da máquina
-# - Tags enviadas com quoting seguro (evita 500 por multipart quebrado)
+# HARNESS FILE STORE - UPLOAD (por máquina) - COM ESTRUTURA:
+#   dev/$GIT_TAG/$MACHINE-(PRE-DEPLOY|DEPLOY|ROLLBACK)
 #
-# SEGREDO (NÃO NO REPO):
-#   HARNESS_X_API_KEY (env var)
+# Requer:
+#   current_machine, deployment_ref, filestore_env, machine_status_file, log_content, status_tag_value
+# Opcional:
+#   stage_name (predeploy|deploy|rollback)  (default: predeploy)
+#   extra_tags []
+# Token:
+#   HARNESS_X_API_KEY (env) ou harness_x_api_key var
 # =====================================================================================
 
 - name: "Harness | Validar vars mínimas"
@@ -31,13 +34,27 @@
     env_lower: "{{ (filestore_env | string | trim | lower) }}"
     deployment_ref_folder: "{{ (deployment_ref_folder | default(deployment_ref)) | string | trim }}"
     deployment_ref_lower: "{{ (deployment_ref | string | trim | lower) }}"
+    stage_raw: "{{ (stage_name | default('predeploy')) | string | trim | lower }}"
+    stage_label: "{{ {'predeploy':'PRE-DEPLOY','deploy':'DEPLOY','rollback':'ROLLBACK'}.get(stage_raw, stage_raw | upper) }}"
 
 - name: "Harness | Identifiers SAFE (HARNESS RULE: [A-Za-z][A-Za-z0-9_]{0,127})"
   ansible.builtin.set_fact:
     # troca qualquer coisa fora [A-Za-z0-9_] por "_"
-    env_identifier: "{{ env_lower | regex_replace('[^A-Za-z0-9_]', '_') }}"
-    deployment_ref_identifier: "{{ (deployment_ref_folder | string | trim | lower) | regex_replace('[^A-Za-z0-9_]', '_') }}"
-    machine_identifier: "{{ (current_machine | string | trim | lower) | regex_replace('[^A-Za-z0-9_]', '_') }}"
+    env_identifier: "{{ ('d_' ~ env_lower) | regex_replace('[^A-Za-z0-9_]', '_') }}"
+    deployment_ref_identifier: "{{ ('d_' ~ (deployment_ref_folder | lower)) | regex_replace('[^A-Za-z0-9_]', '_') }}"
+    machine_identifier: "{{ ('m_' ~ (current_machine | lower)) | regex_replace('[^A-Za-z0-9_]', '_') }}"
+    stage_identifier: "{{ ('s_' ~ (stage_label | lower)) | regex_replace('[^A-Za-z0-9_]', '_') }}"
+    # pasta leaf: MACHINE-STAGE
+    machine_stage_name: "{{ (current_machine | trim) ~ '-' ~ stage_label }}"
+    machine_stage_identifier_raw: "{{ ('p_' ~ (current_machine | lower) ~ '_' ~ (stage_label | lower)) | regex_replace('[^A-Za-z0-9_]', '_') }}"
+
+- name: "Harness | Limitar machine_stage_identifier a 128 (se precisar)"
+  ansible.builtin.set_fact:
+    machine_stage_identifier: >-
+      {{
+        (machine_stage_identifier_raw[0:110] ~ '_' ~ (machine_stage_identifier_raw | hash('sha1'))[0:16])
+        if (machine_stage_identifier_raw | length) > 128 else machine_stage_identifier_raw
+      }}
 
 - name: "Harness | Resolver token (vars > env)"
   ansible.builtin.set_fact:
@@ -60,6 +77,7 @@
       - { key: "env",        value: "{{ env_lower }}" }
       - { key: "deployment", value: "{{ deployment_ref_lower }}" }
       - { key: "machine",    value: "{{ current_machine | lower }}" }
+      - { key: "stage",      value: "{{ stage_label }}" }
       - { key: "tag",        value: "{{ status_tag_value }}" }
 
 - name: "Harness | Adicionar extra_tags como tag=..."
@@ -73,21 +91,20 @@
     hfs_ok_create_codes: ["200","201","202","409"]
     hfs_ok_update_codes: ["200","201","202"]
 
-# helper: tags json em variável (evita quebrar quoting)
 - name: "Harness | Render tags JSON"
   ansible.builtin.set_fact:
     harness_tags_json: "{{ harness_tags | to_json }}"
 
 # -----------------------------------------------------------------------------
-# 1) Garantir folder ENV (filestore_env) embaixo da raiz
+# 1) Garantir folder ENV (dev) embaixo da raiz
 # -----------------------------------------------------------------------------
 - name: "Harness | Garantir folder ENV (POST) com debug"
   ansible.builtin.shell: |
     set -euo pipefail
-    http="$(curl -sS -o /tmp/hfs_env_create.out -w "%{http_code}" \
+    http="$(curl --http1.1 -sS -o /tmp/hfs_env_create.out -w "%{http_code}" \
       --request POST \
       "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
-      -H "x-api-key: {{ harness_x_api_key }}" \
+      -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
       -F "name={{ env_lower }}" \
       -F "type=FOLDER" \
       -F "parentIdentifier={{ harness_filestore_root_identifier_resolved }}" \
@@ -117,15 +134,15 @@
   when: (hfs_env_create_http.stdout | default('')) not in hfs_ok_create_codes
 
 # -----------------------------------------------------------------------------
-# 2) Garantir folder DEPLOYMENT_REF embaixo do ENV
+# 2) Garantir folder GIT_TAG (deployment_ref) embaixo do ENV
 # -----------------------------------------------------------------------------
-- name: "Harness | Garantir folder DEPLOYMENT_REF (POST) com debug"
+- name: "Harness | Garantir folder GIT_TAG (POST) com debug"
   ansible.builtin.shell: |
     set -euo pipefail
-    http="$(curl -sS -o /tmp/hfs_ref_create.out -w "%{http_code}" \
+    http="$(curl --http1.1 -sS -o /tmp/hfs_ref_create.out -w "%{http_code}" \
       --request POST \
       "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
-      -H "x-api-key: {{ harness_x_api_key }}" \
+      -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
       -F "name={{ deployment_ref_folder }}" \
       -F "type=FOLDER" \
       -F "parentIdentifier={{ env_identifier }}" \
@@ -149,27 +166,73 @@
 - name: "Harness | Falhar REF (com body)"
   ansible.builtin.fail:
     msg: |
-      Falha ao criar/garantir folder DEPLOYMENT_REF no Harness.
+      Falha ao criar/garantir folder GIT_TAG no Harness.
       http_code={{ hfs_ref_create_http.stdout | default('') }}
       body={{ hfs_ref_create_body.stdout | default('') }}
   when: (hfs_ref_create_http.stdout | default('')) not in hfs_ok_create_codes
 
 # -----------------------------------------------------------------------------
-# 3) Upload/Upsert STATUS JSON (POST -> se 409 faz PUT) + retry em 500
+# 3) Garantir folder LEAF (MACHINE-STAGE) embaixo do GIT_TAG
 # -----------------------------------------------------------------------------
-- name: "Harness | Definir nome/identifier do STATUS JSON"
-  ansible.builtin.set_fact:
-    hfs_status_name: "{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}.json"
-    hfs_status_identifier: "{{ deployment_ref_identifier }}_{{ machine_identifier }}_{{ env_identifier }}_json"
-    hfs_status_parent_identifier: "{{ deployment_ref_identifier }}"
-
-- name: "Harness | CREATE status (retry se 500)"
+- name: "Harness | Garantir folder LEAF (MACHINE-STAGE) (POST) com debug"
   ansible.builtin.shell: |
     set -euo pipefail
-    http="$(curl -sS -o /tmp/hfs_status_create.out -w "%{http_code}" \
+    http="$(curl --http1.1 -sS -o /tmp/hfs_leaf_create.out -w "%{http_code}" \
       --request POST \
       "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
-      -H "x-api-key: {{ harness_x_api_key }}" \
+      -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
+      -F "name={{ machine_stage_name }}" \
+      -F "type=FOLDER" \
+      -F "parentIdentifier={{ deployment_ref_identifier }}" \
+      -F "identifier={{ machine_stage_identifier }}" \
+      -F 'tags={{ harness_tags_json }}' \
+    )"
+    echo "${http}"
+  args:
+    executable: /bin/bash
+  register: hfs_leaf_create_http
+  changed_when: hfs_leaf_create_http.stdout in ['200','201']
+  failed_when: false
+
+- name: "Harness | DEBUG LEAF (se falhar)"
+  ansible.builtin.shell: "sed -n '1,220p' /tmp/hfs_leaf_create.out || true"
+  register: hfs_leaf_create_body
+  changed_when: false
+  failed_when: false
+  when: (hfs_leaf_create_http.stdout | default('')) not in hfs_ok_create_codes
+
+- name: "Harness | Falhar LEAF (com body)"
+  ansible.builtin.fail:
+    msg: |
+      Falha ao criar/garantir folder LEAF (MACHINE-STAGE) no Harness.
+      http_code={{ hfs_leaf_create_http.stdout | default('') }}
+      body={{ hfs_leaf_create_body.stdout | default('') }}
+  when: (hfs_leaf_create_http.stdout | default('')) not in hfs_ok_create_codes
+
+# -----------------------------------------------------------------------------
+# 4) Upload/Upsert STATUS JSON (POST -> se 409 faz PUT)
+# -----------------------------------------------------------------------------
+- name: "Harness | Definir nome/identifier do STATUS JSON (dentro do LEAF)"
+  ansible.builtin.set_fact:
+    hfs_status_name: "status.json"
+    hfs_status_identifier_raw: "{{ ('f_status_' ~ deployment_ref_identifier ~ '_' ~ machine_stage_identifier) | regex_replace('[^A-Za-z0-9_]', '_') }}"
+    hfs_status_parent_identifier: "{{ machine_stage_identifier }}"
+
+- name: "Harness | Limitar identifier STATUS a 128 (se precisar)"
+  ansible.builtin.set_fact:
+    hfs_status_identifier: >-
+      {{
+        (hfs_status_identifier_raw[0:110] ~ '_' ~ (hfs_status_identifier_raw | hash('sha1'))[0:16])
+        if (hfs_status_identifier_raw | length) > 128 else hfs_status_identifier_raw
+      }}
+
+- name: "Harness | CREATE status"
+  ansible.builtin.shell: |
+    set -euo pipefail
+    http="$(curl --http1.1 -sS -o /tmp/hfs_status_create.out -w "%{http_code}" \
+      --request POST \
+      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+      -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
       -F "name={{ hfs_status_name }}" \
       -F "type=FILE" \
       -F "parentIdentifier={{ hfs_status_parent_identifier }}" \
@@ -183,18 +246,14 @@
   register: hfs_status_create_http
   changed_when: (hfs_status_create_http.stdout | default('')) is match('^2..$')
   failed_when: false
-  no_log: true
-  retries: 4
-  delay: 2
-  until: (hfs_status_create_http.stdout | default('')) != '500'
 
-- name: "Harness | UPDATE status (se create retornou 409) (retry se 500)"
+- name: "Harness | UPDATE status (se create retornou 409)"
   ansible.builtin.shell: |
     set -euo pipefail
-    http="$(curl -sS -o /tmp/hfs_status_update.out -w "%{http_code}" \
+    http="$(curl --http1.1 -sS -o /tmp/hfs_status_update.out -w "%{http_code}" \
       --request PUT \
       "{{ harness_api_base }}/{{ hfs_status_identifier }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
-      -H "x-api-key: {{ harness_x_api_key }}" \
+      -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
       -F "name={{ hfs_status_name }}" \
       -F "type=FILE" \
       -F "parentIdentifier={{ hfs_status_parent_identifier }}" \
@@ -209,63 +268,45 @@
   when: (hfs_status_create_http.stdout | default('')) == '409'
   changed_when: (hfs_status_update_http.stdout | default('')) is match('^2..$')
   failed_when: false
-  no_log: true
-  retries: 4
-  delay: 2
-  until: (hfs_status_update_http.stdout | default('')) != '500'
-
-- name: "Harness | DEBUG body STATUS (quando falhar)"
-  ansible.builtin.shell: |
-    echo "CREATE:"; sed -n '1,260p' /tmp/hfs_status_create.out || true
-    echo "UPDATE:"; sed -n '1,260p' /tmp/hfs_status_update.out || true
-  register: hfs_status_body
-  changed_when: false
-  failed_when: false
-  when:
-    - (hfs_status_create_http.stdout | default('')) not in hfs_ok_create_codes
-      or ((hfs_status_create_http.stdout | default('')) == '409' and (hfs_status_update_http.stdout | default('')) not in hfs_ok_update_codes)
-
-- name: "Harness | Falhar STATUS (com correlationId/body)"
-  ansible.builtin.fail:
-    msg: |
-      Falha no upload do STATUS no Harness File Store.
-      STATUS create http_code={{ hfs_status_create_http.stdout | default('') }}
-      STATUS update http_code={{ hfs_status_update_http.stdout | default('') }}
-      {{ hfs_status_body.stdout | default('') }}
-  when:
-    - (hfs_status_create_http.stdout | default('')) not in hfs_ok_create_codes
-      or ((hfs_status_create_http.stdout | default('')) == '409' and (hfs_status_update_http.stdout | default('')) not in hfs_ok_update_codes)
 
 # -----------------------------------------------------------------------------
-# 4) Upload/Upsert LOG (POST -> se 409 faz PUT) + retry em 500
+# 5) Upload/Upsert LOG (POST -> se 409 faz PUT)
 # -----------------------------------------------------------------------------
-- name: "Harness | Definir nome/identifier do LOG"
+- name: "Harness | Definir nome/identifier do LOG (dentro do LEAF)"
   ansible.builtin.set_fact:
-    hfs_log_name: "{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}.log"
-    hfs_log_identifier: "{{ deployment_ref_identifier }}_{{ machine_identifier }}_{{ env_identifier }}_log"
-    hfs_log_parent_identifier: "{{ deployment_ref_identifier }}"
+    hfs_log_name: "pipeline.log"
+    hfs_log_identifier_raw: "{{ ('f_log_' ~ deployment_ref_identifier ~ '_' ~ machine_stage_identifier) | regex_replace('[^A-Za-z0-9_]', '_') }}"
+    hfs_log_parent_identifier: "{{ machine_stage_identifier }}"
+
+- name: "Harness | Limitar identifier LOG a 128 (se precisar)"
+  ansible.builtin.set_fact:
+    hfs_log_identifier: >-
+      {{
+        (hfs_log_identifier_raw[0:110] ~ '_' ~ (hfs_log_identifier_raw | hash('sha1'))[0:16])
+        if (hfs_log_identifier_raw | length) > 128 else hfs_log_identifier_raw
+      }}
 
 - name: "Harness | Upload do LOG (create/update) com cleanup garantido"
   block:
     - name: "Harness | Criar arquivo temporário do log no controller"
       ansible.builtin.copy:
-        dest: "/tmp/{{ hfs_log_name }}"
+        dest: "/tmp/{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-{{ stage_raw }}.log"
         mode: "0600"
         content: "{{ log_content }}"
 
-    - name: "Harness | CREATE log (retry se 500)"
+    - name: "Harness | CREATE log"
       ansible.builtin.shell: |
         set -euo pipefail
-        http="$(curl -sS -o /tmp/hfs_log_create.out -w "%{http_code}" \
+        http="$(curl --http1.1 -sS -o /tmp/hfs_log_create.out -w "%{http_code}" \
           --request POST \
           "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
-          -H "x-api-key: {{ harness_x_api_key }}" \
+          -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
           -F "name={{ hfs_log_name }}" \
           -F "type=FILE" \
           -F "parentIdentifier={{ hfs_log_parent_identifier }}" \
           -F "identifier={{ hfs_log_identifier }}" \
           -F 'tags={{ harness_tags_json }}' \
-          -F "content=@/tmp/{{ hfs_log_name }}" \
+          -F "content=@/tmp/{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-{{ stage_raw }}.log" \
         )"
         echo "${http}"
       args:
@@ -274,23 +315,20 @@
       changed_when: (hfs_log_create_http.stdout | default('')) is match('^2..$')
       failed_when: false
       no_log: true
-      retries: 4
-      delay: 2
-      until: (hfs_log_create_http.stdout | default('')) != '500'
 
-    - name: "Harness | UPDATE log (se create retornou 409) (retry se 500)"
+    - name: "Harness | UPDATE log (se create retornou 409)"
       ansible.builtin.shell: |
         set -euo pipefail
-        http="$(curl -sS -o /tmp/hfs_log_update.out -w "%{http_code}" \
+        http="$(curl --http1.1 -sS -o /tmp/hfs_log_update.out -w "%{http_code}" \
           --request PUT \
           "{{ harness_api_base }}/{{ hfs_log_identifier }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
-          -H "x-api-key: {{ harness_x_api_key }}" \
+          -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
           -F "name={{ hfs_log_name }}" \
           -F "type=FILE" \
           -F "parentIdentifier={{ hfs_log_parent_identifier }}" \
           -F "identifier={{ hfs_log_identifier }}" \
           -F 'tags={{ harness_tags_json }}' \
-          -F "content=@/tmp/{{ hfs_log_name }}" \
+          -F "content=@/tmp/{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-{{ stage_raw }}.log" \
         )"
         echo "${http}"
       args:
@@ -300,36 +338,22 @@
       changed_when: (hfs_log_update_http.stdout | default('')) is match('^2..$')
       failed_when: false
       no_log: true
-      retries: 4
-      delay: 2
-      until: (hfs_log_update_http.stdout | default('')) != '500'
-
-    - name: "Harness | DEBUG body LOG (quando falhar)"
-      ansible.builtin.shell: |
-        echo "CREATE:"; sed -n '1,260p' /tmp/hfs_log_create.out || true
-        echo "UPDATE:"; sed -n '1,260p' /tmp/hfs_log_update.out || true
-      register: hfs_log_body
-      changed_when: false
-      failed_when: false
-      when:
-        - (hfs_log_create_http.stdout | default('')) not in hfs_ok_create_codes
-          or ((hfs_log_create_http.stdout | default('')) == '409' and (hfs_log_update_http.stdout | default('')) not in hfs_ok_update_codes)
-
-    - name: "Harness | Falhar LOG (com correlationId/body)"
-      ansible.builtin.fail:
-        msg: |
-          Falha no upload do LOG no Harness File Store.
-          LOG create http_code={{ hfs_log_create_http.stdout | default('') }}
-          LOG update http_code={{ hfs_log_update_http.stdout | default('') }}
-          {{ hfs_log_body.stdout | default('') }}
-      when:
-        - (hfs_log_create_http.stdout | default('')) not in hfs_ok_create_codes
-          or ((hfs_log_create_http.stdout | default('')) == '409' and (hfs_log_update_http.stdout | default('')) not in hfs_ok_update_codes)
 
   always:
     - name: "Harness | Limpar arquivo temporário do log"
       ansible.builtin.file:
-        path: "/tmp/{{ hfs_log_name }}"
+        path: "/tmp/{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-{{ stage_raw }}.log"
         state: absent
       changed_when: false
       failed_when: false
+
+
+- include_tasks: harness_filestore_upload.yml
+  vars:
+    stage_name: "predeploy"
+    current_machine: "{{ current_machine }}"
+    deployment_ref: "{{ deployment_ref }}"
+    filestore_env: "{{ filestore_env }}"
+    machine_status_file: "{{ machine_status_file }}"
+    log_content: "{{ log_content }}"
+    status_tag_value: "{{ status_tag_value }}"
