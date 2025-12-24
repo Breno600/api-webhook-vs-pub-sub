@@ -1,5 +1,3 @@
-## harness_filestore_upload.yml
-
 ---
 # =====================================================================================
 # HARNESS FILE STORE - UPLOAD (por máquina)
@@ -9,6 +7,15 @@
 #
 # SEGREDO (NÃO NO REPO):
 #   HARNESS_X_API_KEY (env var)
+#
+# CORREÇÃO APLICADA:
+# - Harness retorna 400 + code=DUPLICATE_FIELD quando a pasta já existe (ao invés de 409).
+# - Agora, quando http_code=400 e o body contém DUPLICATE_FIELD, normalizamos para "409"
+#   (ou seja: consideramos como "já existe" e seguimos).
+# - Mesma normalização aplicada para:
+#   * folder ENV
+#   * folder DEPLOYMENT_REF
+#   * CREATE de STATUS e LOG (para cair no fluxo de UPDATE)
 # =====================================================================================
 
 - name: "Harness | Validar vars mínimas"
@@ -86,6 +93,7 @@
 - name: "Harness | Garantir folder ENV (POST) com debug"
   ansible.builtin.shell: |
     set -euo pipefail
+
     http="$(curl -sS -o /tmp/hfs_env_create.out -w "%{http_code}" \
       --request POST \
       "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
@@ -96,7 +104,13 @@
       -F "identifier={{ env_identifier }}" \
       -F 'tags={{ harness_tags_json }}' \
     )"
-    echo "${http}"
+
+    # CORREÇÃO: quando já existe, Harness pode responder 400 + DUPLICATE_FIELD
+    if [ "${http}" = "400" ] && grep -q 'DUPLICATE_FIELD' /tmp/hfs_env_create.out; then
+      echo "409"
+    else
+      echo "${http}"
+    fi
   args:
     executable: /bin/bash
   register: hfs_env_create_http
@@ -124,6 +138,7 @@
 - name: "Harness | Garantir folder DEPLOYMENT_REF (POST) com debug"
   ansible.builtin.shell: |
     set -euo pipefail
+
     http="$(curl -sS -o /tmp/hfs_ref_create.out -w "%{http_code}" \
       --request POST \
       "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
@@ -134,7 +149,13 @@
       -F "identifier={{ deployment_ref_identifier }}" \
       -F 'tags={{ harness_tags_json }}' \
     )"
-    echo "${http}"
+
+    # CORREÇÃO: quando já existe, Harness pode responder 400 + DUPLICATE_FIELD
+    if [ "${http}" = "400" ] && grep -q 'DUPLICATE_FIELD' /tmp/hfs_ref_create.out; then
+      echo "409"
+    else
+      echo "${http}"
+    fi
   args:
     executable: /bin/bash
   register: hfs_ref_create_http
@@ -168,6 +189,7 @@
 - name: "Harness | CREATE status (retry se 500)"
   ansible.builtin.shell: |
     set -euo pipefail
+
     http="$(curl -sS -o /tmp/hfs_status_create.out -w "%{http_code}" \
       --request POST \
       "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
@@ -179,7 +201,13 @@
       -F 'tags={{ harness_tags_json }}' \
       -F "content=@{{ machine_status_file }}" \
     )"
-    echo "${http}"
+
+    # CORREÇÃO: quando já existe, pode vir 400 + DUPLICATE_FIELD (normaliza para 409 para cair no UPDATE)
+    if [ "${http}" = "400" ] && grep -q 'DUPLICATE_FIELD' /tmp/hfs_status_create.out; then
+      echo "409"
+    else
+      echo "${http}"
+    fi
   args:
     executable: /bin/bash
   register: hfs_status_create_http
@@ -258,6 +286,7 @@
     - name: "Harness | CREATE log (retry se 500)"
       ansible.builtin.shell: |
         set -euo pipefail
+
         http="$(curl -sS -o /tmp/hfs_log_create.out -w "%{http_code}" \
           --request POST \
           "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
@@ -269,7 +298,13 @@
           -F 'tags={{ harness_tags_json }}' \
           -F "content=@/tmp/{{ hfs_log_name }}" \
         )"
-        echo "${http}"
+
+        # CORREÇÃO: quando já existe, pode vir 400 + DUPLICATE_FIELD (normaliza para 409 para cair no UPDATE)
+        if [ "${http}" = "400" ] && grep -q 'DUPLICATE_FIELD' /tmp/hfs_log_create.out; then
+          echo "409"
+        else
+          echo "${http}"
+        fi
       args:
         executable: /bin/bash
       register: hfs_log_create_http
