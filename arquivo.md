@@ -1,3 +1,4 @@
+## segue log
 Exec using JSCH
 Connecting to 10.218.238.144 ....
 Connection to 10.218.238.144 established
@@ -15,8 +16,8 @@ MACHINES          : sitef-02
 FILESTORE_ENV     : dev
 FILESTORE_BASEDIR : dev/DEV000001
 MACHINES_NORMALIZADAS: sitef-02 
-Clonando repo em /tmp/tmp.sprwQpVVqN...
-Cloning into '/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef'...
+Clonando repo em /tmp/tmp.Nkm3jf5oO6...
+Cloning into '/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef'...
 remote: Enumerating objects: 915, done.
 remote: Counting objects:   0% (1/865)
 remote: Counting objects:   1% (9/865)
@@ -307,126 +308,126 @@ Receiving objects:  81% (742/915)
 Receiving objects:  82% (751/915)
 Receiving objects:  83% (760/915)
 Receiving objects:  84% (769/915)
-remote: Total 915 (delta 585), reused 0 (delta 0), pack-reused 50
-Receiving objects:  85% (778/915)
-Receiving objects:  86% (787/915)
-Receiving objects:  87% (797/915)
-Receiving objects:  88% (806/915)
-Receiving objects:  89% (815/915)
-Receiving objects:  90% (824/915)
-Receiving objects:  91% (833/915)
-Receiving objects:  92% (842/915)
-Receiving objects:  93% (851/915)
-Receiving objects:  94% (861/915)
-Receiving objects:  95% (870/915)
-Receiving objects:  96% (879/915)
-Receiving objects:  97% (888/915)
-Receiving objects:  98% (897/915)
-Receiving objects:  99% (906/915)
-Receiving objects: 100% (915/915)
-Receiving objects: 100% (915/915), 934.37 KiB | 1.83 MiB/s, done.
-Resolving deltas:   0% (0/604)
-Resolving deltas:   1% (7/604)
-Resolving deltas:   2% (13/604)
-Resolving deltas:   3% (19/604)
-Resolving deltas:   4% (25/604)
-Resolving deltas:   5% (31/604)
-Resolving deltas:   6% (37/604)
-Resolving deltas:   7% (43/604)
-Resolving deltas:   8% (49/604)
-Resolving deltas:   9% (55/604)
-Resolving deltas:  10% (61/604)
-Resolving deltas:  11% (67/604)
-Resolving deltas:  12% (73/604)
-Resolving deltas:  13% (79/604)
-Resolving deltas:  14% (85/604)
-Resolving deltas:  15% (91/604)
-Resolving deltas:  16% (97/604)
-Resolving deltas:  17% (103/604)
-Resolving deltas:  18% (109/604)
-Resolving deltas:  19% (115/604)
-Resolving deltas:  20% (121/604)
-Resolving deltas:  21% (127/604)
-Resolving deltas:  22% (133/604)
-Resolving deltas:  23% (139/604)
-Resolving deltas:  24% (145/604)
-Resolving deltas:  25% (151/604)
-Resolving deltas:  26% (158/604)
-Resolving deltas:  27% (164/604)
-Resolving deltas:  28% (170/604)
-Resolving deltas:  29% (176/604)
-Resolving deltas:  30% (182/604)
-Resolving deltas:  31% (188/604)
-Resolving deltas:  32% (194/604)
-Resolving deltas:  33% (200/604)
-Resolving deltas:  34% (206/604)
-Resolving deltas:  35% (212/604)
-Resolving deltas:  36% (218/604)
-Resolving deltas:  37% (224/604)
-Resolving deltas:  38% (230/604)
-Resolving deltas:  39% (236/604)
-Resolving deltas:  40% (242/604)
-Resolving deltas:  41% (248/604)
-Resolving deltas:  42% (254/604)
-Resolving deltas:  43% (260/604)
-Resolving deltas:  44% (266/604)
-Resolving deltas:  45% (272/604)
-Resolving deltas:  46% (278/604)
-Resolving deltas:  47% (284/604)
-Resolving deltas:  48% (290/604)
-Resolving deltas:  49% (296/604)
-Resolving deltas:  50% (302/604)
-Resolving deltas:  51% (309/604)
-Resolving deltas:  52% (316/604)
-Resolving deltas:  53% (321/604)
-Resolving deltas:  54% (327/604)
-Resolving deltas:  55% (333/604)
-Resolving deltas:  56% (339/604)
-Resolving deltas:  57% (345/604)
-Resolving deltas:  58% (352/604)
-Resolving deltas:  59% (357/604)
-Resolving deltas:  60% (363/604)
-Resolving deltas:  61% (369/604)
-Resolving deltas:  62% (375/604)
-Resolving deltas:  63% (381/604)
-Resolving deltas:  64% (387/604)
-Resolving deltas:  65% (393/604)
-Resolving deltas:  66% (399/604)
-Resolving deltas:  67% (405/604)
-Resolving deltas:  68% (411/604)
-Resolving deltas:  69% (417/604)
-Resolving deltas:  70% (423/604)
-Resolving deltas:  71% (429/604)
-Resolving deltas:  72% (435/604)
-Resolving deltas:  73% (441/604)
-Resolving deltas:  74% (447/604)
-Resolving deltas:  75% (453/604)
-Resolving deltas:  76% (460/604)
-Resolving deltas:  77% (466/604)
-Resolving deltas:  78% (472/604)
-Resolving deltas:  79% (478/604)
-Resolving deltas:  80% (484/604)
-Resolving deltas:  81% (490/604)
-Resolving deltas:  82% (496/604)
-Resolving deltas:  83% (502/604)
-Resolving deltas:  84% (508/604)
-Resolving deltas:  85% (514/604)
-Resolving deltas:  86% (520/604)
-Resolving deltas:  87% (526/604)
-Resolving deltas:  88% (532/604)
-Resolving deltas:  89% (538/604)
-Resolving deltas:  90% (544/604)
-Resolving deltas:  91% (550/604)
-Resolving deltas:  92% (556/604)
-Resolving deltas:  93% (562/604)
-Resolving deltas:  94% (568/604)
-Resolving deltas:  95% (574/604)
-Resolving deltas:  96% (580/604)
-Resolving deltas:  97% (586/604)
-Resolving deltas:  98% (592/604)
-Resolving deltas:  99% (598/604)
-Resolving deltas: 100% (604/604)
-Resolving deltas: 100% (604/604), done.
+remote: Total 915 (delta 583), reused 0 (delta 0), pack-reused 50
+Receiving objects:  85% (778/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  86% (787/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  87% (797/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  88% (806/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  89% (815/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  90% (824/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  91% (833/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  92% (842/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  93% (851/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  94% (861/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  95% (870/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  96% (879/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  97% (888/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  98% (897/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects:  99% (906/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects: 100% (915/915), 707.77 KiB | 1.34 MiB/s
+Receiving objects: 100% (915/915), 934.52 KiB | 1.77 MiB/s, done.
+Resolving deltas:   0% (0/602)
+Resolving deltas:   1% (7/602)
+Resolving deltas:   2% (13/602)
+Resolving deltas:   3% (19/602)
+Resolving deltas:   4% (25/602)
+Resolving deltas:   5% (31/602)
+Resolving deltas:   6% (37/602)
+Resolving deltas:   7% (43/602)
+Resolving deltas:   8% (49/602)
+Resolving deltas:   9% (55/602)
+Resolving deltas:  10% (61/602)
+Resolving deltas:  11% (67/602)
+Resolving deltas:  12% (73/602)
+Resolving deltas:  13% (79/602)
+Resolving deltas:  14% (85/602)
+Resolving deltas:  15% (91/602)
+Resolving deltas:  16% (97/602)
+Resolving deltas:  17% (103/602)
+Resolving deltas:  18% (109/602)
+Resolving deltas:  19% (115/602)
+Resolving deltas:  20% (121/602)
+Resolving deltas:  21% (127/602)
+Resolving deltas:  22% (133/602)
+Resolving deltas:  23% (139/602)
+Resolving deltas:  24% (145/602)
+Resolving deltas:  25% (151/602)
+Resolving deltas:  26% (157/602)
+Resolving deltas:  27% (163/602)
+Resolving deltas:  28% (169/602)
+Resolving deltas:  29% (175/602)
+Resolving deltas:  30% (181/602)
+Resolving deltas:  31% (187/602)
+Resolving deltas:  32% (193/602)
+Resolving deltas:  33% (200/602)
+Resolving deltas:  34% (205/602)
+Resolving deltas:  35% (211/602)
+Resolving deltas:  36% (217/602)
+Resolving deltas:  37% (223/602)
+Resolving deltas:  38% (229/602)
+Resolving deltas:  39% (235/602)
+Resolving deltas:  40% (241/602)
+Resolving deltas:  41% (247/602)
+Resolving deltas:  42% (253/602)
+Resolving deltas:  43% (259/602)
+Resolving deltas:  44% (265/602)
+Resolving deltas:  45% (271/602)
+Resolving deltas:  46% (277/602)
+Resolving deltas:  47% (283/602)
+Resolving deltas:  48% (289/602)
+Resolving deltas:  49% (295/602)
+Resolving deltas:  50% (301/602)
+Resolving deltas:  51% (308/602)
+Resolving deltas:  52% (314/602)
+Resolving deltas:  53% (320/602)
+Resolving deltas:  54% (326/602)
+Resolving deltas:  55% (332/602)
+Resolving deltas:  56% (338/602)
+Resolving deltas:  57% (344/602)
+Resolving deltas:  58% (350/602)
+Resolving deltas:  59% (356/602)
+Resolving deltas:  60% (362/602)
+Resolving deltas:  61% (368/602)
+Resolving deltas:  62% (374/602)
+Resolving deltas:  63% (380/602)
+Resolving deltas:  64% (386/602)
+Resolving deltas:  65% (392/602)
+Resolving deltas:  66% (398/602)
+Resolving deltas:  67% (404/602)
+Resolving deltas:  68% (410/602)
+Resolving deltas:  69% (416/602)
+Resolving deltas:  70% (422/602)
+Resolving deltas:  71% (428/602)
+Resolving deltas:  72% (434/602)
+Resolving deltas:  73% (440/602)
+Resolving deltas:  74% (446/602)
+Resolving deltas:  75% (452/602)
+Resolving deltas:  76% (458/602)
+Resolving deltas:  77% (464/602)
+Resolving deltas:  78% (470/602)
+Resolving deltas:  79% (476/602)
+Resolving deltas:  80% (482/602)
+Resolving deltas:  81% (488/602)
+Resolving deltas:  82% (494/602)
+Resolving deltas:  83% (500/602)
+Resolving deltas:  84% (506/602)
+Resolving deltas:  85% (512/602)
+Resolving deltas:  86% (518/602)
+Resolving deltas:  87% (524/602)
+Resolving deltas:  88% (530/602)
+Resolving deltas:  89% (536/602)
+Resolving deltas:  90% (542/602)
+Resolving deltas:  91% (548/602)
+Resolving deltas:  92% (554/602)
+Resolving deltas:  93% (560/602)
+Resolving deltas:  94% (566/602)
+Resolving deltas:  95% (572/602)
+Resolving deltas:  96% (578/602)
+Resolving deltas:  97% (584/602)
+Resolving deltas:  98% (590/602)
+Resolving deltas:  99% (596/602)
+Resolving deltas: 100% (602/602)
+Resolving deltas: 100% (602/602), done.
 ====================================================
 == DEPLOY -> sitef-02
 ====================================================
@@ -446,8 +447,8 @@ ok: [localhost] => {
         "machine_name                 = sitef-02",
         "deploy_action                = deploy",
         "deploy_action_resolved       = deploy",
-        "repo_root_resolved           = /tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/..",
-        "status_dir_resolved          = /tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../status/DEV000001",
+        "repo_root_resolved           = /tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/..",
+        "status_dir_resolved          = /tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../status/DEV000001",
         "nexus_base_url_resolved      = https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev",
         "nexus_user_resolved          = (vazio)",
         "filestore_env_resolved       = dev",
@@ -462,7 +463,7 @@ ok: [localhost] => {
     "msg": "All assertions passed"
 }
 TASK [Incluir deploy por máquina] **********************************************
-included: /tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/deploy_per_machine.yml for localhost
+included: /tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/deploy_per_machine.yml for localhost
 TASK [Deploy | Definir caminhos para sitef-02] *********************************
 ok: [localhost]
 TASK [Deploy | Definir diretórios principais do repositório] *******************
@@ -470,15 +471,15 @@ ok: [localhost]
 TASK [Deploy | Definir candidatos de arquivo da máquina] ***********************
 ok: [localhost]
 TASK [Deploy | Verificar candidatos] *******************************************
-ok: [localhost] => (item=/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml)
 TASK [Deploy | Selecionar machine_file existente] ******************************
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 248, 'inode': 4341148, 'dev': 64775, 'nlink': 1, 'atime': 1766599633.963521, 'mtime': 1766599633.963521, 'ctime': 1766599633.963521, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': '005e3367129d5aefc77f49fd9fe62b4e58c51cd5', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '2329176614', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 248, 'inode': 2125411, 'dev': 64775, 'nlink': 1, 'atime': 1766599898.0501983, 'mtime': 1766599898.0501983, 'ctime': 1766599898.0501983, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': '005e3367129d5aefc77f49fd9fe62b4e58c51cd5', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '3110179159', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
 TASK [Deploy | Falhar se arquivo da máquina não existir] ***********************
 skipping: [localhost]
 TASK [Deploy | Carregar config da máquina sitef-02] ****************************
@@ -519,7 +520,7 @@ ok: [localhost -> sitef-02(100.99.57.128)]
 TASK [Deploy | Falhar se init_deploy.sh não existir] ***************************
 skipping: [localhost]
 TASK [Deploy | Executar init_deploy.sh no host (com tee)] **********************
-fatal: [localhost -> sitef-02(100.99.57.128)]: FAILED! => {"changed": true, "cmd": "set -o pipefail\ncd \"/opt/SoftwareExpress/sitef-pipeline/deploy/scripts\"\n/usr/bin/stdbuf -oL -eL /bin/bash -x ./init_deploy.sh 2>&amp;1 | tee -a \"/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/init_deploy.log\"\nexit ${PIPESTATUS[0]}\n", "delta": "0:00:09.961133", "end": "2025-12-24 18:07:32.532875", "msg": "non-zero return code", "rc": 1, "start": "2025-12-24 18:07:22.571742", "stderr": "", "stderr_lines": [], "stdout": "+ set -euo pipefail\n+++ dirname ./init_deploy.sh\n++ cd .\n++ pwd\n+ SCRIPT_DIR=/opt/SoftwareExpress/sitef-pipeline/deploy/scripts\n+ LOG_FILE=/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/deploy.txt\n+ exec\n++ tee -a /opt/SoftwareExpress/sitef-pipeline/deploy/scripts/deploy.txt\n+ echo '== Início init_deploy.sh =='\n== Início init_deploy.sh ==\n+ date\nWed Dec 24 06:07:22 PM UTC 2025\n+ set -x\n+ echo 'Instalacao de dependencias do sistema...'\nInstalacao de dependencias do sistema...\n+ dnf install -y --nodocs python3.12 python3.12-pip\nUpdating Subscription Management repositories.\n\nThis system has release set to 9 and it receives updates only for this release.\n\nRed Hat Satellite Client 6 for RHEL 9 x86_64 (R 2.6 kB/s | 3.8 kB     00:01    \nRed Hat CodeReady Linux Builder for RHEL 9 x86_ 3.9 kB/s | 4.5 kB     00:01    \nRed Hat Enterprise Linux 9 for x86_64 - BaseOS  3.5 kB/s | 4.1 kB     00:01    \nRed Hat Enterprise Linux 9 for x86_64 - AppStre 3.2 kB/s | 4.5 kB     00:01    \nEPEL9_X86                                       2.1 kB/s | 2.3 kB     00:01    \nPackage python3.12-3.12.12-1.el9_7.x86_64 is already installed.\nPackage python3.12-pip-23.2.1-5.el9.noarch is already installed.\nDependencies resolved.\nNothing to do.\nComplete!\n+ echo 'Instalacao de dependencias do sistema finalizada.'\nInstalacao de dependencias do sistema finalizada.\n+ set +x\n./init_deploy.sh: line 22: RC: unbound variable", "stdout_lines": ["+ set -euo pipefail", "+++ dirname ./init_deploy.sh", "++ cd .", "++ pwd", "+ SCRIPT_DIR=/opt/SoftwareExpress/sitef-pipeline/deploy/scripts", "+ LOG_FILE=/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/deploy.txt", "+ exec", "++ tee -a /opt/SoftwareExpress/sitef-pipeline/deploy/scripts/deploy.txt", "+ echo '== Início init_deploy.sh =='", "== Início init_deploy.sh ==", "+ date", "Wed Dec 24 06:07:22 PM UTC 2025", "+ set -x", "+ echo 'Instalacao de dependencias do sistema...'", "Instalacao de dependencias do sistema...", "+ dnf install -y --nodocs python3.12 python3.12-pip", "Updating Subscription Management repositories.", "", "This system has release set to 9 and it receives updates only for this release.", "", "Red Hat Satellite Client 6 for RHEL 9 x86_64 (R 2.6 kB/s | 3.8 kB     00:01    ", "Red Hat CodeReady Linux Builder for RHEL 9 x86_ 3.9 kB/s | 4.5 kB     00:01    ", "Red Hat Enterprise Linux 9 for x86_64 - BaseOS  3.5 kB/s | 4.1 kB     00:01    ", "Red Hat Enterprise Linux 9 for x86_64 - AppStre 3.2 kB/s | 4.5 kB     00:01    ", "EPEL9_X86                                       2.1 kB/s | 2.3 kB     00:01    ", "Package python3.12-3.12.12-1.el9_7.x86_64 is already installed.", "Package python3.12-pip-23.2.1-5.el9.noarch is already installed.", "Dependencies resolved.", "Nothing to do.", "Complete!", "+ echo 'Instalacao de dependencias do sistema finalizada.'", "Instalacao de dependencias do sistema finalizada.", "+ set +x", "./init_deploy.sh: line 22: RC: unbound variable"]}
+fatal: [localhost -> sitef-02(100.99.57.128)]: FAILED! => {"changed": true, "cmd": "set -o pipefail\ncd \"/opt/SoftwareExpress/sitef-pipeline/deploy/scripts\"\n/usr/bin/stdbuf -oL -eL /bin/bash -x ./init_deploy.sh 2>&amp;1 | tee -a \"/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/init_deploy.log\"\nexit ${PIPESTATUS[0]}\n", "delta": "0:00:00.015731", "end": "2025-12-24 18:11:46.162441", "msg": "non-zero return code", "rc": 1, "start": "2025-12-24 18:11:46.146710", "stderr": "", "stderr_lines": [], "stdout": "+ set -euo pipefail\n+ echo '== Início init_deploy.sh =='\n== Início init_deploy.sh ==\n+ date\nWed Dec 24 06:11:46 PM UTC 2025\n+ echo 'Instalacao de dependencias do sistema...'\nInstalacao de dependencias do sistema...\n+ echo 'Instalacao de dependencias do sistema finalizada.'\nInstalacao de dependencias do sistema finalizada.\n./init_deploy.sh: line 11: RC: unbound variable", "stdout_lines": ["+ set -euo pipefail", "+ echo '== Início init_deploy.sh =='", "== Início init_deploy.sh ==", "+ date", "Wed Dec 24 06:11:46 PM UTC 2025", "+ echo 'Instalacao de dependencias do sistema...'", "Instalacao de dependencias do sistema...", "+ echo 'Instalacao de dependencias do sistema finalizada.'", "Instalacao de dependencias do sistema finalizada.", "./init_deploy.sh: line 11: RC: unbound variable"]}
 ...ignoring
 TASK [Deploy | Ler deploy.txt do host (se existir)] ****************************
 ok: [localhost -> sitef-02(100.99.57.128)]
@@ -540,9 +541,31 @@ changed: [localhost]
 TASK [Deploy | Carregar conteúdo completo do log cumulativo (para upload)] *****
 ok: [localhost]
 TASK [Deploy | Upload JSON + LOG para Harness File Store] **********************
-included: /tmp/tmp.sprwQpVVqN/elastic-compute-cloud-sitef/ansible/harness_filestore_upload.yml for localhost
+included: /tmp/tmp.Nkm3jf5oO6/elastic-compute-cloud-sitef/ansible/harness_filestore_upload.yml for localhost
 TASK [Harness | Validar vars mínimas] ******************************************
 fatal: [localhost]: FAILED! => {"msg": "The conditional check 'current_machine is defined' failed. The error was: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ current_machine }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: recursive loop detected in template string: {{ current_machine }}. maximum recursion depth exceeded while calling a Python object"}
 PLAY RECAP *********************************************************************
 localhost                  : ok=38   changed=8    unreachable=0    failed=1    skipped=4    rescued=0    ignored=1   
 Command finished with status FAILURE
+
+
+## segue meu script na maquina
+
+[root@ip-100-99-57-128 bin]# cat /opt/SoftwareExpress/sitef-pipeline/deploy/scripts/init_deploy.sh
+
+#!/bin/bash
+set -euo pipefail
+
+echo "== Início init_deploy.sh =="
+date
+
+echo "Instalacao de dependencias do sistema..."
+echo "Instalacao de dependencias do sistema finalizada."
+
+if [ $RC -ne 0 ]; then
+  echo "Script finalizou com erro."
+  exit 1
+fi
+
+echo "== Fim init_deploy.sh =="
+date
