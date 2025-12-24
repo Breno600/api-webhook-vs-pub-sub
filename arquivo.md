@@ -2,9 +2,9 @@ Exec using JSCH
 Connecting to 10.218.238.144 ....
 Connection to 10.218.238.144 established
 Executing command ...
-export GIT_TAG=DEV000004
-Clonando repo em /tmp/tmp.uEa1p5I53t...
-Cloning into '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef'...
+export GIT_TAG=DEV000005
+Clonando repo em /tmp/tmp.seJOq0ian0...
+Cloning into '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef'...
 remote: Enumerating objects: 959, done.
 remote: Counting objects:   0% (1/909)
 remote: Counting objects:   1% (10/909)
@@ -294,236 +294,236 @@ Receiving objects:  80% (768/959)
 Receiving objects:  81% (777/959)
 Receiving objects:  82% (787/959)
 Receiving objects:  83% (796/959)
-remote: Total 959 (delta 621), reused 0 (delta 0), pack-reused 50
-Receiving objects:  84% (806/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  85% (816/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  86% (825/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  87% (835/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  88% (844/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  89% (854/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  90% (864/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  91% (873/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  92% (883/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  93% (892/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  94% (902/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  95% (912/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  96% (921/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  97% (931/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  98% (940/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects:  99% (950/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects: 100% (959/959), 643.79 KiB | 1.22 MiB/s
-Receiving objects: 100% (959/959), 948.94 KiB | 1.68 MiB/s, done.
-Resolving deltas:   0% (0/640)
-Resolving deltas:   1% (7/640)
-Resolving deltas:   2% (13/640)
-Resolving deltas:   3% (20/640)
-Resolving deltas:   4% (26/640)
-Resolving deltas:   5% (32/640)
-Resolving deltas:   6% (39/640)
-Resolving deltas:   7% (45/640)
-Resolving deltas:   8% (52/640)
-Resolving deltas:   9% (58/640)
-Resolving deltas:  10% (64/640)
-Resolving deltas:  11% (71/640)
-Resolving deltas:  12% (77/640)
-Resolving deltas:  13% (84/640)
-Resolving deltas:  14% (90/640)
-Resolving deltas:  15% (96/640)
-Resolving deltas:  16% (103/640)
-Resolving deltas:  17% (109/640)
-Resolving deltas:  18% (116/640)
-Resolving deltas:  19% (122/640)
-Resolving deltas:  20% (128/640)
-Resolving deltas:  21% (135/640)
-Resolving deltas:  22% (141/640)
-Resolving deltas:  23% (148/640)
-Resolving deltas:  24% (154/640)
-Resolving deltas:  25% (160/640)
-Resolving deltas:  26% (167/640)
-Resolving deltas:  27% (173/640)
-Resolving deltas:  28% (180/640)
-Resolving deltas:  29% (186/640)
-Resolving deltas:  30% (192/640)
-Resolving deltas:  31% (199/640)
-Resolving deltas:  32% (205/640)
-Resolving deltas:  33% (212/640)
-Resolving deltas:  34% (218/640)
-Resolving deltas:  35% (224/640)
-Resolving deltas:  36% (231/640)
-Resolving deltas:  37% (237/640)
-Resolving deltas:  38% (244/640)
-Resolving deltas:  39% (250/640)
-Resolving deltas:  40% (256/640)
-Resolving deltas:  41% (263/640)
-Resolving deltas:  42% (269/640)
-Resolving deltas:  43% (276/640)
-Resolving deltas:  44% (282/640)
-Resolving deltas:  45% (288/640)
-Resolving deltas:  46% (295/640)
-Resolving deltas:  47% (301/640)
-Resolving deltas:  48% (308/640)
-Resolving deltas:  49% (314/640)
-Resolving deltas:  50% (320/640)
-Resolving deltas:  51% (327/640)
-Resolving deltas:  52% (333/640)
-Resolving deltas:  53% (340/640)
-Resolving deltas:  54% (346/640)
-Resolving deltas:  55% (352/640)
-Resolving deltas:  56% (359/640)
-Resolving deltas:  57% (365/640)
-Resolving deltas:  58% (372/640)
-Resolving deltas:  59% (378/640)
-Resolving deltas:  60% (384/640)
-Resolving deltas:  61% (391/640)
-Resolving deltas:  62% (397/640)
-Resolving deltas:  63% (404/640)
-Resolving deltas:  64% (410/640)
-Resolving deltas:  65% (417/640)
-Resolving deltas:  66% (423/640)
-Resolving deltas:  67% (429/640)
-Resolving deltas:  68% (436/640)
-Resolving deltas:  69% (442/640)
-Resolving deltas:  70% (448/640)
-Resolving deltas:  71% (455/640)
-Resolving deltas:  72% (461/640)
-Resolving deltas:  73% (468/640)
-Resolving deltas:  74% (474/640)
-Resolving deltas:  75% (480/640)
-Resolving deltas:  76% (487/640)
-Resolving deltas:  77% (494/640)
-Resolving deltas:  78% (500/640)
-Resolving deltas:  79% (506/640)
-Resolving deltas:  80% (512/640)
-Resolving deltas:  81% (520/640)
-Resolving deltas:  82% (525/640)
-Resolving deltas:  83% (532/640)
-Resolving deltas:  84% (538/640)
-Resolving deltas:  85% (544/640)
-Resolving deltas:  86% (551/640)
-Resolving deltas:  87% (557/640)
-Resolving deltas:  88% (564/640)
-Resolving deltas:  89% (570/640)
-Resolving deltas:  90% (576/640)
-Resolving deltas:  91% (583/640)
-Resolving deltas:  92% (589/640)
-Resolving deltas:  93% (596/640)
-Resolving deltas:  94% (602/640)
-Resolving deltas:  95% (608/640)
-Resolving deltas:  96% (615/640)
-Resolving deltas:  97% (621/640)
-Resolving deltas:  98% (628/640)
-Resolving deltas:  99% (634/640)
-Resolving deltas: 100% (640/640)
-Resolving deltas: 100% (640/640), done.
+remote: Total 959 (delta 623), reused 0 (delta 0), pack-reused 50
+Receiving objects:  84% (806/959)
+Receiving objects:  85% (816/959)
+Receiving objects:  86% (825/959)
+Receiving objects:  87% (835/959)
+Receiving objects:  88% (844/959)
+Receiving objects:  89% (854/959)
+Receiving objects:  90% (864/959)
+Receiving objects:  91% (873/959), 927.75 KiB | 1.80 MiB/s
+Receiving objects:  92% (883/959), 927.75 KiB | 1.80 MiB/s
+Receiving objects:  93% (892/959), 927.75 KiB | 1.80 MiB/s
+Receiving objects:  94% (902/959), 927.75 KiB | 1.80 MiB/s
+Receiving objects:  95% (912/959), 927.75 KiB | 1.80 MiB/s
+Receiving objects:  96% (921/959), 927.75 KiB | 1.80 MiB/s
+Receiving objects:  97% (931/959), 927.75 KiB | 1.80 MiB/s
+Receiving objects:  98% (940/959), 927.75 KiB | 1.80 MiB/s
+Receiving objects:  99% (950/959), 927.75 KiB | 1.80 MiB/s
+Receiving objects: 100% (959/959), 927.75 KiB | 1.80 MiB/s
+Receiving objects: 100% (959/959), 946.36 KiB | 1.84 MiB/s, done.
+Resolving deltas:   0% (0/642)
+Resolving deltas:   1% (7/642)
+Resolving deltas:   2% (13/642)
+Resolving deltas:   3% (20/642)
+Resolving deltas:   4% (26/642)
+Resolving deltas:   5% (33/642)
+Resolving deltas:   6% (39/642)
+Resolving deltas:   7% (45/642)
+Resolving deltas:   8% (52/642)
+Resolving deltas:   9% (58/642)
+Resolving deltas:  10% (65/642)
+Resolving deltas:  11% (71/642)
+Resolving deltas:  12% (78/642)
+Resolving deltas:  13% (84/642)
+Resolving deltas:  14% (90/642)
+Resolving deltas:  15% (97/642)
+Resolving deltas:  16% (103/642)
+Resolving deltas:  17% (110/642)
+Resolving deltas:  18% (116/642)
+Resolving deltas:  19% (122/642)
+Resolving deltas:  20% (129/642)
+Resolving deltas:  21% (135/642)
+Resolving deltas:  22% (142/642)
+Resolving deltas:  23% (148/642)
+Resolving deltas:  24% (155/642)
+Resolving deltas:  25% (161/642)
+Resolving deltas:  26% (167/642)
+Resolving deltas:  27% (174/642)
+Resolving deltas:  28% (180/642)
+Resolving deltas:  29% (187/642)
+Resolving deltas:  30% (193/642)
+Resolving deltas:  31% (200/642)
+Resolving deltas:  32% (206/642)
+Resolving deltas:  33% (212/642)
+Resolving deltas:  34% (219/642)
+Resolving deltas:  35% (225/642)
+Resolving deltas:  36% (232/642)
+Resolving deltas:  37% (238/642)
+Resolving deltas:  38% (244/642)
+Resolving deltas:  39% (251/642)
+Resolving deltas:  40% (257/642)
+Resolving deltas:  41% (264/642)
+Resolving deltas:  42% (270/642)
+Resolving deltas:  43% (277/642)
+Resolving deltas:  44% (283/642)
+Resolving deltas:  45% (289/642)
+Resolving deltas:  46% (296/642)
+Resolving deltas:  47% (302/642)
+Resolving deltas:  48% (309/642)
+Resolving deltas:  49% (315/642)
+Resolving deltas:  50% (321/642)
+Resolving deltas:  51% (328/642)
+Resolving deltas:  52% (334/642)
+Resolving deltas:  53% (341/642)
+Resolving deltas:  54% (347/642)
+Resolving deltas:  55% (354/642)
+Resolving deltas:  56% (360/642)
+Resolving deltas:  57% (366/642)
+Resolving deltas:  58% (373/642)
+Resolving deltas:  59% (379/642)
+Resolving deltas:  60% (387/642)
+Resolving deltas:  61% (392/642)
+Resolving deltas:  62% (399/642)
+Resolving deltas:  63% (405/642)
+Resolving deltas:  64% (411/642)
+Resolving deltas:  65% (418/642)
+Resolving deltas:  66% (424/642)
+Resolving deltas:  67% (431/642)
+Resolving deltas:  68% (437/642)
+Resolving deltas:  69% (443/642)
+Resolving deltas:  70% (450/642)
+Resolving deltas:  71% (456/642)
+Resolving deltas:  72% (463/642)
+Resolving deltas:  73% (469/642)
+Resolving deltas:  74% (476/642)
+Resolving deltas:  75% (482/642)
+Resolving deltas:  76% (488/642)
+Resolving deltas:  77% (495/642)
+Resolving deltas:  78% (501/642)
+Resolving deltas:  79% (508/642)
+Resolving deltas:  80% (514/642)
+Resolving deltas:  81% (521/642)
+Resolving deltas:  82% (527/642)
+Resolving deltas:  83% (533/642)
+Resolving deltas:  84% (541/642)
+Resolving deltas:  85% (546/642)
+Resolving deltas:  86% (553/642)
+Resolving deltas:  87% (559/642)
+Resolving deltas:  88% (565/642)
+Resolving deltas:  89% (572/642)
+Resolving deltas:  90% (578/642)
+Resolving deltas:  91% (586/642)
+Resolving deltas:  92% (591/642)
+Resolving deltas:  93% (598/642)
+Resolving deltas:  94% (604/642)
+Resolving deltas:  95% (610/642)
+Resolving deltas:  96% (617/642)
+Resolving deltas:  97% (623/642)
+Resolving deltas:  98% (630/642)
+Resolving deltas:  99% (636/642)
+Resolving deltas: 100% (642/642)
+Resolving deltas: 100% (642/642), done.
 == PIPELINE PREDEPLOY ==
-TAG   : DEV000004
+TAG   : DEV000005
 EXEC  : execution/machine_list_dev.yml
 BRANCH: develop-testes
-[WARNING]: Unable to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]: Unable to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/localhost as an inventory source
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/deploy_from_status.yml with auto plugin: no root 'plugin' key
-found, '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+found, '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/deploy_from_status.yml' is not a valid YAML inventory plugin
 config file
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/deploy_from_status.yml with yaml plugin: YAML inventory has
 invalid structure, it should be a dictionary, got: &lt;class
 'ansible.parsing.yaml.objects.AnsibleSequence'>
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/deploy_from_status.yml with ini plugin: Invalid host pattern
 '---' supplied, '---' is normally a sign this is a YAML file.
-[WARNING]: Unable to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]: Unable to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/deploy_from_status.yml as an inventory source
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/deploy_per_machine.yml with auto plugin: no root 'plugin' key
-found, '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+found, '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/deploy_per_machine.yml' is not a valid YAML inventory plugin
 config file
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/deploy_per_machine.yml with yaml plugin: YAML inventory has
 invalid structure, it should be a dictionary, got: &lt;class
 'ansible.parsing.yaml.objects.AnsibleSequence'>
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/deploy_per_machine.yml with ini plugin: Invalid host pattern
 '---' supplied, '---' is normally a sign this is a YAML file.
-[WARNING]: Unable to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]: Unable to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/deploy_per_machine.yml as an inventory source
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/harness_filestore_upload.yml with auto plugin: no root 'plugin'
-key found, '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+key found, '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/harness_filestore_upload.yml' is not a valid YAML inventory
 plugin config file
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/harness_filestore_upload.yml with yaml plugin: YAML inventory has
 invalid structure, it should be a dictionary, got: &lt;class
 'ansible.parsing.yaml.objects.AnsibleSequence'>
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/harness_filestore_upload.yml with ini plugin: Invalid host
 pattern '---' supplied, '---' is normally a sign this is a YAML file.
-[WARNING]: Unable to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]: Unable to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/harness_filestore_upload.yml as an inventory source
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/predeploy_from_execution.yml with auto plugin: no root 'plugin'
-key found, '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+key found, '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/predeploy_from_execution.yml' is not a valid YAML inventory
 plugin config file
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/predeploy_from_execution.yml with yaml plugin: YAML inventory has
 invalid structure, it should be a dictionary, got: &lt;class
 'ansible.parsing.yaml.objects.AnsibleSequence'>
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/predeploy_from_execution.yml with ini plugin:
-/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+/tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/predeploy_from_execution.yml:5: Expected key=value host variable
 assignment, got: name:
-[WARNING]: Unable to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]: Unable to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/predeploy_from_execution.yml as an inventory source
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/predeploy_per_machine.yml with auto plugin: no root 'plugin' key
-found, '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+found, '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/predeploy_per_machine.yml' is not a valid YAML inventory plugin
 config file
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/predeploy_per_machine.yml with yaml plugin: YAML inventory has
 invalid structure, it should be a dictionary, got: &lt;class
 'ansible.parsing.yaml.objects.AnsibleSequence'>
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/predeploy_per_machine.yml with ini plugin: Invalid host pattern
 '---' supplied, '---' is normally a sign this is a YAML file.
-[WARNING]: Unable to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]: Unable to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/predeploy_per_machine.yml as an inventory source
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/rollback_from_status.yml with auto plugin: no root 'plugin' key
-found, '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+found, '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/rollback_from_status.yml' is not a valid YAML inventory plugin
 config file
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/rollback_from_status.yml with yaml plugin: YAML inventory has
 invalid structure, it should be a dictionary, got: &lt;class
 'ansible.parsing.yaml.objects.AnsibleSequence'>
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/rollback_from_status.yml with ini plugin:
-/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+/tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/rollback_from_status.yml:5: Expected key=value host variable
 assignment, got: name:
-[WARNING]: Unable to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]: Unable to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/rollback_from_status.yml as an inventory source
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/rollback_per_machine.yml with auto plugin: no root 'plugin' key
-found, '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+found, '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/rollback_per_machine.yml' is not a valid YAML inventory plugin
 config file
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/rollback_per_machine.yml with yaml plugin: YAML inventory has
 invalid structure, it should be a dictionary, got: &lt;class
 'ansible.parsing.yaml.objects.AnsibleSequence'>
-[WARNING]:  * Failed to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]:  * Failed to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/rollback_per_machine.yml with ini plugin: Invalid host pattern
 '---' supplied, '---' is normally a sign this is a YAML file.
-[WARNING]: Unable to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]: Unable to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible/rollback_per_machine.yml as an inventory source
-[WARNING]: Unable to parse /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-
+[WARNING]: Unable to parse /tmp/tmp.seJOq0ian0/elastic-compute-cloud-
 sitef/ansible as an inventory source
 [WARNING]: No inventory was parsed, only implicit localhost is available
 [WARNING]: provided hosts list is empty, only localhost is available. Note that
@@ -537,11 +537,11 @@ TASK [Mostrar variáveis de entrada e resolvidas] ******************************
 ok: [localhost] => {
     "msg": [
         "execution_file_name          = execution/machine_list_dev.yml",
-        "deployment_ref               = DEV000004",
-        "repo_root_resolved           = /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/..",
-        "status_dir_resolved          = /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../status/DEV000004",
+        "deployment_ref               = DEV000005",
+        "repo_root_resolved           = /tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/..",
+        "status_dir_resolved          = /tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../status/DEV000005",
         "filestore_env_resolved       = dev",
-        "filestore_base_dir_resolved  = dev/DEV000004",
+        "filestore_base_dir_resolved  = dev/DEV000005",
         "nexus_base_url               = https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev"
     ]
 }
@@ -552,7 +552,7 @@ ok: [localhost]
 TASK [Falhar se não tiver máquinas no arquivo de execução] *********************
 skipping: [localhost]
 TASK [Executar pré-deploy por máquina] *****************************************
-included: /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/predeploy_per_machine.yml for localhost => (item=sitef-02)
+included: /tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/predeploy_per_machine.yml for localhost => (item=sitef-02)
 TASK [Predeploy | Resolver nome da máquina atual] ******************************
 ok: [localhost]
 TASK [Predeploy | Validar vars mínimas] ****************************************
@@ -565,15 +565,15 @@ ok: [localhost]
 TASK [Predeploy | Definir candidatos de arquivo da máquina] ********************
 ok: [localhost]
 TASK [Predeploy | Verificar candidatos] ****************************************
-ok: [localhost] => (item=/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml)
 TASK [Predeploy | Selecionar machine_file existente] ***************************
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 248, 'inode': 4417880, 'dev': 64775, 'nlink': 1, 'atime': 1766604082.409368, 'mtime': 1766604082.408368, 'ctime': 1766604082.408368, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': '005e3367129d5aefc77f49fd9fe62b4e58c51cd5', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '2457303666', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 248, 'inode': 2102511, 'dev': 64775, 'nlink': 1, 'atime': 1766604260.40021, 'mtime': 1766604260.3882098, 'ctime': 1766604260.3882098, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': '005e3367129d5aefc77f49fd9fe62b4e58c51cd5', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '1667455297', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
 TASK [Predeploy | Falhar se arquivo da máquina não existir] ********************
 skipping: [localhost]
 TASK [Predeploy | Carregar config da máquina sitef-02] *************************
@@ -660,7 +660,7 @@ ok: [localhost]
 TASK [Predeploy | Atualizar status final (append em history)] ******************
 changed: [localhost]
 TASK [Predeploy | Upload JSON + LOG para Harness File Store (sempre)] **********
-included: /tmp/tmp.uEa1p5I53t/elastic-compute-cloud-sitef/ansible/harness_filestore_upload.yml for localhost
+included: /tmp/tmp.seJOq0ian0/elastic-compute-cloud-sitef/ansible/harness_filestore_upload.yml for localhost
 TASK [Harness | Resolver entradas (safe locals)] *******************************
 fatal: [localhost]: FAILED! => {"msg": "An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ stage_name }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: recursive loop detected in template string: {{ stage_name }}. maximum recursion depth exceeded while calling a Python object"}
 PLAY RECAP *********************************************************************
