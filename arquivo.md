@@ -1,5 +1,5 @@
 ---
-# Upload para Harness File Store (sem loop e sem depender de var criada no mesmo set_fact)
+# Upload para Harness File Store (sem loop / recursão)
 # Requer ENV: HARNESS_ENDPOINT, HARNESS_ACCOUNT_ID, HARNESS_ORG_ID, HARNESS_PROJECT_ID e HARNESS_API_KEY (ou HARNESS_X_API_KEY)
 
 - name: "Harness | Resolver base via ENV (parte 1)"
@@ -114,35 +114,9 @@
     content: "{{ log_content | default('') }}"
   when: hf_can_upload
 
-- name: "Harness | Resolver arquivos locais (anti-recursão)"
-  ansible.builtin.set_fact:
-    hf_local_status_file: >-
-      {{
-        (
-          machine_status_file
-          if (machine_status_file is defined
-              and (machine_status_file|string|trim) != ''
-              and ('{{' not in (machine_status_file|string)))
-          else
-            (
-              status_json_file
-              if (status_json_file is defined
-                  and (status_json_file|string|trim) != ''
-                  and ('{{' not in (status_json_file|string)))
-              else
-                (lookup('env','MACHINE_STATUS_FILE') | default('', true))
-            )
-        )
-      }}
-  when: hf_can_upload
-
-- name: "Harness | Stat status.json (não falhar)"
-  ansible.builtin.stat:
-    path: "{{ hf_local_status_file }}"
-  register: hf_status_stat
-  when: hf_can_upload and (hf_local_status_file | length > 0)
-  failed_when: false
-
+# =========================
+# STATUS.JSON (SEM machine_status_file)
+# =========================
 
 - name: "Harness | Definir diretório base de status (safe)"
   ansible.builtin.set_fact:
@@ -168,7 +142,7 @@
         (
           (
             hf_status_find.files
-            | selectattr('path', 'search', (machine_name_resolved | default(machine_name | default(''))))
+            | selectattr('path', 'search', (hf_machine | default('')))
             | list
             | sort(attribute='mtime', reverse=true)
             | map(attribute='path')
@@ -190,6 +164,15 @@
       }}
   when: hf_can_upload and (hf_status_find.files is defined) and (hf_status_find.files | length > 0)
 
+- name: "Harness | Debug se não encontrou status.json"
+  ansible.builtin.debug:
+    msg:
+      - "Não encontrei status.json para upload."
+      - "hf_status_root={{ hf_status_root }}"
+      - "hf_machine={{ hf_machine }}"
+      - "arquivos_encontrados={{ (hf_status_find.files | length) if (hf_status_find.files is defined) else 0 }}"
+  when: hf_can_upload and (hf_local_status_file | default('') | length == 0)
+  changed_when: false
 
 - name: "Harness | Ler status.json (não falhar)"
   ansible.builtin.slurp:
@@ -198,14 +181,16 @@
   when: hf_can_upload and (hf_local_status_file | length > 0)
   failed_when: false
 
-
-
 - name: "Harness | Escrever STATUS temp"
   ansible.builtin.copy:
     dest: "{{ hf_tmpdir.path }}/{{ hf_status_name }}"
     mode: "0644"
     content: "{{ (hf_status_slurp.content | b64decode) if (hf_status_slurp.content is defined) else '{}' }}"
   when: hf_can_upload
+
+# =========================
+# UPLOADS
+# =========================
 
 - name: "Harness | Upload LOG (não falha pipeline)"
   ansible.builtin.shell: |
