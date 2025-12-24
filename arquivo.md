@@ -1,11 +1,10 @@
 ---
-# Upload para Harness File Store (sem loop / recursão)
-# Requer ENV: HARNESS_ENDPOINT, HARNESS_ACCOUNT_ID, HARNESS_ORG_ID, HARNESS_PROJECT_ID e HARNESS_API_KEY (ou HARNESS_X_API_KEY)
+# Harness File Store upload com DEBUG + FAIL em erro (temporário)
 
 - name: "Harness | Resolver base via ENV (parte 1)"
   ansible.builtin.set_fact:
     hf_stage: "{{ (hf_stage_name | default(stage_name | default('unknown')) | string | trim) }}"
-    hf_machine: "{{ (current_machine | default(machine_name | default('')) | string | trim) }}"
+    hf_machine: "{{ (current_machine | default(machine_name | default('controller')) | string | trim) }}"
     hf_deploy_ref: "{{ (deployment_ref | default(lookup('env','GIT_TAG') | default('')) | string | trim) }}"
     hf_env: "{{ (filestore_env | default(lookup('env','FILESTORE_ENV') | default('dev')) | string | trim | lower) }}"
 
@@ -41,18 +40,26 @@
         (hf_machine | default('') | length) > 0
       }}
 
-- name: "Harness | Pular upload se faltar credenciais (não falha pipeline)"
+- name: "Harness | DEBUG - variáveis principais"
+  ansible.builtin.debug:
+    msg:
+      - "hf_can_upload={{ hf_can_upload }}"
+      - "hf_endpoint={{ hf_endpoint }}"
+      - "hf_account={{ hf_account }}"
+      - "hf_org={{ hf_org }}"
+      - "hf_project={{ hf_project }}"
+      - "hf_deploy_ref={{ hf_deploy_ref }}"
+      - "hf_env={{ hf_env }}"
+      - "hf_stage={{ hf_stage }}"
+      - "hf_machine={{ hf_machine }}"
+      - "pat_len={{ hf_pat | default('') | length }}"
+      - "hf_base_dir={{ hf_base_dir | default('') }}"
+  changed_when: false
+
+- name: "Harness | Pular upload se faltar credenciais (NÃO falha aqui)"
   ansible.builtin.debug:
     msg:
       - "Pulando upload (HARNESS_* incompleto ou deploy/machine vazio)."
-      - "hf_can_upload={{ hf_can_upload }}"
-      - "endpoint={{ hf_endpoint | default('') }}"
-      - "account={{ hf_account | default('') }}"
-      - "org={{ hf_org | default('') }}"
-      - "project={{ hf_project | default('') }}"
-      - "deploy_ref={{ hf_deploy_ref | default('') }}"
-      - "machine={{ hf_machine | default('') }}"
-      - "pat_present={{ (hf_pat | default('') | length) > 0 }}"
   when: not hf_can_upload
   changed_when: false
 
@@ -77,6 +84,14 @@
     hf_log_name: "{{ (hf_log_path | regex_replace('^/+','')) | replace('/','__') }}"
     hf_status_name: "{{ (hf_status_path | regex_replace('^/+','')) | replace('/','__') }}"
   when: hf_can_upload
+
+- name: "Harness | DEBUG - nomes finais (procure no File Store por isso)"
+  ansible.builtin.debug:
+    msg:
+      - "LOG_NAME={{ hf_log_name }}"
+      - "STATUS_NAME={{ hf_status_name }}"
+  when: hf_can_upload
+  changed_when: false
 
 - name: "Harness | Tags (lista)"
   ansible.builtin.set_fact:
@@ -114,16 +129,21 @@
     content: "{{ log_content | default('') }}"
   when: hf_can_upload
 
-# =========================
-# STATUS.JSON (SEM machine_status_file)
-# =========================
+# ========= STATUS.JSON via FIND (sem machine_status_file) =========
 
 - name: "Harness | Definir diretório base de status (safe)"
   ansible.builtin.set_fact:
     hf_status_root: "{{ status_dir_resolved | default(status_dir | default('')) }}"
   when: hf_can_upload
 
-- name: "Harness | Descobrir status.json local (sem usar machine_status_file)"
+- name: "Harness | DEBUG - status root"
+  ansible.builtin.debug:
+    msg:
+      - "hf_status_root={{ hf_status_root }}"
+  when: hf_can_upload
+  changed_when: false
+
+- name: "Harness | Descobrir status.json local"
   ansible.builtin.find:
     paths: "{{ hf_status_root }}"
     recurse: true
@@ -164,21 +184,19 @@
       }}
   when: hf_can_upload and (hf_status_find.files is defined) and (hf_status_find.files | length > 0)
 
-- name: "Harness | Debug se não encontrou status.json"
+- name: "Harness | DEBUG - status escolhido"
   ansible.builtin.debug:
     msg:
-      - "Não encontrei status.json para upload."
-      - "hf_status_root={{ hf_status_root }}"
-      - "hf_machine={{ hf_machine }}"
-      - "arquivos_encontrados={{ (hf_status_find.files | length) if (hf_status_find.files is defined) else 0 }}"
-  when: hf_can_upload and (hf_local_status_file | default('') | length == 0)
+      - "hf_local_status_file={{ hf_local_status_file | default('') }}"
+      - "found={{ (hf_status_find.files | length) if (hf_status_find.files is defined) else 0 }}"
+  when: hf_can_upload
   changed_when: false
 
 - name: "Harness | Ler status.json (não falhar)"
   ansible.builtin.slurp:
     src: "{{ hf_local_status_file }}"
   register: hf_status_slurp
-  when: hf_can_upload and (hf_local_status_file | length > 0)
+  when: hf_can_upload and (hf_local_status_file | default('') | length > 0)
   failed_when: false
 
 - name: "Harness | Escrever STATUS temp"
@@ -188,11 +206,9 @@
     content: "{{ (hf_status_slurp.content | b64decode) if (hf_status_slurp.content is defined) else '{}' }}"
   when: hf_can_upload
 
-# =========================
-# UPLOADS
-# =========================
+# ========= Uploads =========
 
-- name: "Harness | Upload LOG (não falha pipeline)"
+- name: "Harness | Upload LOG (DEBUG + FALHA se erro)"
   ansible.builtin.shell: |
     set -euo pipefail
     API="{{ hf_endpoint.rstrip('/') }}/ng/api/file-store?accountIdentifier={{ hf_account }}&orgIdentifier={{ hf_org }}&projectIdentifier={{ hf_project }}"
@@ -204,18 +220,24 @@
       -F "name={{ hf_log_name }}" \
       -F "type=FILE" \
       -F "tags={{ hf_tags }}" \
-      -F "file=@${FILE};type=text/plain" \
-    || true)
-    echo "HTTP_CODE=${code}"
+      -F "file=@${FILE};type=text/plain")
+    echo "$code"
     cat "$RESP" 2>/dev/null || true
-    exit 0
   args:
     executable: /bin/bash
-  changed_when: false
-  failed_when: false
+  register: hf_upload_log
   when: hf_can_upload
+  changed_when: false
 
-- name: "Harness | Upload STATUS (não falha pipeline)"
+- name: "Harness | Validar LOG upload (falha se não 2xx)"
+  ansible.builtin.fail:
+    msg: |
+      Upload LOG falhou.
+      stdout={{ hf_upload_log.stdout | default('') }}
+      stderr={{ hf_upload_log.stderr | default('') }}
+  when: hf_can_upload and (hf_upload_log.stdout | default('') | regex_search('^2'))
+
+- name: "Harness | Upload STATUS (DEBUG + FALHA se erro)"
   ansible.builtin.shell: |
     set -euo pipefail
     API="{{ hf_endpoint.rstrip('/') }}/ng/api/file-store?accountIdentifier={{ hf_account }}&orgIdentifier={{ hf_org }}&projectIdentifier={{ hf_project }}"
@@ -227,13 +249,19 @@
       -F "name={{ hf_status_name }}" \
       -F "type=FILE" \
       -F "tags={{ hf_tags }}" \
-      -F "file=@${FILE};type=application/json" \
-    || true)
-    echo "HTTP_CODE=${code}"
+      -F "file=@${FILE};type=application/json")
+    echo "$code"
     cat "$RESP" 2>/dev/null || true
-    exit 0
   args:
     executable: /bin/bash
-  changed_when: false
-  failed_when: false
+  register: hf_upload_status
   when: hf_can_upload
+  changed_when: false
+
+- name: "Harness | Validar STATUS upload (falha se não 2xx)"
+  ansible.builtin.fail:
+    msg: |
+      Upload STATUS falhou.
+      stdout={{ hf_upload_status.stdout | default('') }}
+      stderr={{ hf_upload_status.stderr | default('') }}
+  when: hf_can_upload and (hf_upload_status.stdout | default('') | regex_search('^2'))
