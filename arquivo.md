@@ -1,125 +1,136 @@
-#!/bin/bash
-set -euo pipefail
+# predeploy_from_execution.yml
+# =====================================================================================
+# PIPELINE 1 - PREDEPLOY (a partir do arquivo de execução)
+# =====================================================================================
 
-# =========================
-# INPUTS / DEFAULTS
-# =========================
+- name: "Predeploy a partir do arquivo de execução"
+  hosts: localhost
+  connection: local
+  gather_facts: true
 
-# ⚠️ RECOMENDADO: não deixe tokens hardcoded aqui.
-# Deixe o Harness injetar via Secrets/Env Vars.
-GIT_TOKEN="${GIT_TOKEN:-xXAiJyF1Hx4noamrBSdV}"
+  vars:
+    # -------------------------------
+    # Entradas principais (RESOLVIDAS)
+    # -------------------------------
+    execution_file_name_resolved: "{{ execution_file_name | default('execution/machine_list_dev.yml') }}"
+    deployment_ref_resolved: "{{ deployment_ref | default('DEV000000001') }}"
 
-GIT_TAG="${GIT_TAG:-}"
-EXECUTION_FILE_NAME="${EXECUTION_FILE_NAME:-execution/machine_list_dev.yml}"
-GIT_BRANCH="${GIT_BRANCH:-develop}"
+    # -------------------------------
+    # Paths do repositório
+    # -------------------------------
+    repo_root_resolved: "{{ playbook_dir }}/.."
+    status_dir_resolved: "{{ (playbook_dir ~ '/..') }}/status/{{ deployment_ref_resolved }}"
 
-GIT_USER_NAME="${GIT_USER_NAME:-harness-bot}"
-GIT_USER_EMAIL="${GIT_USER_EMAIL:-harness-bot@fiserv.com}"
+    # -------------------------------
+    # Nexus (ideal vir de secrets do Harness)
+    # -------------------------------
+    nexus_base_url_resolved: "{{ nexus_base_url | default('https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev') }}"
+    nexus_user_resolved: "{{ nexus_user | default('') }}"
+    nexus_password_resolved: "{{ nexus_password | default('') }}"
 
-NEXUS_BASE_URL="${NEXUS_BASE_URL:-https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev}"
-NEXUS_USER="${NEXUS_USER:-AS4hZF20}"
-NEXUS_PASSWORD="${NEXUS_PASSWORD:-l7WwGfJd_Grmh-5Kn7B__U8nqgdNWh1XhrYtVQQ5I_6k}"
+    # -------------------------------
+    # Harness (pode vir por -e ou env)
+    # -------------------------------
+    harness_endpoint_resolved: "{{ harness_endpoint | default('') }}"
+    harness_account_id_resolved: "{{ harness_account_id | default('') }}"
+    harness_org_id_resolved: "{{ harness_org_id | default('') }}"
+    harness_project_id_resolved: "{{ harness_project_id | default('') }}"
+    harness_api_key_resolved: "{{ harness_api_key | default('') }}"
+    harness_x_api_key_resolved: "{{ harness_x_api_key | default('') }}"
 
-# Token do Harness (PAT)
-HARNESS_X_API_KEY="${HARNESS_X_API_KEY:-pat.fgDto6qoTT6ctfZS9eWbEw.693f147c43bfca2e849b46f4.WtMpaUZG5pxwDZcIkzl0}"
+    # Stage (usado pelo harness upload)
+    hf_stage_name: "predeploy"
 
-# Defaults Harness
-HARNESS_ENDPOINT="${HARNESS_ENDPOINT:-https://harness.onefiserv.net}"
-HARNESS_ACCOUNT_ID="${HARNESS_ACCOUNT_ID:-fgDto6qoTT6ctfZS9eWbEw}"
-HARNESS_ORG_ID="${HARNESS_ORG_ID:-Fiserv}"
-HARNESS_PROJECT_ID="${HARNESS_PROJECT_ID:-sitef}"
+  tasks:
+    # ---------------------------------------
+    # Resolver File Store sem recursão
+    # ---------------------------------------
+    - name: "Resolver filestore_env e filestore_base_dir sem recursão"
+      ansible.builtin.set_fact:
+        filestore_env_resolved: >-
+          {{
+            (filestore_env | string | trim)
+              if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
+              else 'dev'
+          }}
+        filestore_base_dir_resolved: >-
+          {{
+            (filestore_base_dir | string | trim)
+              if (filestore_base_dir is defined and (filestore_base_dir | string | trim) | length > 0)
+              else (
+                (
+                  (filestore_env | string | trim)
+                    if (filestore_env is defined and (filestore_env | string | trim) | length > 0)
+                    else 'dev'
+                ) ~ '/' ~ deployment_ref_resolved
+              )
+          }}
 
-FILESTORE_ENV="${FILESTORE_ENV:-dev}"
+    # ---------------------------------------
+    # Mostrar variáveis resolvidas (debug)
+    # ---------------------------------------
+    - name: "Mostrar variáveis de entrada e resolvidas"
+      ansible.builtin.debug:
+        msg:
+          - "execution_file_name_resolved = {{ execution_file_name_resolved }}"
+          - "deployment_ref_resolved      = {{ deployment_ref_resolved }}"
+          - "repo_root_resolved           = {{ repo_root_resolved }}"
+          - "status_dir_resolved          = {{ status_dir_resolved }}"
+          - "filestore_env_resolved       = {{ filestore_env_resolved }}"
+          - "filestore_base_dir_resolved  = {{ filestore_base_dir_resolved }}"
+          - "nexus_base_url_resolved      = {{ nexus_base_url_resolved }}"
+      changed_when: false
 
-export ANSIBLE_HOST_KEY_CHECKING=False
+    # ---------------------------------------
+    # Criar diretório base de status local
+    # ---------------------------------------
+    - name: "Criar diretório de status da TAG"
+      ansible.builtin.file:
+        path: "{{ status_dir_resolved }}"
+        state: directory
+        mode: "0755"
 
-# =========================
-# VALIDATIONS
-# =========================
-if [[ -z "${GIT_TAG}" ]]; then
-  echo "ERRO: GIT_TAG está vazio. Ex: DEV000011"
-  exit 1
-fi
+    # ---------------------------------------
+    # Carregar arquivo de execução
+    # ---------------------------------------
+    - name: "Carregar arquivo de execução"
+      ansible.builtin.include_vars:
+        file: "{{ repo_root_resolved }}/{{ execution_file_name_resolved }}"
+        name: execution_cfg
 
-if [[ -z "${GIT_TOKEN}" ]]; then
-  echo "ERRO: GIT_TOKEN está vazio (injete via Secret/Env no Harness)."
-  exit 1
-fi
+    # ---------------------------------------
+    # Validar se há máquinas
+    # ---------------------------------------
+    - name: "Falhar se não tiver máquinas no arquivo de execução"
+      ansible.builtin.fail:
+        msg: "Nenhuma máquina encontrada em execution_cfg.machines"
+      when: execution_cfg.machines is not defined or execution_cfg.machines | length == 0
 
-if [[ -z "${NEXUS_USER}" || -z "${NEXUS_PASSWORD}" ]]; then
-  echo "ERRO: NEXUS_USER/NEXUS_PASSWORD estão vazios (injete via Secret/Env)."
-  exit 1
-fi
+    # ---------------------------------------
+    # Executar PREDEPLOY por máquina
+    # ---------------------------------------
+    - name: "Executar pré-deploy por máquina"
+      ansible.builtin.include_tasks: predeploy_per_machine.yml
+      loop: "{{ execution_cfg.machines }}"
+      loop_control:
+        loop_var: machine_name
+      vars:
+        deployment_ref: "{{ deployment_ref_resolved }}"
+        repo_root: "{{ repo_root_resolved }}"
+        status_dir: "{{ status_dir_resolved }}"
 
-if [[ -z "${HARNESS_X_API_KEY}" ]]; then
-  echo "ERRO: HARNESS_X_API_KEY está vazio (injete via Secret/Env)."
-  exit 1
-fi
+        nexus_base_url: "{{ nexus_base_url_resolved }}"
+        nexus_user: "{{ nexus_user_resolved }}"
+        nexus_password: "{{ nexus_password_resolved }}"
 
-if [[ -z "${HARNESS_ACCOUNT_ID}" || -z "${HARNESS_ORG_ID}" || -z "${HARNESS_PROJECT_ID}" ]]; then
-  echo "ERRO: HARNESS_ACCOUNT_ID/HARNESS_ORG_ID/HARNESS_PROJECT_ID estão vazios (injete via Env)."
-  exit 1
-fi
+        filestore_env: "{{ filestore_env_resolved }}"
+        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
 
-# =========================
-# REPO
-# =========================
-REPO_URL="https://harness:${GIT_TOKEN}@gitlab.onefiserv.net/latam/latam/merchant-latam/LAC/aws-cd-configuration/elastic-compute-cloud-sitef.git"
-
-WORKDIR="$(mktemp -d)"
-trap 'rm -rf "$WORKDIR"' EXIT
-
-echo "Clonando repo em ${WORKDIR}..."
-git clone --branch "${GIT_BRANCH}" "${REPO_URL}" "${WORKDIR}/elastic-compute-cloud-sitef"
-cd "${WORKDIR}/elastic-compute-cloud-sitef"
-git checkout $GIT_TAG
-
-# Tags / refs
-git fetch --tags --force
-
-# (Opcional) identity pro git se algum step precisar commitar/tag
-git config user.name  "${GIT_USER_NAME}"
-git config user.email "${GIT_USER_EMAIL}"
-
-echo
-echo "== PIPELINE PREDEPLOY =="
-echo "TAG   : ${GIT_TAG}"
-echo "EXEC  : ${EXECUTION_FILE_NAME}"
-echo "BRANCH: ${GIT_BRANCH}"
-echo
-
-cd ansible
-
-# =========================
-# EXPORTS para o Ansible (env)
-# =========================
-export NEXUS_BASE_URL NEXUS_USER NEXUS_PASSWORD FILESTORE_ENV
-
-# Padrão "HARNESS_*" (alguns playbooks usam isso)
-export HARNESS_ENDPOINT HARNESS_ACCOUNT_ID HARNESS_ORG_ID HARNESS_PROJECT_ID
-
-# Mapeia o token pro nome esperado por alguns fluxos
-export HARNESS_API_KEY="${HARNESS_API_KEY:-$HARNESS_X_API_KEY}"
-
-# ✅ CRÍTICO: mapeamento para o padrão que o seu harness_filestore_upload.yml está cobrando no log:
-# "Garanta HARNESS_ENDPOINT/ACC/ORG/PROJ/TOKEN no ambiente."
-export ACC="${ACC:-$HARNESS_ACCOUNT_ID}"
-export ORG="${ORG:-$HARNESS_ORG_ID}"
-export PROJ="${PROJ:-$HARNESS_PROJECT_ID}"
-export TOKEN="${TOKEN:-$HARNESS_API_KEY}"
-
-# (Opcional) se seu upload usa parentIdentifier
-export PARENT_IDENTIFIER="${PARENT_IDENTIFIER:-Root}"
-
-# =========================
-# RUN
-# =========================
-ansible-playbook -i "localhost," -c local predeploy_from_execution.yml \
-  -e "execution_file_name=${EXECUTION_FILE_NAME}" \
-  -e "deployment_ref=${GIT_TAG}" \
-  -e "nexus_base_url=${NEXUS_BASE_URL}" \
-  -e "nexus_user=${NEXUS_USER}" \
-  -e "nexus_password=${NEXUS_PASSWORD}" \
-  -e "filestore_env=${FILESTORE_ENV}" \
-  -e "stage_name=predeploy" \
-  --forks 10
+        # Harness vars (podem ser vazios; o include resolve com fallback/env)
+        harness_endpoint: "{{ harness_endpoint_resolved }}"
+        harness_account_id: "{{ harness_account_id_resolved }}"
+        harness_org_id: "{{ harness_org_id_resolved }}"
+        harness_project_id: "{{ harness_project_id_resolved }}"
+        harness_api_key: "{{ harness_api_key_resolved }}"
+        harness_x_api_key: "{{ harness_x_api_key_resolved }}"
+        hf_stage_name: "{{ hf_stage_name }}"
