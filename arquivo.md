@@ -1,485 +1,540 @@
-Exec using JSCH
-Connecting to 10.218.238.144 ....
-Connection to 10.218.238.144 established
-Executing command ...
-export GIT_TAG=DEV0000001
-Clonando repo em /tmp/tmp.ELZwlAH0Fl...
-Cloning into '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef'...
-remote: Enumerating objects: 1290, done.
-remote: Counting objects:   0% (1/1240)
-remote: Counting objects:   1% (13/1240)
-remote: Counting objects:   2% (25/1240)
-remote: Counting objects:   3% (38/1240)
-remote: Counting objects:   4% (50/1240)
-remote: Counting objects:   5% (62/1240)
-remote: Counting objects:   6% (75/1240)
-remote: Counting objects:   7% (87/1240)
-remote: Counting objects:   8% (100/1240)
-remote: Counting objects:   9% (112/1240)
-remote: Counting objects:  10% (124/1240)
-remote: Counting objects:  11% (137/1240)
-remote: Counting objects:  12% (149/1240)
-remote: Counting objects:  13% (162/1240)
-remote: Counting objects:  14% (174/1240)
-remote: Counting objects:  15% (186/1240)
-remote: Counting objects:  16% (199/1240)
-remote: Counting objects:  17% (211/1240)
-remote: Counting objects:  18% (224/1240)
-remote: Counting objects:  19% (236/1240)
-remote: Counting objects:  20% (248/1240)
-remote: Counting objects:  21% (261/1240)
-remote: Counting objects:  22% (273/1240)
-remote: Counting objects:  23% (286/1240)
-remote: Counting objects:  24% (298/1240)
-remote: Counting objects:  25% (310/1240)
-remote: Counting objects:  26% (323/1240)
-remote: Counting objects:  27% (335/1240)
-remote: Counting objects:  28% (348/1240)
-remote: Counting objects:  29% (360/1240)
-remote: Counting objects:  30% (372/1240)
-remote: Counting objects:  31% (385/1240)
-remote: Counting objects:  32% (397/1240)
-remote: Counting objects:  33% (410/1240)
-remote: Counting objects:  34% (422/1240)
-remote: Counting objects:  35% (434/1240)
-remote: Counting objects:  36% (447/1240)
-remote: Counting objects:  37% (459/1240)
-remote: Counting objects:  38% (472/1240)
-remote: Counting objects:  39% (484/1240)
-remote: Counting objects:  40% (496/1240)
-remote: Counting objects:  41% (509/1240)
-remote: Counting objects:  42% (521/1240)
-remote: Counting objects:  43% (534/1240)
-remote: Counting objects:  44% (546/1240)
-remote: Counting objects:  45% (558/1240)
-remote: Counting objects:  46% (571/1240)
-remote: Counting objects:  47% (583/1240)
-remote: Counting objects:  48% (596/1240)
-remote: Counting objects:  49% (608/1240)
-remote: Counting objects:  50% (620/1240)
-remote: Counting objects:  51% (633/1240)
-remote: Counting objects:  52% (645/1240)
-remote: Counting objects:  53% (658/1240)
-remote: Counting objects:  54% (670/1240)
-remote: Counting objects:  55% (682/1240)
-remote: Counting objects:  56% (695/1240)
-remote: Counting objects:  57% (707/1240)
-remote: Counting objects:  58% (720/1240)
-remote: Counting objects:  59% (732/1240)
-remote: Counting objects:  60% (744/1240)
-remote: Counting objects:  61% (757/1240)
-remote: Counting objects:  62% (769/1240)
-remote: Counting objects:  63% (782/1240)
-remote: Counting objects:  64% (794/1240)
-remote: Counting objects:  65% (806/1240)
-remote: Counting objects:  66% (819/1240)
-remote: Counting objects:  67% (831/1240)
-remote: Counting objects:  68% (844/1240)
-remote: Counting objects:  69% (856/1240)
-remote: Counting objects:  70% (868/1240)
-remote: Counting objects:  71% (881/1240)
-remote: Counting objects:  72% (893/1240)
-remote: Counting objects:  73% (906/1240)
-remote: Counting objects:  74% (918/1240)
-remote: Counting objects:  75% (930/1240)
-remote: Counting objects:  76% (943/1240)
-remote: Counting objects:  77% (955/1240)
-remote: Counting objects:  78% (968/1240)
-remote: Counting objects:  79% (980/1240)
-remote: Counting objects:  80% (992/1240)
-remote: Counting objects:  81% (1005/1240)
-remote: Counting objects:  82% (1017/1240)
-remote: Counting objects:  83% (1030/1240)
-remote: Counting objects:  84% (1042/1240)
-remote: Counting objects:  85% (1054/1240)
-remote: Counting objects:  86% (1067/1240)
-remote: Counting objects:  87% (1079/1240)
-remote: Counting objects:  88% (1092/1240)
-remote: Counting objects:  89% (1104/1240)
-remote: Counting objects:  90% (1116/1240)
-remote: Counting objects:  91% (1129/1240)
-remote: Counting objects:  92% (1141/1240)
-remote: Counting objects:  93% (1154/1240)
-remote: Counting objects:  94% (1166/1240)
-remote: Counting objects:  95% (1178/1240)
-remote: Counting objects:  96% (1191/1240)
-remote: Counting objects:  97% (1203/1240)
-remote: Counting objects:  98% (1216/1240)
-remote: Counting objects:  99% (1228/1240)
-remote: Counting objects: 100% (1240/1240)
-remote: Counting objects: 100% (1240/1240), done.
-remote: Compressing objects:   0% (1/469)
-remote: Compressing objects:   1% (5/469)
-remote: Compressing objects:   2% (10/469)
-remote: Compressing objects:   3% (15/469)
-remote: Compressing objects:   4% (19/469)
-remote: Compressing objects:   5% (24/469)
-remote: Compressing objects:   6% (29/469)
-remote: Compressing objects:   7% (33/469)
-remote: Compressing objects:   8% (38/469)
-remote: Compressing objects:   9% (43/469)
-remote: Compressing objects:  10% (47/469)
-remote: Compressing objects:  11% (52/469)
-remote: Compressing objects:  12% (57/469)
-remote: Compressing objects:  13% (61/469)
-remote: Compressing objects:  14% (66/469)
-remote: Compressing objects:  15% (71/469)
-remote: Compressing objects:  16% (76/469)
-remote: Compressing objects:  17% (80/469)
-remote: Compressing objects:  18% (85/469)
-remote: Compressing objects:  19% (90/469)
-remote: Compressing objects:  20% (94/469)
-remote: Compressing objects:  21% (99/469)
-remote: Compressing objects:  22% (104/469)
-remote: Compressing objects:  23% (108/469)
-remote: Compressing objects:  24% (113/469)
-remote: Compressing objects:  25% (118/469)
-remote: Compressing objects:  26% (122/469)
-remote: Compressing objects:  27% (127/469)
-remote: Compressing objects:  28% (132/469)
-remote: Compressing objects:  29% (137/469)
-remote: Compressing objects:  30% (141/469)
-remote: Compressing objects:  31% (146/469)
-remote: Compressing objects:  32% (151/469)
-remote: Compressing objects:  33% (155/469)
-remote: Compressing objects:  34% (160/469)
-remote: Compressing objects:  35% (165/469)
-remote: Compressing objects:  36% (169/469)
-remote: Compressing objects:  37% (174/469)
-remote: Compressing objects:  38% (179/469)
-remote: Compressing objects:  39% (183/469)
-remote: Compressing objects:  40% (188/469)
-remote: Compressing objects:  41% (193/469)
-remote: Compressing objects:  42% (197/469)
-remote: Compressing objects:  43% (202/469)
-remote: Compressing objects:  44% (207/469)
-remote: Compressing objects:  45% (212/469)
-remote: Compressing objects:  46% (216/469)
-remote: Compressing objects:  47% (221/469)
-remote: Compressing objects:  48% (226/469)
-remote: Compressing objects:  49% (230/469)
-remote: Compressing objects:  50% (235/469)
-remote: Compressing objects:  51% (240/469)
-remote: Compressing objects:  52% (244/469)
-remote: Compressing objects:  53% (249/469)
-remote: Compressing objects:  54% (254/469)
-remote: Compressing objects:  55% (258/469)
-remote: Compressing objects:  56% (263/469)
-remote: Compressing objects:  57% (268/469)
-remote: Compressing objects:  58% (273/469)
-remote: Compressing objects:  59% (277/469)
-remote: Compressing objects:  60% (282/469)
-remote: Compressing objects:  61% (287/469)
-remote: Compressing objects:  62% (291/469)
-remote: Compressing objects:  63% (296/469)
-remote: Compressing objects:  64% (301/469)
-remote: Compressing objects:  65% (305/469)
-remote: Compressing objects:  66% (310/469)
-remote: Compressing objects:  67% (315/469)
-remote: Compressing objects:  68% (319/469)
-remote: Compressing objects:  69% (324/469)
-remote: Compressing objects:  70% (329/469)
-remote: Compressing objects:  71% (333/469)
-remote: Compressing objects:  72% (338/469)
-remote: Compressing objects:  73% (343/469)
-remote: Compressing objects:  74% (348/469)
-remote: Compressing objects:  75% (352/469)
-remote: Compressing objects:  76% (357/469)
-remote: Compressing objects:  77% (362/469)
-remote: Compressing objects:  78% (366/469)
-remote: Compressing objects:  79% (371/469)
-remote: Compressing objects:  80% (376/469)
-remote: Compressing objects:  81% (380/469)
-remote: Compressing objects:  82% (385/469)
-remote: Compressing objects:  83% (390/469)
-remote: Compressing objects:  84% (394/469)
-remote: Compressing objects:  85% (399/469)
-remote: Compressing objects:  86% (404/469)
-remote: Compressing objects:  87% (409/469)
-remote: Compressing objects:  88% (413/469)
-remote: Compressing objects:  89% (418/469)
-remote: Compressing objects:  90% (423/469)
-remote: Compressing objects:  91% (427/469)
-remote: Compressing objects:  92% (432/469)
-remote: Compressing objects:  93% (437/469)
-remote: Compressing objects:  94% (441/469)
-remote: Compressing objects:  95% (446/469)
-remote: Compressing objects:  96% (451/469)
-remote: Compressing objects:  97% (455/469)
-remote: Compressing objects:  98% (460/469)
-remote: Compressing objects:  99% (465/469)
-remote: Compressing objects: 100% (469/469)
-remote: Compressing objects: 100% (469/469), done.
-Receiving objects:   0% (1/1290)
-Receiving objects:   1% (13/1290)
-Receiving objects:   2% (26/1290)
-Receiving objects:   3% (39/1290)
-Receiving objects:   4% (52/1290)
-Receiving objects:   5% (65/1290)
-Receiving objects:   6% (78/1290)
-Receiving objects:   7% (91/1290)
-Receiving objects:   8% (104/1290)
-Receiving objects:   9% (117/1290)
-Receiving objects:  10% (129/1290)
-Receiving objects:  11% (142/1290)
-Receiving objects:  12% (155/1290)
-Receiving objects:  13% (168/1290)
-Receiving objects:  14% (181/1290)
-Receiving objects:  15% (194/1290)
-Receiving objects:  16% (207/1290)
-Receiving objects:  17% (220/1290)
-Receiving objects:  18% (233/1290)
-Receiving objects:  19% (246/1290)
-Receiving objects:  20% (258/1290)
-Receiving objects:  21% (271/1290)
-Receiving objects:  22% (284/1290)
-Receiving objects:  23% (297/1290)
-Receiving objects:  24% (310/1290)
-Receiving objects:  25% (323/1290)
-Receiving objects:  26% (336/1290)
-Receiving objects:  27% (349/1290)
-Receiving objects:  28% (362/1290)
-Receiving objects:  29% (375/1290)
-Receiving objects:  30% (387/1290)
-Receiving objects:  31% (400/1290)
-Receiving objects:  32% (413/1290)
-Receiving objects:  33% (426/1290)
-Receiving objects:  34% (439/1290)
-Receiving objects:  35% (452/1290)
-Receiving objects:  36% (465/1290)
-Receiving objects:  37% (478/1290)
-Receiving objects:  38% (491/1290)
-Receiving objects:  39% (504/1290)
-Receiving objects:  40% (516/1290)
-Receiving objects:  41% (529/1290)
-Receiving objects:  42% (542/1290)
-Receiving objects:  43% (555/1290)
-Receiving objects:  44% (568/1290)
-Receiving objects:  45% (581/1290)
-Receiving objects:  46% (594/1290)
-Receiving objects:  47% (607/1290)
-Receiving objects:  48% (620/1290)
-Receiving objects:  49% (633/1290)
-Receiving objects:  50% (645/1290)
-Receiving objects:  51% (658/1290)
-Receiving objects:  52% (671/1290)
-Receiving objects:  53% (684/1290)
-Receiving objects:  54% (697/1290)
-Receiving objects:  55% (710/1290)
-Receiving objects:  56% (723/1290)
-Receiving objects:  57% (736/1290)
-Receiving objects:  58% (749/1290)
-Receiving objects:  59% (762/1290)
-Receiving objects:  60% (774/1290)
-Receiving objects:  61% (787/1290)
-Receiving objects:  62% (800/1290)
-Receiving objects:  63% (813/1290)
-Receiving objects:  64% (826/1290)
-Receiving objects:  65% (839/1290)
-Receiving objects:  66% (852/1290)
-Receiving objects:  67% (865/1290)
-Receiving objects:  68% (878/1290)
-Receiving objects:  69% (891/1290)
-Receiving objects:  70% (903/1290)
-Receiving objects:  71% (916/1290)
-Receiving objects:  72% (929/1290)
-Receiving objects:  73% (942/1290)
-Receiving objects:  74% (955/1290)
-Receiving objects:  75% (968/1290)
-Receiving objects:  76% (981/1290)
-Receiving objects:  77% (994/1290)
-Receiving objects:  78% (1007/1290)
-Receiving objects:  79% (1020/1290)
-Receiving objects:  80% (1032/1290)
-Receiving objects:  81% (1045/1290)
-Receiving objects:  82% (1058/1290)
-remote: Total 1290 (delta 918), reused 1035 (delta 750), pack-reused 50
-Receiving objects:  83% (1071/1290)
-Receiving objects:  84% (1084/1290)
-Receiving objects:  85% (1097/1290)
-Receiving objects:  86% (1110/1290)
-Receiving objects:  87% (1123/1290)
-Receiving objects:  88% (1136/1290)
-Receiving objects:  89% (1149/1290)
-Receiving objects:  90% (1161/1290)
-Receiving objects:  91% (1174/1290)
-Receiving objects:  92% (1187/1290)
-Receiving objects:  93% (1200/1290)
-Receiving objects:  94% (1213/1290)
-Receiving objects:  95% (1226/1290)
-Receiving objects:  96% (1239/1290)
-Receiving objects:  97% (1252/1290)
-Receiving objects:  98% (1265/1290)
-Receiving objects:  99% (1278/1290)
-Receiving objects: 100% (1290/1290)
-Receiving objects: 100% (1290/1290), 1021.76 KiB | 2.00 MiB/s, done.
-Resolving deltas:   0% (0/937)
-Resolving deltas:   1% (10/937)
-Resolving deltas:   2% (19/937)
-Resolving deltas:   3% (29/937)
-Resolving deltas:   4% (38/937)
-Resolving deltas:   5% (47/937)
-Resolving deltas:   6% (57/937)
-Resolving deltas:   7% (66/937)
-Resolving deltas:   8% (75/937)
-Resolving deltas:   9% (85/937)
-Resolving deltas:  10% (94/937)
-Resolving deltas:  11% (104/937)
-Resolving deltas:  12% (113/937)
-Resolving deltas:  13% (122/937)
-Resolving deltas:  14% (132/937)
-Resolving deltas:  15% (141/937)
-Resolving deltas:  16% (150/937)
-Resolving deltas:  17% (160/937)
-Resolving deltas:  18% (169/937)
-Resolving deltas:  19% (179/937)
-Resolving deltas:  20% (188/937)
-Resolving deltas:  21% (197/937)
-Resolving deltas:  22% (207/937)
-Resolving deltas:  23% (216/937)
-Resolving deltas:  24% (225/937)
-Resolving deltas:  25% (235/937)
-Resolving deltas:  26% (244/937)
-Resolving deltas:  27% (253/937)
-Resolving deltas:  28% (263/937)
-Resolving deltas:  29% (272/937)
-Resolving deltas:  30% (282/937)
-Resolving deltas:  31% (291/937)
-Resolving deltas:  32% (300/937)
-Resolving deltas:  33% (310/937)
-Resolving deltas:  34% (319/937)
-Resolving deltas:  35% (328/937)
-Resolving deltas:  36% (338/937)
-Resolving deltas:  37% (347/937)
-Resolving deltas:  38% (357/937)
-Resolving deltas:  39% (366/937)
-Resolving deltas:  40% (375/937)
-Resolving deltas:  41% (385/937)
-Resolving deltas:  42% (394/937)
-Resolving deltas:  43% (403/937)
-Resolving deltas:  44% (413/937)
-Resolving deltas:  45% (422/937)
-Resolving deltas:  46% (432/937)
-Resolving deltas:  47% (441/937)
-Resolving deltas:  48% (450/937)
-Resolving deltas:  49% (460/937)
-Resolving deltas:  50% (469/937)
-Resolving deltas:  51% (478/937)
-Resolving deltas:  52% (488/937)
-Resolving deltas:  53% (497/937)
-Resolving deltas:  54% (506/937)
-Resolving deltas:  55% (516/937)
-Resolving deltas:  56% (525/937)
-Resolving deltas:  57% (535/937)
-Resolving deltas:  58% (545/937)
-Resolving deltas:  59% (553/937)
-Resolving deltas:  60% (564/937)
-Resolving deltas:  61% (572/937)
-Resolving deltas:  62% (581/937)
-Resolving deltas:  63% (591/937)
-Resolving deltas:  64% (600/937)
-Resolving deltas:  65% (610/937)
-Resolving deltas:  66% (619/937)
-Resolving deltas:  67% (628/937)
-Resolving deltas:  68% (638/937)
-Resolving deltas:  69% (647/937)
-Resolving deltas:  70% (656/937)
-Resolving deltas:  71% (666/937)
-Resolving deltas:  72% (675/937)
-Resolving deltas:  73% (685/937)
-Resolving deltas:  74% (694/937)
-Resolving deltas:  75% (703/937)
-Resolving deltas:  76% (713/937)
-Resolving deltas:  77% (722/937)
-Resolving deltas:  78% (731/937)
-Resolving deltas:  79% (741/937)
-Resolving deltas:  80% (750/937)
-Resolving deltas:  81% (759/937)
-Resolving deltas:  82% (769/937)
-Resolving deltas:  83% (778/937)
-Resolving deltas:  84% (788/937)
-Resolving deltas:  85% (797/937)
-Resolving deltas:  86% (806/937)
-Resolving deltas:  87% (816/937)
-Resolving deltas:  88% (825/937)
-Resolving deltas:  89% (834/937)
-Resolving deltas:  90% (844/937)
-Resolving deltas:  91% (853/937)
-Resolving deltas:  92% (863/937)
-Resolving deltas:  93% (872/937)
-Resolving deltas:  94% (881/937)
-Resolving deltas:  95% (891/937)
-Resolving deltas:  96% (900/937)
-Resolving deltas:  97% (909/937)
-Resolving deltas:  98% (919/937)
-Resolving deltas:  99% (928/937)
-Resolving deltas: 100% (937/937)
-Resolving deltas: 100% (937/937), done.
+# predeploy_per_machine.yml
+---
+# =====================================================================================
+# PREDEPLOY POR MÁQUINA (COMPLETO / CORRIGIDO)
+# Chamado por: predeploy_from_execution.yml
+# =====================================================================================
 
-== PIPELINE PREDEPLOY ==
-TAG   : DEV0000001
-EXEC  : execution/machine_list_dev.yml
-BRANCH: develop-testes
-PLAY [Predeploy a partir do arquivo de execução] *******************************
-TASK [Gathering Facts] *********************************************************
-ok: [localhost]
-TASK [Resolver filestore_env_resolved (safe)] **********************************
-ok: [localhost]
-TASK [Resolver filestore_base_dir_resolved (safe via override)] ****************
-ok: [localhost]
-TASK [Mostrar variáveis de entrada e resolvidas] *******************************
-ok: [localhost] => {
-    "msg": [
-        "execution_file_name_resolved = execution/machine_list_dev.yml",
-        "deployment_ref_resolved      = DEV0000001",
-        "repo_root_resolved           = /tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/..",
-        "status_dir_resolved          = /tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../status/DEV0000001",
-        "filestore_env_resolved       = dev",
-        "filestore_base_dir_resolved  = dev/DEV0000001",
-        "nexus_base_url_resolved      = https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev"
-    ]
-}
-TASK [Criar diretório de status da TAG] ****************************************
-changed: [localhost]
-TASK [Carregar arquivo de execução] ********************************************
-ok: [localhost]
-TASK [Falhar se não tiver máquinas no arquivo de execução] *********************
-skipping: [localhost]
-TASK [Executar pré-deploy por máquina] *****************************************
-included: /tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/predeploy_per_machine.yml for localhost => (item=sitef-02)
-included: /tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/predeploy_per_machine.yml for localhost => (item=sitef-03)
-TASK [Predeploy | Resolver nome da máquina atual] ******************************
-ok: [localhost]
-TASK [Predeploy | Validar vars mínimas] ****************************************
-ok: [localhost] => {
-    "changed": false,
-    "msg": "All assertions passed"
-}
-TASK [Predeploy | Definir paths base do repositório] ***************************
-ok: [localhost]
-TASK [Predeploy | Definir candidatos de arquivo da máquina] ********************
-ok: [localhost]
-TASK [Predeploy | Verificar candidatos] ****************************************
-ok: [localhost] => (item=/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml)
-TASK [Predeploy | Selecionar machine_file existente] ***************************
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 228, 'inode': 2133866, 'dev': 64775, 'nlink': 1, 'atime': 1766773354.3027277, 'mtime': 1766773354.2887275, 'ctime': 1766773354.2887275, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': '5434a102feaa917dcdf00602d9cd66b4c81adeb8', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '474645489', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-TASK [Predeploy | Falhar se arquivo da máquina não existir] ********************
-skipping: [localhost]
-TASK [Predeploy | Carregar config da máquina sitef-02] *************************
-ok: [localhost]
-TASK [Predeploy | Validar package definido] ************************************
-ok: [localhost] => {
-    "changed": false,
-    "msg": "All assertions passed"
-}
-TASK [Predeploy | Carregar config do pacote sitef-teste-0.0.2-0] ***************
-fatal: [localhost]: FAILED! => {"ansible_facts": {"package_cfg": {}}, "ansible_included_var_files": [], "changed": false, "message": "Could not find or access '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../packages/sitef-teste-0.0.2-0.yml' on the Ansible Controller.\nIf you are using a module and expect the file to exist on the remote, see the remote_src option"}
-PLAY RECAP *********************************************************************
-localhost                  : ok=16   changed=1    unreachable=0    failed=1    skipped=2    rescued=0    ignored=0   
-Command finished with status FAILURE
+# -----------------------------------------------------------------------------
+# 0) Resolver nome da máquina atual + stage + RESET (evitar vazamento entre loops)
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Resolver nome da máquina atual + reset vars"
+  ansible.builtin.set_fact:
+    stage_name: "predeploy"
+    current_machine: "{{ (machine_name | default(item) | default('')) | string | trim }}"
+
+    # RESET por máquina (IMPORTANTE!)
+    machine_file: ""
+    package_file: ""
+
+- name: "Predeploy | Validar vars mínimas"
+  ansible.builtin.assert:
+    that:
+      - (current_machine | length) > 0
+      - deployment_ref is defined
+      - (deployment_ref | string | trim | length) > 0
+      - filestore_env is defined
+      - (filestore_env | string | trim | length) > 0
+      - filestore_base_dir is defined
+      - (filestore_base_dir | string | trim | length) > 0
+      - status_dir is defined
+      - (status_dir | string | trim | length) > 0
+      - nexus_base_url is defined
+      - (nexus_base_url | string | trim | length) > 0
+    fail_msg: "Faltam variáveis obrigatórias para o predeploy_per_machine.yml"
+
+# -----------------------------------------------------------------------------
+# 1) Paths base do repositório
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Definir paths base do repositório"
+  ansible.builtin.set_fact:
+    repo_root_safe: "{{ repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..')) }}"
+    execution_dir: "{{ repo_root_safe }}/execution"
+    machines_dir: "{{ repo_root_safe }}/machines"
+    packages_dir: "{{ repo_root_safe }}/packages"
+    scripts_root_dir: "{{ repo_root_safe }}/scripts"
+
+# -----------------------------------------------------------------------------
+# 2) Resolver machine_file
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Definir candidatos de arquivo da máquina"
+  ansible.builtin.set_fact:
+    candidate_machine_files:
+      - "{{ execution_dir }}/machines/{{ current_machine }}.yml"
+      - "{{ execution_dir }}/{{ current_machine }}.yml"
+      - "{{ machines_dir }}/{{ current_machine }}.yml"
+      - "{{ repo_root_safe }}/inventory/machines/{{ current_machine }}.yml"
+
+- name: "Predeploy | Verificar candidatos (machine_file)"
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop: "{{ candidate_machine_files }}"
+  register: machine_candidates_stat
+
+- name: "Predeploy | Selecionar machine_file existente"
+  ansible.builtin.set_fact:
+    machine_file: "{{ item.item }}"
+  when:
+    - item.stat.exists
+    - (machine_file | default('') | string | length) == 0
+  loop: "{{ machine_candidates_stat.results }}"
+
+- name: "Predeploy | Falhar se arquivo da máquina não existir"
+  ansible.builtin.fail:
+    msg: |
+      [predeploy] Arquivo de máquina não encontrado para {{ current_machine }}.
+      Caminhos testados:
+      {{ candidate_machine_files | to_nice_yaml }}
+  when: (machine_file | default('') | string | length) == 0
+
+# -----------------------------------------------------------------------------
+# 3) Carregar machine_cfg
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Carregar config da máquina {{ current_machine }}"
+  ansible.builtin.include_vars:
+    file: "{{ machine_file }}"
+    name: machine_cfg
+
+- name: "Predeploy | Validar package definido"
+  ansible.builtin.assert:
+    that:
+      - machine_cfg is defined
+      - machine_cfg.package is defined
+      - (machine_cfg.package | string | trim | length) > 0
+    fail_msg: "machine_cfg.package não definido em {{ machine_file }}"
+
+# -----------------------------------------------------------------------------
+# 3.1) Resolver package_file (suporta .yml/.yaml e estrutura em pasta)
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Definir candidatos de arquivo do pacote"
+  ansible.builtin.set_fact:
+    package_name: "{{ machine_cfg.package | string | trim }}"
+    candidate_package_files:
+      - "{{ packages_dir }}/{{ package_name }}.yml"
+      - "{{ packages_dir }}/{{ package_name }}.yaml"
+      - "{{ packages_dir }}/{{ package_name }}/package.yml"
+      - "{{ packages_dir }}/{{ package_name }}/package.yaml"
+
+- name: "Predeploy | Verificar candidatos (package_file)"
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop: "{{ candidate_package_files }}"
+  register: package_candidates_stat
+
+- name: "Predeploy | Selecionar package_file existente"
+  ansible.builtin.set_fact:
+    package_file: "{{ item.item }}"
+  when:
+    - item.stat.exists
+    - (package_file | default('') | string | length) == 0
+  loop: "{{ package_candidates_stat.results }}"
+
+- name: "Predeploy | Listar packages disponíveis (debug) se package_file não encontrado"
+  ansible.builtin.find:
+    paths: "{{ packages_dir }}"
+    file_type: file
+    patterns:
+      - "*.yml"
+      - "*.yaml"
+  register: packages_found
+  when: (package_file | default('') | string | length) == 0
+
+- name: "Predeploy | Falhar se arquivo do pacote não existir"
+  ansible.builtin.fail:
+    msg: |
+      [predeploy] Package file não encontrado para package="{{ package_name }}" (machine={{ current_machine }}).
+      Caminhos testados:
+      {{ candidate_package_files | to_nice_yaml }}
+
+      Packages disponíveis em {{ packages_dir }}:
+      {{
+        (packages_found.files | default([]) | map(attribute='path') | list) | to_nice_yaml
+      }}
+
+      ✅ Ajuste esperado:
+      - OU criar/commitar o arquivo do pacote com esse nome na TAG {{ deployment_ref }}
+      - OU corrigir machine_cfg.package em {{ machine_file }} para um package que exista em /packages
+  when: (package_file | default('') | string | length) == 0
+
+# -----------------------------------------------------------------------------
+# 3.2) Carregar package_cfg
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Carregar config do pacote ({{ package_name }})"
+  ansible.builtin.include_vars:
+    file: "{{ package_file }}"
+    name: package_cfg
+
+- name: "Predeploy | Validar components do pacote"
+  ansible.builtin.assert:
+    that:
+      - package_cfg is defined
+      - package_cfg.components is defined
+      - (package_cfg.components | length) > 0
+    fail_msg: "components ausente/vazio no pacote {{ package_name }} (arquivo {{ package_file }})"
+
+- name: "Predeploy | Validar script do pacote"
+  ansible.builtin.assert:
+    that:
+      - package_cfg.script is defined
+      - (package_cfg.script | string | trim | length) > 0
+    fail_msg: "package_cfg.script ausente/vazio no pacote {{ package_name }} (arquivo {{ package_file }})"
+
+# -----------------------------------------------------------------------------
+# 4) SSH e host dinâmico
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Resolver host alvo"
+  ansible.builtin.set_fact:
+    target_user: "{{ machine_cfg.user | default(machine_cfg.target_user | default('root')) }}"
+    target_host: "{{ machine_cfg.host | default(machine_cfg.ip | default('')) | string | trim }}"
+    ssh_common_args: "{{ machine_cfg.ssh_common_args | default('-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null') }}"
+
+- name: "Predeploy | Falhar se host/ip não informado"
+  ansible.builtin.assert:
+    that:
+      - (target_host | length) > 0
+    fail_msg: "machine_cfg.host/ip vazio em {{ machine_file }}"
+
+- name: "Predeploy | Aplicar ProxyJump via bastion (quando necessário)"
+  ansible.builtin.set_fact:
+    ssh_common_args: >-
+      {{ ssh_common_args }}
+      -o ProxyJump={{ machine_cfg.bastion_user | default(target_user) }}@{{ machine_cfg.bastion_host }}
+  when:
+    - machine_cfg.bastion_host is defined
+    - (machine_cfg.bastion_host | string | trim | length) > 0
+
+- name: "Predeploy | Registrar host dinâmico para {{ current_machine }}"
+  ansible.builtin.add_host:
+    name: "{{ current_machine }}"
+    ansible_host: "{{ target_host }}"
+    ansible_user: "{{ target_user }}"
+    ansible_port: "{{ machine_cfg.port | default(22) }}"
+    ansible_ssh_private_key_file: "{{ machine_cfg.ssh_key | default(omit) }}"
+    ansible_ssh_common_args: "{{ ssh_common_args }}"
+    ansible_connection: ssh
+  changed_when: true
+
+# -----------------------------------------------------------------------------
+# 5) Montar env final (package base + machine override) + extras
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Montar env final (package base + machine override)"
+  ansible.builtin.set_fact:
+    merged_env_vars: >-
+      {{
+        (package_cfg.env_vars | default({}))
+        | combine(machine_cfg.env_vars | default({}), recursive=True)
+        | combine({
+            'SITEF_MACHINE': current_machine,
+            'SITEF_HOST': target_host,
+            'DEPLOYMENT_REF': (deployment_ref | default('')),
+            'PACKAGE_NAME': (package_name | default('')),
+            'ROLLBACK_PACKAGE': (machine_cfg.rollback | default(''))
+          }, recursive=True)
+      }}
+
+# -----------------------------------------------------------------------------
+# 6) Normalizações + run_id
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Normalizações"
+  ansible.builtin.set_fact:
+    deployment_ref_lower: "{{ (deployment_ref | string | trim | lower) }}"
+    env_lower: "{{ (filestore_env | string | trim | lower) }}"
+    machine_lower: "{{ (current_machine | string | trim | lower) }}"
+
+- name: "Predeploy | Gerar run_id"
+  ansible.builtin.set_fact:
+    run_id: "{{ deployment_ref_lower ~ '-' ~ machine_lower ~ '-' ~ env_lower ~ '-' ~ stage_name ~ '-' ~ ansible_date_time.epoch }}"
+
+# -----------------------------------------------------------------------------
+# 7) Paths local (controller) + paths filestore
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Definir arquivos/diretórios locais"
+  ansible.builtin.set_fact:
+    machine_status_dir: "{{ status_dir }}/{{ current_machine }}"
+    machine_status_file: "{{ status_dir }}/{{ current_machine }}/status.json"
+    pipeline_log_file: "{{ status_dir }}/{{ current_machine }}/pipeline.log"
+
+- name: "Predeploy | Definir paths lógicos (File Store) SEPARADOS POR STAGE"
+  ansible.builtin.set_fact:
+    filestore_log_path: "{{ filestore_base_dir }}/{{ deployment_ref_lower }}-{{ machine_lower }}-{{ env_lower }}-{{ stage_name }}.log"
+    filestore_status_path: "{{ filestore_base_dir }}/{{ deployment_ref_lower }}-{{ machine_lower }}-{{ env_lower }}-{{ stage_name }}.json"
+
+- name: "Predeploy | Garantir diretório de status local"
+  ansible.builtin.file:
+    path: "{{ machine_status_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: "Predeploy | Garantir arquivo pipeline.log (cumulativo local)"
+  ansible.builtin.file:
+    path: "{{ pipeline_log_file }}"
+    state: touch
+    mode: "0644"
+
+# -----------------------------------------------------------------------------
+# 8) Status.json com history - queued
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Verificar se status.json já existe"
+  ansible.builtin.stat:
+    path: "{{ machine_status_file }}"
+  register: status_stat
+
+- name: "Predeploy | Ler status.json existente (se existir)"
+  ansible.builtin.slurp:
+    path: "{{ machine_status_file }}"
+  register: status_slurp
+  when: status_stat.stat.exists
+
+- name: "Predeploy | Parse do status existente (ou base vazio)"
+  ansible.builtin.set_fact:
+    status_obj: "{{ (status_slurp.content | b64decode | from_json) if (status_stat.stat.exists | default(false)) else {} }}"
+
+- name: "Predeploy | Escrever status inicial (predeploy:queued) com history append"
+  ansible.builtin.copy:
+    dest: "{{ machine_status_file }}"
+    mode: "0644"
+    content: >-
+      {{
+        (
+          status_obj
+          | combine({
+              "run_id": run_id,
+              "stage": stage_name,
+              "machine": current_machine,
+              "host": target_host,
+              "package": package_name,
+              "rollback": (machine_cfg.rollback | default('')),
+              "deployment_ref": (deployment_ref | default('')),
+              "log_path": filestore_log_path,
+              "status": "predeploy:queued",
+              "timestamp": ansible_date_time.iso8601,
+              "history": (
+                (status_obj.history | default([]))
+                + [ {
+                      "run_id": run_id,
+                      "stage": stage_name,
+                      "status": "predeploy:queued",
+                      "timestamp": ansible_date_time.iso8601
+                    } ]
+              )
+            }, recursive=True)
+        ) | to_nice_json
+      }}
+  changed_when: true
+
+# -----------------------------------------------------------------------------
+# 9) Preparar diretórios no host remoto
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Definir diretórios remotos do pipeline"
+  ansible.builtin.set_fact:
+    deploy_base_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/components"
+    deploy_scripts_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
+    deploy_scripts_package_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package"
+    remote_init_log: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/init_parallel_{{ run_id }}.log"
+
+- name: "Predeploy | Garantir base do pipeline no host"
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  delegate_to: "{{ current_machine }}"
+  loop:
+    - "{{ deploy_base_dir }}"
+    - "{{ deploy_scripts_dir }}"
+    - "{{ deploy_scripts_package_dir }}"
+
+# -----------------------------------------------------------------------------
+# 10) Limpar pasta do package scripts e recriar
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Limpar pasta de scripts do pacote"
+  become: true
+  ansible.builtin.file:
+    path: "{{ deploy_scripts_package_dir }}"
+    state: absent
+  delegate_to: "{{ current_machine }}"
+
+- name: "Predeploy | Recriar pasta de scripts do pacote"
+  become: true
+  ansible.builtin.file:
+    path: "{{ deploy_scripts_package_dir }}"
+    state: directory
+    mode: "0755"
+  delegate_to: "{{ current_machine }}"
+
+# -----------------------------------------------------------------------------
+# 11) Copiar package.yml para /deploy/scripts/package/
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Copiar package file para o host"
+  become: true
+  ansible.builtin.copy:
+    src: "{{ package_file }}"
+    dest: "{{ deploy_scripts_package_dir }}/{{ package_name }}.yml"
+    mode: "0644"
+  delegate_to: "{{ current_machine }}"
+
+# -----------------------------------------------------------------------------
+# 12) Garantir diretórios dos componentes + baixar do Nexus
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Garantir diretórios dos componentes no host"
+  become: true
+  ansible.builtin.file:
+    path: "{{ deploy_base_dir }}/{{ item | dirname }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ package_cfg.components }}"
+  delegate_to: "{{ current_machine }}"
+
+- name: "Predeploy | Baixar componentes do Nexus"
+  become: true
+  ansible.builtin.get_url:
+    url: "{{ nexus_base_url.rstrip('/') }}/{{ item }}"
+    dest: "{{ deploy_base_dir }}/{{ item }}"
+    mode: "0644"
+    url_username: "{{ (nexus_user | default('') | string | trim) if ((nexus_user | default('') | string | trim) | length > 0) else omit }}"
+    url_password: "{{ (nexus_password | default('') | string | trim) if ((nexus_password | default('') | string | trim) | length > 0) else omit }}"
+  loop: "{{ package_cfg.components }}"
+  delegate_to: "{{ current_machine }}"
+
+# -----------------------------------------------------------------------------
+# 13) Copiar scripts do pacote para /deploy/scripts
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Copiar scripts do pacote para o host"
+  become: true
+  ansible.builtin.copy:
+    src: "{{ scripts_root_dir }}/{{ package_cfg.script }}/"
+    dest: "{{ deploy_scripts_dir }}/"
+    mode: "0755"
+  delegate_to: "{{ current_machine }}"
+
+# -----------------------------------------------------------------------------
+# 14) Executar init_parallel.sh na máquina alvo (log por execução, SEM -a)
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Zerar log remoto desta execução"
+  become: true
+  ansible.builtin.shell: |
+    : > "{{ remote_init_log }}"
+  args:
+    executable: /bin/bash
+  delegate_to: "{{ current_machine }}"
+  changed_when: true
+
+- name: "Predeploy | Executar init_parallel.sh no host (com tee sem -a)"
+  become: true
+  ansible.builtin.shell: |
+    set -o pipefail
+    cd "{{ deploy_scripts_dir }}"
+    /usr/bin/stdbuf -oL -eL /bin/bash -x ./init_parallel.sh 2>&1 | tee "{{ remote_init_log }}"
+    exit ${PIPESTATUS[0]}
+  args:
+    executable: /bin/bash
+  environment: "{{ merged_env_vars }}"
+  delegate_to: "{{ current_machine }}"
+  register: init_parallel_result
+  ignore_errors: true
+  changed_when: true
+
+- name: "Predeploy | Tail do log remoto desta execução (sempre)"
+  become: true
+  ansible.builtin.shell: |
+    echo "===== tail -n 800 {{ remote_init_log }} ====="
+    tail -n 800 "{{ remote_init_log }}" 2>/dev/null || echo "log não encontrado"
+  args:
+    executable: /bin/bash
+  delegate_to: "{{ current_machine }}"
+  register: predeploy_tail
+  changed_when: false
+  failed_when: false
+
+# -----------------------------------------------------------------------------
+# 15) Montar bloco de log + append no pipeline.log (controller)
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Montar conteúdo do log (bloco predeploy)"
+  ansible.builtin.set_fact:
+    predeploy_log_block: |
+      ---- pipeline predeploy ----
+      run_id={{ run_id }}
+      deployment_ref={{ deployment_ref | default('') }}
+      machine={{ current_machine }}
+      host={{ target_host }}
+      package={{ package_name }}
+      stage={{ stage_name }}
+      rc={{ init_parallel_result.rc | default(1) }}
+      ts={{ ansible_date_time.iso8601 }}
+      remote_log={{ remote_init_log }}
+
+      ---- stdout (ansible) ----
+      {{ init_parallel_result.stdout | default('') }}
+
+      ---- stderr (ansible) ----
+      {{ init_parallel_result.stderr | default('') }}
+
+      ---- init_parallel.log (tail) ----
+      {{ predeploy_tail.stdout | default('') }}
+      ---- pipeline predeploy ----
+
+- name: "Predeploy | Append do bloco no pipeline.log (controller)"
+  ansible.builtin.blockinfile:
+    path: "{{ pipeline_log_file }}"
+    marker: ""
+    insertafter: EOF
+    block: |
+      {{ predeploy_log_block }}
+  changed_when: true
+
+# ✅ FileStore: enviar só o log desta execução (não o cumulativo)
+- name: "Predeploy | Definir log_content_to_upload (somente esta execução)"
+  ansible.builtin.set_fact:
+    log_content_to_upload: "{{ predeploy_log_block }}"
+
+# -----------------------------------------------------------------------------
+# 16) Atualizar status final (predeploy:ok / predeploy:error) com history append
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Ler status.json atual"
+  ansible.builtin.slurp:
+    path: "{{ machine_status_file }}"
+  register: status_after_queued_slurp
+
+- name: "Predeploy | Parse do status atual"
+  ansible.builtin.set_fact:
+    status_now: "{{ status_after_queued_slurp.content | b64decode | from_json }}"
+
+- name: "Predeploy | Atualizar status final (append em history)"
+  ansible.builtin.copy:
+    dest: "{{ machine_status_file }}"
+    mode: "0644"
+    content: >-
+      {{
+        (
+          status_now
+          | combine({
+              "run_id": run_id,
+              "stage": stage_name,
+              "status": ("predeploy:ok" if (init_parallel_result.rc | default(1)) == 0 else "predeploy:error"),
+              "timestamp": ansible_date_time.iso8601,
+              "rc": (init_parallel_result.rc | default(1)),
+              "history": (
+                (status_now.history | default([]))
+                + [ {
+                      "run_id": run_id,
+                      "stage": stage_name,
+                      "status": ("predeploy:ok" if (init_parallel_result.rc | default(1)) == 0 else "predeploy:error"),
+                      "rc": (init_parallel_result.rc | default(1)),
+                      "timestamp": ansible_date_time.iso8601
+                    } ]
+              )
+            }, recursive=True)
+        ) | to_nice_json
+      }}
+  changed_when: true
+
+- name: "Predeploy | Definir status_tag_value (tag usada no File Store)"
+  ansible.builtin.set_fact:
+    status_tag_value: "{{ 'predeploy:ok' if (init_parallel_result.rc | default(1)) == 0 else 'predeploy:error' }}"
+
+# -----------------------------------------------------------------------------
+# 17) Upload para Harness File Store (SEMPRE) - não pode quebrar a pipeline
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Upload JSON + LOG para Harness File Store (sempre)"
+  ansible.builtin.include_tasks: harness_filestore_upload.yml
+  vars:
+    stage_name: "predeploy"
+    log_content: "{{ log_content_to_upload }}"
+
+# -----------------------------------------------------------------------------
+# 18) Falhar pipeline se predeploy deu erro (DEPOIS do upload)
+# -----------------------------------------------------------------------------
+- name: "Predeploy | Falhar se init_parallel.sh retornou erro (depois do upload)"
+  ansible.builtin.fail:
+    msg: "PREDEPLOY falhou em {{ current_machine }} (rc={{ init_parallel_result.rc | default(1) }})"
+  when: (init_parallel_result.rc | default(1)) != 0
