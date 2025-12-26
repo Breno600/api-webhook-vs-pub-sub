@@ -1,595 +1,490 @@
-Exec using JSCH
-Connecting to 10.218.238.144 ....
-Connection to 10.218.238.144 established
-Executing command ...
-export GIT_TAG=DEV00001
-Clonando repo em /tmp/tmp.Q1rcolemxZ...
-Cloning into '/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef'...
-remote: Enumerating objects: 1122, done.
-remote: Counting objects:   0% (1/1072)
-remote: Counting objects:   1% (11/1072)
-remote: Counting objects:   2% (22/1072)
-remote: Counting objects:   3% (33/1072)
-remote: Counting objects:   4% (43/1072)
-remote: Counting objects:   5% (54/1072)
-remote: Counting objects:   6% (65/1072)
-remote: Counting objects:   7% (76/1072)
-remote: Counting objects:   8% (86/1072)
-remote: Counting objects:   9% (97/1072)
-remote: Counting objects:  10% (108/1072)
-remote: Counting objects:  11% (118/1072)
-remote: Counting objects:  12% (129/1072)
-remote: Counting objects:  13% (140/1072)
-remote: Counting objects:  14% (151/1072)
-remote: Counting objects:  15% (161/1072)
-remote: Counting objects:  16% (172/1072)
-remote: Counting objects:  17% (183/1072)
-remote: Counting objects:  18% (193/1072)
-remote: Counting objects:  19% (204/1072)
-remote: Counting objects:  20% (215/1072)
-remote: Counting objects:  21% (226/1072)
-remote: Counting objects:  22% (236/1072)
-remote: Counting objects:  23% (247/1072)
-remote: Counting objects:  24% (258/1072)
-remote: Counting objects:  25% (268/1072)
-remote: Counting objects:  26% (279/1072)
-remote: Counting objects:  27% (290/1072)
-remote: Counting objects:  28% (301/1072)
-remote: Counting objects:  29% (311/1072)
-remote: Counting objects:  30% (322/1072)
-remote: Counting objects:  31% (333/1072)
-remote: Counting objects:  32% (344/1072)
-remote: Counting objects:  33% (354/1072)
-remote: Counting objects:  34% (365/1072)
-remote: Counting objects:  35% (376/1072)
-remote: Counting objects:  36% (386/1072)
-remote: Counting objects:  37% (397/1072)
-remote: Counting objects:  38% (408/1072)
-remote: Counting objects:  39% (419/1072)
-remote: Counting objects:  40% (429/1072)
-remote: Counting objects:  41% (440/1072)
-remote: Counting objects:  42% (451/1072)
-remote: Counting objects:  43% (461/1072)
-remote: Counting objects:  44% (472/1072)
-remote: Counting objects:  45% (483/1072)
-remote: Counting objects:  46% (494/1072)
-remote: Counting objects:  47% (504/1072)
-remote: Counting objects:  48% (515/1072)
-remote: Counting objects:  49% (526/1072)
-remote: Counting objects:  50% (536/1072)
-remote: Counting objects:  51% (547/1072)
-remote: Counting objects:  52% (558/1072)
-remote: Counting objects:  53% (569/1072)
-remote: Counting objects:  54% (579/1072)
-remote: Counting objects:  55% (590/1072)
-remote: Counting objects:  56% (601/1072)
-remote: Counting objects:  57% (612/1072)
-remote: Counting objects:  58% (622/1072)
-remote: Counting objects:  59% (633/1072)
-remote: Counting objects:  60% (644/1072)
-remote: Counting objects:  61% (654/1072)
-remote: Counting objects:  62% (665/1072)
-remote: Counting objects:  63% (676/1072)
-remote: Counting objects:  64% (687/1072)
-remote: Counting objects:  65% (697/1072)
-remote: Counting objects:  66% (708/1072)
-remote: Counting objects:  67% (719/1072)
-remote: Counting objects:  68% (729/1072)
-remote: Counting objects:  69% (740/1072)
-remote: Counting objects:  70% (751/1072)
-remote: Counting objects:  71% (762/1072)
-remote: Counting objects:  72% (772/1072)
-remote: Counting objects:  73% (783/1072)
-remote: Counting objects:  74% (794/1072)
-remote: Counting objects:  75% (804/1072)
-remote: Counting objects:  76% (815/1072)
-remote: Counting objects:  77% (826/1072)
-remote: Counting objects:  78% (837/1072)
-remote: Counting objects:  79% (847/1072)
-remote: Counting objects:  80% (858/1072)
-remote: Counting objects:  81% (869/1072)
-remote: Counting objects:  82% (880/1072)
-remote: Counting objects:  83% (890/1072)
-remote: Counting objects:  84% (901/1072)
-remote: Counting objects:  85% (912/1072)
-remote: Counting objects:  86% (922/1072)
-remote: Counting objects:  87% (933/1072)
-remote: Counting objects:  88% (944/1072)
-remote: Counting objects:  89% (955/1072)
-remote: Counting objects:  90% (965/1072)
-remote: Counting objects:  91% (976/1072)
-remote: Counting objects:  92% (987/1072)
-remote: Counting objects:  93% (997/1072)
-remote: Counting objects:  94% (1008/1072)
-remote: Counting objects:  95% (1019/1072)
-remote: Counting objects:  96% (1030/1072)
-remote: Counting objects:  97% (1040/1072)
-remote: Counting objects:  98% (1051/1072)
-remote: Counting objects:  99% (1062/1072)
-remote: Counting objects: 100% (1072/1072)
-remote: Counting objects: 100% (1072/1072), done.
-remote: Compressing objects:   0% (1/310)
-remote: Compressing objects:   1% (4/310)
-remote: Compressing objects:   2% (7/310)
-remote: Compressing objects:   3% (10/310)
-remote: Compressing objects:   4% (13/310)
-remote: Compressing objects:   5% (16/310)
-remote: Compressing objects:   6% (19/310)
-remote: Compressing objects:   7% (22/310)
-remote: Compressing objects:   8% (25/310)
-remote: Compressing objects:   9% (28/310)
-remote: Compressing objects:  10% (31/310)
-remote: Compressing objects:  11% (35/310)
-remote: Compressing objects:  12% (38/310)
-remote: Compressing objects:  13% (41/310)
-remote: Compressing objects:  14% (44/310)
-remote: Compressing objects:  15% (47/310)
-remote: Compressing objects:  16% (50/310)
-remote: Compressing objects:  17% (53/310)
-remote: Compressing objects:  18% (56/310)
-remote: Compressing objects:  19% (59/310)
-remote: Compressing objects:  20% (62/310)
-remote: Compressing objects:  21% (66/310)
-remote: Compressing objects:  22% (69/310)
-remote: Compressing objects:  23% (72/310)
-remote: Compressing objects:  24% (75/310)
-remote: Compressing objects:  25% (78/310)
-remote: Compressing objects:  26% (81/310)
-remote: Compressing objects:  27% (84/310)
-remote: Compressing objects:  28% (87/310)
-remote: Compressing objects:  29% (90/310)
-remote: Compressing objects:  30% (93/310)
-remote: Compressing objects:  31% (97/310)
-remote: Compressing objects:  32% (100/310)
-remote: Compressing objects:  33% (103/310)
-remote: Compressing objects:  34% (106/310)
-remote: Compressing objects:  35% (109/310)
-remote: Compressing objects:  36% (112/310)
-remote: Compressing objects:  37% (115/310)
-remote: Compressing objects:  38% (118/310)
-remote: Compressing objects:  39% (121/310)
-remote: Compressing objects:  40% (124/310)
-remote: Compressing objects:  41% (128/310)
-remote: Compressing objects:  42% (131/310)
-remote: Compressing objects:  43% (134/310)
-remote: Compressing objects:  44% (137/310)
-remote: Compressing objects:  45% (140/310)
-remote: Compressing objects:  46% (143/310)
-remote: Compressing objects:  47% (146/310)
-remote: Compressing objects:  48% (149/310)
-remote: Compressing objects:  49% (152/310)
-remote: Compressing objects:  50% (155/310)
-remote: Compressing objects:  51% (159/310)
-remote: Compressing objects:  52% (162/310)
-remote: Compressing objects:  53% (165/310)
-remote: Compressing objects:  54% (168/310)
-remote: Compressing objects:  55% (171/310)
-remote: Compressing objects:  56% (174/310)
-remote: Compressing objects:  57% (177/310)
-remote: Compressing objects:  58% (180/310)
-remote: Compressing objects:  59% (183/310)
-remote: Compressing objects:  60% (186/310)
-remote: Compressing objects:  61% (190/310)
-remote: Compressing objects:  62% (193/310)
-remote: Compressing objects:  63% (196/310)
-remote: Compressing objects:  64% (199/310)
-remote: Compressing objects:  65% (202/310)
-remote: Compressing objects:  66% (205/310)
-remote: Compressing objects:  67% (208/310)
-remote: Compressing objects:  68% (211/310)
-remote: Compressing objects:  69% (214/310)
-remote: Compressing objects:  70% (217/310)
-remote: Compressing objects:  71% (221/310)
-remote: Compressing objects:  72% (224/310)
-remote: Compressing objects:  73% (227/310)
-remote: Compressing objects:  74% (230/310)
-remote: Compressing objects:  75% (233/310)
-remote: Compressing objects:  76% (236/310)
-remote: Compressing objects:  77% (239/310)
-remote: Compressing objects:  78% (242/310)
-remote: Compressing objects:  79% (245/310)
-remote: Compressing objects:  80% (248/310)
-remote: Compressing objects:  81% (252/310)
-remote: Compressing objects:  82% (255/310)
-remote: Compressing objects:  83% (258/310)
-remote: Compressing objects:  84% (261/310)
-remote: Compressing objects:  85% (264/310)
-remote: Compressing objects:  86% (267/310)
-remote: Compressing objects:  87% (270/310)
-remote: Compressing objects:  88% (273/310)
-remote: Compressing objects:  89% (276/310)
-remote: Compressing objects:  90% (279/310)
-remote: Compressing objects:  91% (283/310)
-remote: Compressing objects:  92% (286/310)
-remote: Compressing objects:  93% (289/310)
-remote: Compressing objects:  94% (292/310)
-remote: Compressing objects:  95% (295/310)
-remote: Compressing objects:  96% (298/310)
-remote: Compressing objects:  97% (301/310)
-remote: Compressing objects:  98% (304/310)
-remote: Compressing objects:  99% (307/310)
-remote: Compressing objects: 100% (310/310)
-remote: Compressing objects: 100% (310/310), done.
-Receiving objects:   0% (1/1122)
-Receiving objects:   1% (12/1122)
-Receiving objects:   2% (23/1122)
-Receiving objects:   3% (34/1122)
-Receiving objects:   4% (45/1122)
-Receiving objects:   5% (57/1122)
-Receiving objects:   6% (68/1122)
-Receiving objects:   7% (79/1122)
-Receiving objects:   8% (90/1122)
-Receiving objects:   9% (101/1122)
-Receiving objects:  10% (113/1122)
-Receiving objects:  11% (124/1122)
-Receiving objects:  12% (135/1122)
-Receiving objects:  13% (146/1122)
-Receiving objects:  14% (158/1122)
-Receiving objects:  15% (169/1122)
-Receiving objects:  16% (180/1122)
-Receiving objects:  17% (191/1122)
-Receiving objects:  18% (202/1122)
-Receiving objects:  19% (214/1122)
-Receiving objects:  20% (225/1122)
-Receiving objects:  21% (236/1122)
-Receiving objects:  22% (247/1122)
-Receiving objects:  23% (259/1122)
-Receiving objects:  24% (270/1122)
-Receiving objects:  25% (281/1122)
-Receiving objects:  26% (292/1122)
-Receiving objects:  27% (303/1122)
-Receiving objects:  28% (315/1122)
-Receiving objects:  29% (326/1122)
-Receiving objects:  30% (337/1122)
-Receiving objects:  31% (348/1122)
-Receiving objects:  32% (360/1122)
-Receiving objects:  33% (371/1122)
-Receiving objects:  34% (382/1122)
-Receiving objects:  35% (393/1122)
-Receiving objects:  36% (404/1122)
-Receiving objects:  37% (416/1122)
-Receiving objects:  38% (427/1122)
-Receiving objects:  39% (438/1122)
-Receiving objects:  40% (449/1122)
-Receiving objects:  41% (461/1122)
-Receiving objects:  42% (472/1122)
-Receiving objects:  43% (483/1122)
-Receiving objects:  44% (494/1122)
-Receiving objects:  45% (505/1122)
-Receiving objects:  46% (517/1122)
-Receiving objects:  47% (528/1122)
-Receiving objects:  48% (539/1122)
-Receiving objects:  49% (550/1122)
-Receiving objects:  50% (561/1122)
-Receiving objects:  51% (573/1122)
-Receiving objects:  52% (584/1122)
-Receiving objects:  53% (595/1122)
-Receiving objects:  54% (606/1122)
-Receiving objects:  55% (618/1122)
-Receiving objects:  56% (629/1122)
-Receiving objects:  57% (640/1122)
-Receiving objects:  58% (651/1122)
-Receiving objects:  59% (662/1122)
-Receiving objects:  60% (674/1122)
-Receiving objects:  61% (685/1122)
-Receiving objects:  62% (696/1122)
-Receiving objects:  63% (707/1122)
-Receiving objects:  64% (719/1122)
-Receiving objects:  65% (730/1122)
-Receiving objects:  66% (741/1122)
-Receiving objects:  67% (752/1122)
-Receiving objects:  68% (763/1122)
-Receiving objects:  69% (775/1122)
-Receiving objects:  70% (786/1122)
-Receiving objects:  71% (797/1122)
-Receiving objects:  72% (808/1122)
-Receiving objects:  73% (820/1122)
-Receiving objects:  74% (831/1122)
-Receiving objects:  75% (842/1122)
-Receiving objects:  76% (853/1122)
-Receiving objects:  77% (864/1122)
-Receiving objects:  78% (876/1122)
-Receiving objects:  79% (887/1122)
-Receiving objects:  80% (898/1122)
-Receiving objects:  81% (909/1122)
-Receiving objects:  82% (921/1122)
-Receiving objects:  83% (932/1122)
-Receiving objects:  84% (943/1122)
-Receiving objects:  85% (954/1122)
-remote: Total 1122 (delta 780), reused 1035 (delta 747), pack-reused 50
-Receiving objects:  86% (965/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects:  87% (977/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects:  88% (988/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects:  89% (999/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects:  90% (1010/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects:  91% (1022/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects:  92% (1033/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects:  93% (1044/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects:  94% (1055/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects:  95% (1066/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects:  96% (1078/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects:  97% (1089/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects:  98% (1100/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects:  99% (1111/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects: 100% (1122/1122), 727.77 KiB | 1.41 MiB/s
-Receiving objects: 100% (1122/1122), 989.30 KiB | 1.79 MiB/s, done.
-Resolving deltas:   0% (0/799)
-Resolving deltas:   1% (8/799)
-Resolving deltas:   2% (16/799)
-Resolving deltas:   3% (24/799)
-Resolving deltas:   4% (32/799)
-Resolving deltas:   5% (40/799)
-Resolving deltas:   6% (48/799)
-Resolving deltas:   7% (56/799)
-Resolving deltas:   8% (64/799)
-Resolving deltas:   9% (72/799)
-Resolving deltas:  10% (80/799)
-Resolving deltas:  11% (88/799)
-Resolving deltas:  12% (96/799)
-Resolving deltas:  13% (104/799)
-Resolving deltas:  14% (112/799)
-Resolving deltas:  15% (120/799)
-Resolving deltas:  16% (128/799)
-Resolving deltas:  17% (136/799)
-Resolving deltas:  18% (144/799)
-Resolving deltas:  19% (152/799)
-Resolving deltas:  20% (160/799)
-Resolving deltas:  21% (168/799)
-Resolving deltas:  22% (176/799)
-Resolving deltas:  23% (184/799)
-Resolving deltas:  24% (192/799)
-Resolving deltas:  25% (200/799)
-Resolving deltas:  26% (208/799)
-Resolving deltas:  27% (216/799)
-Resolving deltas:  28% (224/799)
-Resolving deltas:  29% (232/799)
-Resolving deltas:  30% (240/799)
-Resolving deltas:  31% (248/799)
-Resolving deltas:  32% (256/799)
-Resolving deltas:  33% (264/799)
-Resolving deltas:  34% (272/799)
-Resolving deltas:  35% (280/799)
-Resolving deltas:  36% (288/799)
-Resolving deltas:  37% (296/799)
-Resolving deltas:  38% (304/799)
-Resolving deltas:  39% (312/799)
-Resolving deltas:  40% (320/799)
-Resolving deltas:  41% (328/799)
-Resolving deltas:  42% (336/799)
-Resolving deltas:  43% (344/799)
-Resolving deltas:  44% (352/799)
-Resolving deltas:  45% (360/799)
-Resolving deltas:  46% (368/799)
-Resolving deltas:  47% (376/799)
-Resolving deltas:  48% (384/799)
-Resolving deltas:  49% (392/799)
-Resolving deltas:  50% (400/799)
-Resolving deltas:  51% (408/799)
-Resolving deltas:  52% (416/799)
-Resolving deltas:  53% (424/799)
-Resolving deltas:  54% (432/799)
-Resolving deltas:  55% (440/799)
-Resolving deltas:  56% (448/799)
-Resolving deltas:  57% (456/799)
-Resolving deltas:  58% (464/799)
-Resolving deltas:  59% (472/799)
-Resolving deltas:  60% (480/799)
-Resolving deltas:  61% (488/799)
-Resolving deltas:  62% (496/799)
-Resolving deltas:  63% (504/799)
-Resolving deltas:  64% (512/799)
-Resolving deltas:  65% (520/799)
-Resolving deltas:  66% (528/799)
-Resolving deltas:  67% (536/799)
-Resolving deltas:  68% (544/799)
-Resolving deltas:  69% (552/799)
-Resolving deltas:  70% (560/799)
-Resolving deltas:  71% (568/799)
-Resolving deltas:  72% (576/799)
-Resolving deltas:  73% (584/799)
-Resolving deltas:  74% (592/799)
-Resolving deltas:  75% (600/799)
-Resolving deltas:  76% (608/799)
-Resolving deltas:  77% (616/799)
-Resolving deltas:  78% (624/799)
-Resolving deltas:  79% (632/799)
-Resolving deltas:  80% (640/799)
-Resolving deltas:  81% (648/799)
-Resolving deltas:  82% (656/799)
-Resolving deltas:  83% (664/799)
-Resolving deltas:  84% (672/799)
-Resolving deltas:  85% (680/799)
-Resolving deltas:  86% (688/799)
-Resolving deltas:  87% (696/799)
-Resolving deltas:  88% (704/799)
-Resolving deltas:  89% (712/799)
-Resolving deltas:  90% (720/799)
-Resolving deltas:  91% (728/799)
-Resolving deltas:  92% (736/799)
-Resolving deltas:  93% (744/799)
-Resolving deltas:  94% (752/799)
-Resolving deltas:  95% (760/799)
-Resolving deltas:  96% (768/799)
-Resolving deltas:  97% (776/799)
-Resolving deltas:  98% (784/799)
-Resolving deltas:  99% (792/799)
-Resolving deltas: 100% (799/799)
-Resolving deltas: 100% (799/799), done.
-== PIPELINE PREDEPLOY ==
-TAG   : DEV00001
-EXEC  : execution/machine_list_dev.yml
-BRANCH: develop-testes
-PLAY [Predeploy a partir do arquivo de execução] *******************************
-TASK [Gathering Facts] *********************************************************
-ok: [localhost]
-TASK [Resolver filestore_env e filestore_base_dir sem recursão] ****************
-ok: [localhost]
-TASK [Mostrar variáveis de entrada e resolvidas] *******************************
-ok: [localhost] => {
-    "msg": [
-        "execution_file_name_resolved = execution/machine_list_dev.yml",
-        "deployment_ref_resolved      = DEV00001",
-        "repo_root_resolved           = /tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/..",
-        "status_dir_resolved          = /tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../status/DEV00001",
-        "filestore_env_resolved       = dev",
-        "filestore_base_dir_resolved  = dev/DEV00001",
-        "nexus_base_url_resolved      = https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev"
-    ]
-}
-TASK [Criar diretório de status da TAG] ****************************************
-changed: [localhost]
-TASK [Carregar arquivo de execução] ********************************************
-ok: [localhost]
-TASK [Falhar se não tiver máquinas no arquivo de execução] *********************
-skipping: [localhost]
-TASK [Executar pré-deploy por máquina] *****************************************
-included: /tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/predeploy_per_machine.yml for localhost => (item=sitef-02)
-TASK [Predeploy | Resolver nome da máquina atual] ******************************
-ok: [localhost]
-TASK [Predeploy | Validar vars mínimas] ****************************************
-ok: [localhost] => {
-    "changed": false,
-    "msg": "All assertions passed"
-}
-TASK [Predeploy | Definir paths base do repositório] ***************************
-ok: [localhost]
-TASK [Predeploy | Definir candidatos de arquivo da máquina] ********************
-ok: [localhost]
-TASK [Predeploy | Verificar candidatos] ****************************************
-ok: [localhost] => (item=/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml)
-ok: [localhost] => (item=/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml)
-TASK [Predeploy | Selecionar machine_file existente] ***************************
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 248, 'inode': 4417905, 'dev': 64775, 'nlink': 1, 'atime': 1766709611.2848675, 'mtime': 1766709611.2708673, 'ctime': 1766709611.2708673, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': '005e3367129d5aefc77f49fd9fe62b4e58c51cd5', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '3494994605', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
-TASK [Predeploy | Falhar se arquivo da máquina não existir] ********************
-skipping: [localhost]
-TASK [Predeploy | Carregar config da máquina sitef-02] *************************
-ok: [localhost]
-TASK [Predeploy | Validar package definido] ************************************
-ok: [localhost] => {
-    "changed": false,
-    "msg": "All assertions passed"
-}
-TASK [Predeploy | Carregar config do pacote sitef-core-0.0.1-0] ****************
-ok: [localhost]
-TASK [Predeploy | Validar components do pacote] ********************************
-ok: [localhost] => {
-    "changed": false,
-    "msg": "All assertions passed"
-}
-TASK [Predeploy | Validar script do pacote] ************************************
-ok: [localhost] => {
-    "changed": false,
-    "msg": "All assertions passed"
-}
-TASK [Predeploy | Definir usuário alvo padrão] *********************************
-ok: [localhost]
-TASK [Predeploy | Definir ssh_common_args padrão] ******************************
-ok: [localhost]
-TASK [Predeploy | Aplicar ProxyJump via bastion (quando necessário)] ***********
-skipping: [localhost]
-TASK [Predeploy | Registrar host dinâmico para sitef-02] ***********************
-changed: [localhost]
-TASK [Predeploy | Montar env final (package base + machine override)] **********
-ok: [localhost]
-TASK [Predeploy | Normalizações] ***********************************************
-ok: [localhost]
-TASK [Predeploy | Gerar run_id] ************************************************
-ok: [localhost]
-TASK [Predeploy | Definir arquivos/diretórios locais] **************************
-ok: [localhost]
-TASK [Predeploy | Definir paths lógicos (File Store) SEPARADOS POR STAGE] ******
-ok: [localhost]
-TASK [Predeploy | Garantir diretório de status local] **************************
-changed: [localhost]
-TASK [Predeploy | Garantir arquivo pipeline.log (cumulativo local)] ************
-changed: [localhost]
-TASK [Predeploy | Verificar se status.json já existe] **************************
-ok: [localhost]
-TASK [Predeploy | Ler status.json existente (se existir)] **********************
-skipping: [localhost]
-TASK [Predeploy | Parse do status existente (ou base vazio)] *******************
-ok: [localhost]
-TASK [Predeploy | Escrever status inicial (predeploy:queued) com history append] ***
-changed: [localhost]
-TASK [Predeploy | Definir diretórios remotos do pipeline] **********************
-ok: [localhost]
-TASK [Predeploy | Garantir base do pipeline no host] ***************************
-ok: [localhost -> sitef-02(100.99.57.128)] => (item=/opt/SoftwareExpress/sitef-pipeline/deploy/components)
-ok: [localhost -> sitef-02(100.99.57.128)] => (item=/opt/SoftwareExpress/sitef-pipeline/deploy/scripts)
-ok: [localhost -> sitef-02(100.99.57.128)] => (item=/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package)
-TASK [Predeploy | Limpar pasta de scripts do pacote] ***************************
-changed: [localhost -> sitef-02(100.99.57.128)]
-TASK [Predeploy | Recriar pasta de scripts do pacote] **************************
-changed: [localhost -> sitef-02(100.99.57.128)]
-TASK [Predeploy | Copiar package.yml para o host] ******************************
-changed: [localhost -> sitef-02(100.99.57.128)]
-TASK [Predeploy | Garantir diretórios dos componentes no host] *****************
-ok: [localhost -> sitef-02(100.99.57.128)] => (item=packages/linux/sitef-core-0.0.1-0.x86_64.rpm)
-TASK [Predeploy | Baixar componentes do Nexus] *********************************
-ok: [localhost -> sitef-02(100.99.57.128)] => (item=packages/linux/sitef-core-0.0.1-0.x86_64.rpm)
-TASK [Predeploy | Copiar scripts do pacote para o host] ************************
-ok: [localhost -> sitef-02(100.99.57.128)]
-TASK [Predeploy | Executar init_parallel.sh no host (com log + stdout)] ********
-changed: [localhost -> sitef-02(100.99.57.128)]
-TASK [Predeploy | Tail do init_parallel.log (sempre)] **************************
-ok: [localhost -> sitef-02(100.99.57.128)]
-TASK [Predeploy | Montar conteúdo do log (bloco predeploy)] ********************
-ok: [localhost]
-TASK [Predeploy | Append do bloco no pipeline.log (controller)] ****************
-changed: [localhost]
-TASK [Predeploy | Carregar conteúdo completo do pipeline.log (controller)] *****
-ok: [localhost]
-TASK [Predeploy | Ler status.json atual] ***************************************
-ok: [localhost]
-TASK [Predeploy | Parse do status atual] ***************************************
-ok: [localhost]
-TASK [Predeploy | Atualizar status final (append em history)] ******************
-changed: [localhost]
-TASK [Predeploy | Definir status_tag_value (tag usada no File Store)] **********
-ok: [localhost]
-TASK [Predeploy | Upload JSON + LOG para Harness File Store (sempre)] **********
-included: /tmp/tmp.Q1rcolemxZ/elastic-compute-cloud-sitef/ansible/harness_filestore_upload.yml for localhost
-TASK [Harness | Validar vars mínimas] ******************************************
-ok: [localhost] => {
-    "changed": false,
-    "msg": "All assertions passed"
-}
-TASK [Harness | Definir defaults + normalizações (parte 1)] ********************
-ok: [localhost]
-TASK [Harness | Definir stage_label (parte 2)] *********************************
-ok: [localhost]
-TASK [Harness | Identifiers SAFE (HARNESS RULE: [A-Za-z][A-Za-z0-9_]{0,127})] ***
-ok: [localhost]
-TASK [Harness | Limitar machine_stage_identifier a 128 (se precisar)] **********
-ok: [localhost]
-TASK [Harness | Resolver token (vars > env)] ***********************************
-ok: [localhost]
-TASK [Harness | Debug seguro do token (não mostra valor)] **********************
-ok: [localhost] => {
-    "msg": "Harness token presente? True (len=72)"
-}
-TASK [Harness | Falhar se token vazio] *****************************************
-ok: [localhost] => {
-    "changed": false,
-    "msg": "All assertions passed"
-}
-TASK [Harness | Map token para header x-api-key] *******************************
-ok: [localhost]
-TASK [Harness | Montar tags base] **********************************************
-ok: [localhost]
-TASK [Harness | Adicionar extra_tags como tag=...] *****************************
-skipping: [localhost]
-TASK [Harness | Definir http_codes aceitos] ************************************
-ok: [localhost]
-TASK [Harness | Render tags JSON] **********************************************
-ok: [localhost]
-TASK [Harness | Garantir folder ENV (POST)] ************************************
-fatal: [localhost]: FAILED! => {"msg": "An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key_resolved }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ harness_x_api_key | default('') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: recursive loop detected in template string: {{ harness_x_api_key | default('') }}. maximum recursion depth exceeded while calling a Python object"}
-PLAY RECAP *********************************************************************
-localhost                  : ok=60   changed=11   unreachable=0    failed=1    skipped=5    rescued=0    ignored=0   
-Command finished with status FAILURE
+---
+# =====================================================================================
+# HARNESS FILE STORE - UPLOAD (por máquina) - SIMPLES / SEM LOOKUP
+#
+# Estrutura:
+#   dev/$GIT_TAG/$MACHINE-(PRE-DEPLOY|DEPLOY|ROLLBACK)
+#
+# Requer:
+#   current_machine, deployment_ref, filestore_env, machine_status_file, log_content, status_tag_value
+# Opcional:
+#   stage_name (predeploy|deploy|rollback)  (default: predeploy)
+#   extra_tags []
+# Token:
+#   harness_api_key_override (var) OU env: HARNESS_API_KEY / HARNESS_PAT / HARNESS_TOKEN
+# =====================================================================================
+
+- name: "Harness | Validar vars mínimas"
+  ansible.builtin.assert:
+    that:
+      - current_machine is defined
+      - deployment_ref is defined
+      - filestore_env is defined
+      - machine_status_file is defined
+      - log_content is defined
+      - status_tag_value is defined
+    fail_msg: "Faltam vars obrigatórias para harness_filestore_upload.yml"
+
+- name: "Harness | Definir defaults + normalizações"
+  ansible.builtin.set_fact:
+    harness_account_id_resolved: >-
+      {{
+        (harness_account_id_override | default('', true) | string | trim)
+          | default((lookup('ansible.builtin.env','HARNESS_ACCOUNT_ID') | default('', true) | string | trim), true)
+          | default('fgDto6qoTT6ctfZS9eWbEw', true)
+      }}
+    harness_org_id_resolved: >-
+      {{
+        (harness_org_id_override | default('', true) | string | trim)
+          | default((lookup('ansible.builtin.env','HARNESS_ORG_ID') | default('', true) | string | trim), true)
+          | default('Fiserv', true)
+      }}
+    harness_project_id_resolved: >-
+      {{
+        (harness_project_id_override | default('', true) | string | trim)
+          | default((lookup('ansible.builtin.env','HARNESS_PROJECT_ID') | default('', true) | string | trim), true)
+          | default('sitef', true)
+      }}
+    harness_filestore_root_identifier_resolved: >-
+      {{
+        (harness_filestore_root_identifier_override | default('', true) | string | trim)
+          | default((lookup('ansible.builtin.env','HARNESS_FILESTORE_ROOT_IDENTIFIER') | default('', true) | string | trim), true)
+          | default('Root', true)
+      }}
+
+    harness_api_base: "https://harness.onefiserv.net/ng/api/file-store"
+
+    env_lower: "{{ (filestore_env | string | trim | lower) }}"
+    deployment_ref_folder: "{{ (deployment_ref_folder | default(deployment_ref)) | string | trim }}"
+    deployment_ref_lower: "{{ (deployment_ref | string | trim | lower) }}"
+    stage_raw: "{{ (stage_name | default('predeploy')) | string | trim | lower }}"
+
+- name: "Harness | Definir stage_label"
+  ansible.builtin.set_fact:
+    stage_label: "{{ {'predeploy':'PRE-DEPLOY','deploy':'DEPLOY','rollback':'ROLLBACK'}.get(stage_raw, stage_raw | upper) }}"
+    machine_stage_name: "{{ (current_machine | string | trim) ~ '-' ~ stage_label }}"
+
+# -----------------------------------------------------------------------------
+# TOKEN (sem recursão)
+# -----------------------------------------------------------------------------
+- name: "Harness | Resolver token (vars > env)"
+  no_log: true
+  ansible.builtin.set_fact:
+    harness_api_key_resolved: >-
+      {{
+        (harness_api_key_override | default('', true) | string | trim)
+          | default((lookup('ansible.builtin.env','HARNESS_API_KEY') | default('', true) | string | trim), true)
+          | default((lookup('ansible.builtin.env','HARNESS_PAT')     | default('', true) | string | trim), true)
+          | default((lookup('ansible.builtin.env','HARNESS_TOKEN')   | default('', true) | string | trim), true)
+      }}
+
+- name: "Harness | Falhar se token vazio"
+  ansible.builtin.assert:
+    that:
+      - (harness_api_key_resolved | default('') | length) > 10
+    fail_msg: >-
+      Harness token não encontrado. Defina harness_api_key_override OU exporte
+      HARNESS_API_KEY (ou HARNESS_PAT / HARNESS_TOKEN) no step ANTES do ansible.
+
+- name: "Harness | Definir http_codes aceitos"
+  ansible.builtin.set_fact:
+    hfs_ok_folder_codes: ["200","201","202","409"]
+    hfs_ok_file_codes:   ["200","201","202"]
+    hfs_retry_opts: "--connect-timeout 10 --max-time 60 --retry 2 --retry-delay 1 --retry-connrefused"
+
+# -----------------------------------------------------------------------------
+# Tags
+# -----------------------------------------------------------------------------
+- name: "Harness | Montar tags base"
+  ansible.builtin.set_fact:
+    harness_tags:
+      - { key: "env",        value: "{{ env_lower }}" }
+      - { key: "deployment", value: "{{ deployment_ref_lower }}" }
+      - { key: "machine",    value: "{{ current_machine | lower }}" }
+      - { key: "stage",      value: "{{ stage_label }}" }
+      - { key: "tag",        value: "{{ status_tag_value }}" }
+
+- name: "Harness | Adicionar extra_tags como tag=..."
+  ansible.builtin.set_fact:
+    harness_tags: "{{ harness_tags + [ {'key':'tag','value': (item | string | trim)} ] }}"
+  loop: "{{ extra_tags | default([]) }}"
+  when: (item | string | trim | length) > 0
+
+- name: "Harness | Render tags JSON"
+  ansible.builtin.set_fact:
+    harness_tags_json: "{{ harness_tags | to_json }}"
+
+# -----------------------------------------------------------------------------
+# Identifiers SIMPLES: usar identifier = name (isso evita lookup e bate com o que já existe)
+# Regras Harness: [A-Za-z][A-Za-z0-9_]{0,127}
+# -----------------------------------------------------------------------------
+- name: "Harness | Identifiers (simples, compatível com pastas já existentes)"
+  ansible.builtin.set_fact:
+    # ENV: usa o próprio nome "dev"
+    env_identifier_final: "{{ env_lower }}"
+
+    # GIT_TAG: usa o próprio nome (ex: DEV00001) se começar com letra, senão prefixa
+    deployment_ref_identifier_raw: "{{ deployment_ref_folder | regex_replace('[^A-Za-z0-9_]', '_') }}"
+    deployment_ref_identifier_final: >-
+      {{
+        (deployment_ref_identifier_raw)
+        if (deployment_ref_identifier_raw | regex_search('^[A-Za-z]')) else ('d_' ~ deployment_ref_identifier_raw)
+      }}
+
+    # LEAF: derive do nome e sanitize
+    leaf_identifier_raw: "{{ (machine_stage_name | lower) | regex_replace('[^A-Za-z0-9_]', '_') }}"
+    leaf_identifier_raw2: >-
+      {{
+        (leaf_identifier_raw)
+        if (leaf_identifier_raw | regex_search('^[A-Za-z]')) else ('p_' ~ leaf_identifier_raw)
+      }}
+
+- name: "Harness | Limitar leaf_identifier a 128 (se precisar)"
+  ansible.builtin.set_fact:
+    leaf_identifier_final: >-
+      {{
+        (leaf_identifier_raw2[0:110] ~ '_' ~ (leaf_identifier_raw2 | hash('sha1'))[0:16])
+        if (leaf_identifier_raw2 | length) > 128 else leaf_identifier_raw2
+      }}
+
+# -----------------------------------------------------------------------------
+# 1) Garantir folder ENV (dev) embaixo do Root
+# -----------------------------------------------------------------------------
+- name: "Harness | Garantir folder ENV (POST)"
+  ansible.builtin.shell: |
+    set -o pipefail
+    http="$(curl --http1.1 -sS {{ hfs_retry_opts }} -o /tmp/hfs_env_create.out -w "%{http_code}" \
+      --request POST \
+      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+      -H "x-api-key: ${HARNESS_X_API_KEY}" -H "Expect:" \
+      -F "name={{ env_lower }}" \
+      -F "type=FOLDER" \
+      -F "parentIdentifier={{ harness_filestore_root_identifier_resolved }}" \
+      -F "identifier={{ env_identifier_final }}" \
+      -F 'tags={{ harness_tags_json }}' \
+    )"
+    echo "${http}"
+  args:
+    executable: /bin/bash
+  environment:
+    HARNESS_X_API_KEY: "{{ harness_api_key_resolved }}"
+  register: hfs_env_create_http
+  failed_when: false
+  changed_when: hfs_env_create_http.stdout | trim in ['200','201']
+
+- name: "Harness | Ler body ENV"
+  ansible.builtin.shell: "cat /tmp/hfs_env_create.out 2>/dev/null || true"
+  args:
+    executable: /bin/bash
+  register: hfs_env_create_body
+  changed_when: false
+  failed_when: false
+
+- name: "Harness | Marcar ENV duplicate?"
+  ansible.builtin.set_fact:
+    hfs_env_http_code: "{{ hfs_env_create_http.stdout | default('') | string | trim }}"
+    hfs_env_is_duplicate: >-
+      {{
+        (hfs_env_create_http.stdout | default('') | string | trim) == '400'
+        and ((hfs_env_create_body.stdout | default('') | string) is regex('.*DUPLICATE_FIELD.*'))
+      }}
+
+- name: "Harness | Falhar ENV se não OK"
+  ansible.builtin.fail:
+    msg: |
+      Falha ao criar/garantir folder ENV no Harness.
+      http_code={{ hfs_env_http_code }}
+      body={{ hfs_env_create_body.stdout | default('') }}
+  when:
+    - (hfs_env_http_code not in hfs_ok_folder_codes)
+    - not (hfs_env_is_duplicate | bool)
+
+# -----------------------------------------------------------------------------
+# 2) Garantir folder GIT_TAG embaixo do ENV
+# -----------------------------------------------------------------------------
+- name: "Harness | Garantir folder GIT_TAG (POST)"
+  ansible.builtin.shell: |
+    set -o pipefail
+    http="$(curl --http1.1 -sS {{ hfs_retry_opts }} -o /tmp/hfs_ref_create.out -w "%{http_code}" \
+      --request POST \
+      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+      -H "x-api-key: ${HARNESS_X_API_KEY}" -H "Expect:" \
+      -F "name={{ deployment_ref_folder }}" \
+      -F "type=FOLDER" \
+      -F "parentIdentifier={{ env_identifier_final }}" \
+      -F "identifier={{ deployment_ref_identifier_final }}" \
+      -F 'tags={{ harness_tags_json }}' \
+    )"
+    echo "${http}"
+  args:
+    executable: /bin/bash
+  environment:
+    HARNESS_X_API_KEY: "{{ harness_api_key_resolved }}"
+  register: hfs_ref_create_http
+  failed_when: false
+  changed_when: hfs_ref_create_http.stdout | trim in ['200','201']
+
+- name: "Harness | Ler body GIT_TAG"
+  ansible.builtin.shell: "cat /tmp/hfs_ref_create.out 2>/dev/null || true"
+  args:
+    executable: /bin/bash
+  register: hfs_ref_create_body
+  changed_when: false
+  failed_when: false
+
+- name: "Harness | Marcar GIT_TAG duplicate?"
+  ansible.builtin.set_fact:
+    hfs_ref_http_code: "{{ hfs_ref_create_http.stdout | default('') | string | trim }}"
+    hfs_ref_is_duplicate: >-
+      {{
+        (hfs_ref_create_http.stdout | default('') | string | trim) == '400'
+        and ((hfs_ref_create_body.stdout | default('') | string) is regex('.*DUPLICATE_FIELD.*'))
+      }}
+
+- name: "Harness | Falhar GIT_TAG se não OK"
+  ansible.builtin.fail:
+    msg: |
+      Falha ao criar/garantir folder GIT_TAG no Harness.
+      http_code={{ hfs_ref_http_code }}
+      body={{ hfs_ref_create_body.stdout | default('') }}
+  when:
+    - (hfs_ref_http_code not in hfs_ok_folder_codes)
+    - not (hfs_ref_is_duplicate | bool)
+
+# -----------------------------------------------------------------------------
+# 3) Garantir folder LEAF (MACHINE-STAGE) embaixo do GIT_TAG
+# -----------------------------------------------------------------------------
+- name: "Harness | Garantir folder LEAF (POST)"
+  ansible.builtin.shell: |
+    set -o pipefail
+    http="$(curl --http1.1 -sS {{ hfs_retry_opts }} -o /tmp/hfs_leaf_create.out -w "%{http_code}" \
+      --request POST \
+      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+      -H "x-api-key: ${HARNESS_X_API_KEY}" -H "Expect:" \
+      -F "name={{ machine_stage_name }}" \
+      -F "type=FOLDER" \
+      -F "parentIdentifier={{ deployment_ref_identifier_final }}" \
+      -F "identifier={{ leaf_identifier_final }}" \
+      -F 'tags={{ harness_tags_json }}' \
+    )"
+    echo "${http}"
+  args:
+    executable: /bin/bash
+  environment:
+    HARNESS_X_API_KEY: "{{ harness_api_key_resolved }}"
+  register: hfs_leaf_create_http
+  failed_when: false
+  changed_when: hfs_leaf_create_http.stdout | trim in ['200','201']
+
+- name: "Harness | Ler body LEAF"
+  ansible.builtin.shell: "cat /tmp/hfs_leaf_create.out 2>/dev/null || true"
+  args:
+    executable: /bin/bash
+  register: hfs_leaf_create_body
+  changed_when: false
+  failed_when: false
+
+- name: "Harness | Marcar LEAF duplicate?"
+  ansible.builtin.set_fact:
+    hfs_leaf_http_code: "{{ hfs_leaf_create_http.stdout | default('') | string | trim }}"
+    hfs_leaf_is_duplicate: >-
+      {{
+        (hfs_leaf_create_http.stdout | default('') | string | trim) == '400'
+        and ((hfs_leaf_create_body.stdout | default('') | string) is regex('.*DUPLICATE_FIELD.*'))
+      }}
+
+- name: "Harness | Falhar LEAF se não OK"
+  ansible.builtin.fail:
+    msg: |
+      Falha ao criar/garantir folder LEAF no Harness.
+      http_code={{ hfs_leaf_http_code }}
+      body={{ hfs_leaf_create_body.stdout | default('') }}
+  when:
+    - (hfs_leaf_http_code not in hfs_ok_folder_codes)
+    - not (hfs_leaf_is_duplicate | bool)
+
+# -----------------------------------------------------------------------------
+# 4) Upload/Upsert STATUS JSON (POST -> se 409 ou DUPLICATE faz PUT)
+# -----------------------------------------------------------------------------
+- name: "Harness | Definir identifiers do STATUS"
+  ansible.builtin.set_fact:
+    hfs_status_name: "status.json"
+    hfs_status_parent_identifier: "{{ leaf_identifier_final }}"
+    hfs_status_identifier_raw: "{{ ('status_' ~ deployment_ref_identifier_final ~ '_' ~ leaf_identifier_final) | regex_replace('[^A-Za-z0-9_]', '_') }}"
+
+- name: "Harness | Limitar identifier STATUS a 128"
+  ansible.builtin.set_fact:
+    hfs_status_identifier: >-
+      {{
+        (hfs_status_identifier_raw[0:110] ~ '_' ~ (hfs_status_identifier_raw | hash('sha1'))[0:16])
+        if (hfs_status_identifier_raw | length) > 128 else hfs_status_identifier_raw
+      }}
+
+- name: "Harness | CREATE status.json"
+  ansible.builtin.shell: |
+    set -o pipefail
+    http="$(curl --http1.1 -sS {{ hfs_retry_opts }} -o /tmp/hfs_status_create.out -w "%{http_code}" \
+      --request POST \
+      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+      -H "x-api-key: ${HARNESS_X_API_KEY}" -H "Expect:" \
+      -F "name={{ hfs_status_name }}" \
+      -F "type=FILE" \
+      -F "parentIdentifier={{ hfs_status_parent_identifier }}" \
+      -F "identifier={{ hfs_status_identifier }}" \
+      -F 'tags={{ harness_tags_json }}' \
+      -F "content=@{{ machine_status_file }}" \
+    )"
+    echo "${http}"
+  args:
+    executable: /bin/bash
+  environment:
+    HARNESS_X_API_KEY: "{{ harness_api_key_resolved }}"
+  register: hfs_status_create_http
+  failed_when: false
+  changed_when: (hfs_status_create_http.stdout | trim) is match('^2..$')
+
+- name: "Harness | Ler body status CREATE"
+  ansible.builtin.shell: "cat /tmp/hfs_status_create.out 2>/dev/null || true"
+  args:
+    executable: /bin/bash
+  register: hfs_status_create_body
+  changed_when: false
+  failed_when: false
+
+- name: "Harness | UPDATE status.json (se já existe)"
+  ansible.builtin.shell: |
+    set -o pipefail
+    http="$(curl --http1.1 -sS {{ hfs_retry_opts }} -o /tmp/hfs_status_update.out -w "%{http_code}" \
+      --request PUT \
+      "{{ harness_api_base }}/{{ hfs_status_identifier }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+      -H "x-api-key: ${HARNESS_X_API_KEY}" -H "Expect:" \
+      -F "name={{ hfs_status_name }}" \
+      -F "type=FILE" \
+      -F "parentIdentifier={{ hfs_status_parent_identifier }}" \
+      -F "identifier={{ hfs_status_identifier }}" \
+      -F 'tags={{ harness_tags_json }}' \
+      -F "content=@{{ machine_status_file }}" \
+    )"
+    echo "${http}"
+  args:
+    executable: /bin/bash
+  environment:
+    HARNESS_X_API_KEY: "{{ harness_api_key_resolved }}"
+  register: hfs_status_update_http
+  when: >
+    (hfs_status_create_http.stdout | default('') | trim) in ['409','400']
+    or ((hfs_status_create_body.stdout | default('') | string) is regex('.*DUPLICATE_FIELD.*'))
+  failed_when: false
+  changed_when: (hfs_status_update_http.stdout | default('') | trim) is match('^2..$')
+
+- name: "Harness | Falhar status se create e update não deram certo"
+  ansible.builtin.fail:
+    msg: |
+      Falha ao enviar status.json
+      create_http={{ hfs_status_create_http.stdout | default('') | trim }}
+      create_body={{ hfs_status_create_body.stdout | default('') }}
+      update_http={{ hfs_status_update_http.stdout | default('') | trim }}
+  when: >
+    not ((hfs_status_create_http.stdout | default('') | trim) is match('^2..$'))
+    and not ((hfs_status_update_http.stdout | default('') | trim) is match('^2..$'))
+
+# -----------------------------------------------------------------------------
+# 5) Upload/Upsert LOG (POST -> se 409 ou DUPLICATE faz PUT)
+# -----------------------------------------------------------------------------
+- name: "Harness | Definir identifiers do LOG"
+  ansible.builtin.set_fact:
+    hfs_log_name: "pipeline.log"
+    hfs_log_parent_identifier: "{{ leaf_identifier_final }}"
+    hfs_log_identifier_raw: "{{ ('log_' ~ deployment_ref_identifier_final ~ '_' ~ leaf_identifier_final) | regex_replace('[^A-Za-z0-9_]', '_') }}"
+
+- name: "Harness | Limitar identifier LOG a 128"
+  ansible.builtin.set_fact:
+    hfs_log_identifier: >-
+      {{
+        (hfs_log_identifier_raw[0:110] ~ '_' ~ (hfs_log_identifier_raw | hash('sha1'))[0:16])
+        if (hfs_log_identifier_raw | length) > 128 else hfs_log_identifier_raw
+      }}
+
+- name: "Harness | Upload do LOG (create/update) com cleanup garantido"
+  block:
+    - name: "Harness | Criar arquivo temporário do log no controller"
+      ansible.builtin.copy:
+        dest: "/tmp/{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-{{ stage_raw }}.log"
+        mode: "0600"
+        content: "{{ log_content }}"
+
+    - name: "Harness | CREATE pipeline.log"
+      ansible.builtin.shell: |
+        set -o pipefail
+        http="$(curl --http1.1 -sS {{ hfs_retry_opts }} -o /tmp/hfs_log_create.out -w "%{http_code}" \
+          --request POST \
+          "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+          -H "x-api-key: ${HARNESS_X_API_KEY}" -H "Expect:" \
+          -F "name={{ hfs_log_name }}" \
+          -F "type=FILE" \
+          -F "parentIdentifier={{ hfs_log_parent_identifier }}" \
+          -F "identifier={{ hfs_log_identifier }}" \
+          -F 'tags={{ harness_tags_json }}' \
+          -F "content=@/tmp/{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-{{ stage_raw }}.log" \
+        )"
+        echo "${http}"
+      args:
+        executable: /bin/bash
+      environment:
+        HARNESS_X_API_KEY: "{{ harness_api_key_resolved }}"
+      register: hfs_log_create_http
+      failed_when: false
+      changed_when: (hfs_log_create_http.stdout | default('') | trim) is match('^2..$')
+
+    - name: "Harness | Ler body log CREATE"
+      ansible.builtin.shell: "cat /tmp/hfs_log_create.out 2>/dev/null || true"
+      args:
+        executable: /bin/bash
+      register: hfs_log_create_body
+      changed_when: false
+      failed_when: false
+
+    - name: "Harness | UPDATE pipeline.log (se já existe)"
+      ansible.builtin.shell: |
+        set -o pipefail
+        http="$(curl --http1.1 -sS {{ hfs_retry_opts }} -o /tmp/hfs_log_update.out -w "%{http_code}" \
+          --request PUT \
+          "{{ harness_api_base }}/{{ hfs_log_identifier }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
+          -H "x-api-key: ${HARNESS_X_API_KEY}" -H "Expect:" \
+          -F "name={{ hfs_log_name }}" \
+          -F "type=FILE" \
+          -F "parentIdentifier={{ hfs_log_parent_identifier }}" \
+          -F "identifier={{ hfs_log_identifier }}" \
+          -F 'tags={{ harness_tags_json }}' \
+          -F "content=@/tmp/{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-{{ stage_raw }}.log" \
+        )"
+        echo "${http}"
+      args:
+        executable: /bin/bash
+      environment:
+        HARNESS_X_API_KEY: "{{ harness_api_key_resolved }}"
+      register: hfs_log_update_http
+      when: >
+        (hfs_log_create_http.stdout | default('') | trim) in ['409','400']
+        or ((hfs_log_create_body.stdout | default('') | string) is regex('.*DUPLICATE_FIELD.*'))
+      failed_when: false
+      changed_when: (hfs_log_update_http.stdout | default('') | trim) is match('^2..$')
+
+    - name: "Harness | Falhar LOG se create e update não deram certo"
+      ansible.builtin.fail:
+        msg: |
+          Falha ao enviar pipeline.log
+          create_http={{ hfs_log_create_http.stdout | default('') | trim }}
+          create_body={{ hfs_log_create_body.stdout | default('') }}
+          update_http={{ hfs_log_update_http.stdout | default('') | trim }}
+      when: >
+        not ((hfs_log_create_http.stdout | default('') | trim) is match('^2..$'))
+        and not ((hfs_log_update_http.stdout | default('') | trim) is match('^2..$'))
+
+  always:
+    - name: "Harness | Limpar arquivo temporário do log"
+      ansible.builtin.file:
+        path: "/tmp/{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-{{ stage_raw }}.log"
+        state: absent
+      changed_when: false
+      failed_when: false
