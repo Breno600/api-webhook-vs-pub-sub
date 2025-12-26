@@ -1,2 +1,3 @@
-TASK [Harness | Detectar DUPLICATE_FIELD ENV (robusto)] ************************
-fatal: [localhost]: FAILED! => {"msg": "The task includes an option with an undefined variable. The error was: 'hfs_env_http_code' is undefined. 'hfs_env_http_code' is undefined\n\nThe error appears to be in '/tmp/tmp.EUs8QZ0z1Q/elastic-compute-cloud-sitef/ansible/harness_filestore_upload.yml': line 181, column 3, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n\n- name: \"Harness | Detectar DUPLICATE_FIELD ENV (robusto)\"\n  ^ here\n"}
+- name: "Harness | Normalizar http_code ENV"
+  ansible.builtin.set_fact:
+    hfs_env_http_code: "{{ (hfs_env_create_http.stdout | default('') | string | trim) }}"
