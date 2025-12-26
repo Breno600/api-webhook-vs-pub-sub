@@ -1,145 +1,485 @@
-ansible-playbook -i "localhost," -c local predeploy_from_execution.yml \
-  -e "execution_file_name=${EXECUTION_FILE_NAME}" \
-  -e "deployment_ref=${GIT_TAG}" \
-  -e "nexus_base_url=${NEXUS_BASE_URL}" \
-  -e "nexus_user=${NEXUS_USER}" \
-  -e "nexus_password=${NEXUS_PASSWORD}" \
-  -e "filestore_env=${FILESTORE_ENV}" \
-  -e "filestore_base_dir_override=${FILESTORE_ENV}/${GIT_TAG}" \
-  -e "stage_name=predeploy" \
-  --forks 10
+Exec using JSCH
+Connecting to 10.218.238.144 ....
+Connection to 10.218.238.144 established
+Executing command ...
+export GIT_TAG=DEV0000001
+Clonando repo em /tmp/tmp.ELZwlAH0Fl...
+Cloning into '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef'...
+remote: Enumerating objects: 1290, done.
+remote: Counting objects:   0% (1/1240)
+remote: Counting objects:   1% (13/1240)
+remote: Counting objects:   2% (25/1240)
+remote: Counting objects:   3% (38/1240)
+remote: Counting objects:   4% (50/1240)
+remote: Counting objects:   5% (62/1240)
+remote: Counting objects:   6% (75/1240)
+remote: Counting objects:   7% (87/1240)
+remote: Counting objects:   8% (100/1240)
+remote: Counting objects:   9% (112/1240)
+remote: Counting objects:  10% (124/1240)
+remote: Counting objects:  11% (137/1240)
+remote: Counting objects:  12% (149/1240)
+remote: Counting objects:  13% (162/1240)
+remote: Counting objects:  14% (174/1240)
+remote: Counting objects:  15% (186/1240)
+remote: Counting objects:  16% (199/1240)
+remote: Counting objects:  17% (211/1240)
+remote: Counting objects:  18% (224/1240)
+remote: Counting objects:  19% (236/1240)
+remote: Counting objects:  20% (248/1240)
+remote: Counting objects:  21% (261/1240)
+remote: Counting objects:  22% (273/1240)
+remote: Counting objects:  23% (286/1240)
+remote: Counting objects:  24% (298/1240)
+remote: Counting objects:  25% (310/1240)
+remote: Counting objects:  26% (323/1240)
+remote: Counting objects:  27% (335/1240)
+remote: Counting objects:  28% (348/1240)
+remote: Counting objects:  29% (360/1240)
+remote: Counting objects:  30% (372/1240)
+remote: Counting objects:  31% (385/1240)
+remote: Counting objects:  32% (397/1240)
+remote: Counting objects:  33% (410/1240)
+remote: Counting objects:  34% (422/1240)
+remote: Counting objects:  35% (434/1240)
+remote: Counting objects:  36% (447/1240)
+remote: Counting objects:  37% (459/1240)
+remote: Counting objects:  38% (472/1240)
+remote: Counting objects:  39% (484/1240)
+remote: Counting objects:  40% (496/1240)
+remote: Counting objects:  41% (509/1240)
+remote: Counting objects:  42% (521/1240)
+remote: Counting objects:  43% (534/1240)
+remote: Counting objects:  44% (546/1240)
+remote: Counting objects:  45% (558/1240)
+remote: Counting objects:  46% (571/1240)
+remote: Counting objects:  47% (583/1240)
+remote: Counting objects:  48% (596/1240)
+remote: Counting objects:  49% (608/1240)
+remote: Counting objects:  50% (620/1240)
+remote: Counting objects:  51% (633/1240)
+remote: Counting objects:  52% (645/1240)
+remote: Counting objects:  53% (658/1240)
+remote: Counting objects:  54% (670/1240)
+remote: Counting objects:  55% (682/1240)
+remote: Counting objects:  56% (695/1240)
+remote: Counting objects:  57% (707/1240)
+remote: Counting objects:  58% (720/1240)
+remote: Counting objects:  59% (732/1240)
+remote: Counting objects:  60% (744/1240)
+remote: Counting objects:  61% (757/1240)
+remote: Counting objects:  62% (769/1240)
+remote: Counting objects:  63% (782/1240)
+remote: Counting objects:  64% (794/1240)
+remote: Counting objects:  65% (806/1240)
+remote: Counting objects:  66% (819/1240)
+remote: Counting objects:  67% (831/1240)
+remote: Counting objects:  68% (844/1240)
+remote: Counting objects:  69% (856/1240)
+remote: Counting objects:  70% (868/1240)
+remote: Counting objects:  71% (881/1240)
+remote: Counting objects:  72% (893/1240)
+remote: Counting objects:  73% (906/1240)
+remote: Counting objects:  74% (918/1240)
+remote: Counting objects:  75% (930/1240)
+remote: Counting objects:  76% (943/1240)
+remote: Counting objects:  77% (955/1240)
+remote: Counting objects:  78% (968/1240)
+remote: Counting objects:  79% (980/1240)
+remote: Counting objects:  80% (992/1240)
+remote: Counting objects:  81% (1005/1240)
+remote: Counting objects:  82% (1017/1240)
+remote: Counting objects:  83% (1030/1240)
+remote: Counting objects:  84% (1042/1240)
+remote: Counting objects:  85% (1054/1240)
+remote: Counting objects:  86% (1067/1240)
+remote: Counting objects:  87% (1079/1240)
+remote: Counting objects:  88% (1092/1240)
+remote: Counting objects:  89% (1104/1240)
+remote: Counting objects:  90% (1116/1240)
+remote: Counting objects:  91% (1129/1240)
+remote: Counting objects:  92% (1141/1240)
+remote: Counting objects:  93% (1154/1240)
+remote: Counting objects:  94% (1166/1240)
+remote: Counting objects:  95% (1178/1240)
+remote: Counting objects:  96% (1191/1240)
+remote: Counting objects:  97% (1203/1240)
+remote: Counting objects:  98% (1216/1240)
+remote: Counting objects:  99% (1228/1240)
+remote: Counting objects: 100% (1240/1240)
+remote: Counting objects: 100% (1240/1240), done.
+remote: Compressing objects:   0% (1/469)
+remote: Compressing objects:   1% (5/469)
+remote: Compressing objects:   2% (10/469)
+remote: Compressing objects:   3% (15/469)
+remote: Compressing objects:   4% (19/469)
+remote: Compressing objects:   5% (24/469)
+remote: Compressing objects:   6% (29/469)
+remote: Compressing objects:   7% (33/469)
+remote: Compressing objects:   8% (38/469)
+remote: Compressing objects:   9% (43/469)
+remote: Compressing objects:  10% (47/469)
+remote: Compressing objects:  11% (52/469)
+remote: Compressing objects:  12% (57/469)
+remote: Compressing objects:  13% (61/469)
+remote: Compressing objects:  14% (66/469)
+remote: Compressing objects:  15% (71/469)
+remote: Compressing objects:  16% (76/469)
+remote: Compressing objects:  17% (80/469)
+remote: Compressing objects:  18% (85/469)
+remote: Compressing objects:  19% (90/469)
+remote: Compressing objects:  20% (94/469)
+remote: Compressing objects:  21% (99/469)
+remote: Compressing objects:  22% (104/469)
+remote: Compressing objects:  23% (108/469)
+remote: Compressing objects:  24% (113/469)
+remote: Compressing objects:  25% (118/469)
+remote: Compressing objects:  26% (122/469)
+remote: Compressing objects:  27% (127/469)
+remote: Compressing objects:  28% (132/469)
+remote: Compressing objects:  29% (137/469)
+remote: Compressing objects:  30% (141/469)
+remote: Compressing objects:  31% (146/469)
+remote: Compressing objects:  32% (151/469)
+remote: Compressing objects:  33% (155/469)
+remote: Compressing objects:  34% (160/469)
+remote: Compressing objects:  35% (165/469)
+remote: Compressing objects:  36% (169/469)
+remote: Compressing objects:  37% (174/469)
+remote: Compressing objects:  38% (179/469)
+remote: Compressing objects:  39% (183/469)
+remote: Compressing objects:  40% (188/469)
+remote: Compressing objects:  41% (193/469)
+remote: Compressing objects:  42% (197/469)
+remote: Compressing objects:  43% (202/469)
+remote: Compressing objects:  44% (207/469)
+remote: Compressing objects:  45% (212/469)
+remote: Compressing objects:  46% (216/469)
+remote: Compressing objects:  47% (221/469)
+remote: Compressing objects:  48% (226/469)
+remote: Compressing objects:  49% (230/469)
+remote: Compressing objects:  50% (235/469)
+remote: Compressing objects:  51% (240/469)
+remote: Compressing objects:  52% (244/469)
+remote: Compressing objects:  53% (249/469)
+remote: Compressing objects:  54% (254/469)
+remote: Compressing objects:  55% (258/469)
+remote: Compressing objects:  56% (263/469)
+remote: Compressing objects:  57% (268/469)
+remote: Compressing objects:  58% (273/469)
+remote: Compressing objects:  59% (277/469)
+remote: Compressing objects:  60% (282/469)
+remote: Compressing objects:  61% (287/469)
+remote: Compressing objects:  62% (291/469)
+remote: Compressing objects:  63% (296/469)
+remote: Compressing objects:  64% (301/469)
+remote: Compressing objects:  65% (305/469)
+remote: Compressing objects:  66% (310/469)
+remote: Compressing objects:  67% (315/469)
+remote: Compressing objects:  68% (319/469)
+remote: Compressing objects:  69% (324/469)
+remote: Compressing objects:  70% (329/469)
+remote: Compressing objects:  71% (333/469)
+remote: Compressing objects:  72% (338/469)
+remote: Compressing objects:  73% (343/469)
+remote: Compressing objects:  74% (348/469)
+remote: Compressing objects:  75% (352/469)
+remote: Compressing objects:  76% (357/469)
+remote: Compressing objects:  77% (362/469)
+remote: Compressing objects:  78% (366/469)
+remote: Compressing objects:  79% (371/469)
+remote: Compressing objects:  80% (376/469)
+remote: Compressing objects:  81% (380/469)
+remote: Compressing objects:  82% (385/469)
+remote: Compressing objects:  83% (390/469)
+remote: Compressing objects:  84% (394/469)
+remote: Compressing objects:  85% (399/469)
+remote: Compressing objects:  86% (404/469)
+remote: Compressing objects:  87% (409/469)
+remote: Compressing objects:  88% (413/469)
+remote: Compressing objects:  89% (418/469)
+remote: Compressing objects:  90% (423/469)
+remote: Compressing objects:  91% (427/469)
+remote: Compressing objects:  92% (432/469)
+remote: Compressing objects:  93% (437/469)
+remote: Compressing objects:  94% (441/469)
+remote: Compressing objects:  95% (446/469)
+remote: Compressing objects:  96% (451/469)
+remote: Compressing objects:  97% (455/469)
+remote: Compressing objects:  98% (460/469)
+remote: Compressing objects:  99% (465/469)
+remote: Compressing objects: 100% (469/469)
+remote: Compressing objects: 100% (469/469), done.
+Receiving objects:   0% (1/1290)
+Receiving objects:   1% (13/1290)
+Receiving objects:   2% (26/1290)
+Receiving objects:   3% (39/1290)
+Receiving objects:   4% (52/1290)
+Receiving objects:   5% (65/1290)
+Receiving objects:   6% (78/1290)
+Receiving objects:   7% (91/1290)
+Receiving objects:   8% (104/1290)
+Receiving objects:   9% (117/1290)
+Receiving objects:  10% (129/1290)
+Receiving objects:  11% (142/1290)
+Receiving objects:  12% (155/1290)
+Receiving objects:  13% (168/1290)
+Receiving objects:  14% (181/1290)
+Receiving objects:  15% (194/1290)
+Receiving objects:  16% (207/1290)
+Receiving objects:  17% (220/1290)
+Receiving objects:  18% (233/1290)
+Receiving objects:  19% (246/1290)
+Receiving objects:  20% (258/1290)
+Receiving objects:  21% (271/1290)
+Receiving objects:  22% (284/1290)
+Receiving objects:  23% (297/1290)
+Receiving objects:  24% (310/1290)
+Receiving objects:  25% (323/1290)
+Receiving objects:  26% (336/1290)
+Receiving objects:  27% (349/1290)
+Receiving objects:  28% (362/1290)
+Receiving objects:  29% (375/1290)
+Receiving objects:  30% (387/1290)
+Receiving objects:  31% (400/1290)
+Receiving objects:  32% (413/1290)
+Receiving objects:  33% (426/1290)
+Receiving objects:  34% (439/1290)
+Receiving objects:  35% (452/1290)
+Receiving objects:  36% (465/1290)
+Receiving objects:  37% (478/1290)
+Receiving objects:  38% (491/1290)
+Receiving objects:  39% (504/1290)
+Receiving objects:  40% (516/1290)
+Receiving objects:  41% (529/1290)
+Receiving objects:  42% (542/1290)
+Receiving objects:  43% (555/1290)
+Receiving objects:  44% (568/1290)
+Receiving objects:  45% (581/1290)
+Receiving objects:  46% (594/1290)
+Receiving objects:  47% (607/1290)
+Receiving objects:  48% (620/1290)
+Receiving objects:  49% (633/1290)
+Receiving objects:  50% (645/1290)
+Receiving objects:  51% (658/1290)
+Receiving objects:  52% (671/1290)
+Receiving objects:  53% (684/1290)
+Receiving objects:  54% (697/1290)
+Receiving objects:  55% (710/1290)
+Receiving objects:  56% (723/1290)
+Receiving objects:  57% (736/1290)
+Receiving objects:  58% (749/1290)
+Receiving objects:  59% (762/1290)
+Receiving objects:  60% (774/1290)
+Receiving objects:  61% (787/1290)
+Receiving objects:  62% (800/1290)
+Receiving objects:  63% (813/1290)
+Receiving objects:  64% (826/1290)
+Receiving objects:  65% (839/1290)
+Receiving objects:  66% (852/1290)
+Receiving objects:  67% (865/1290)
+Receiving objects:  68% (878/1290)
+Receiving objects:  69% (891/1290)
+Receiving objects:  70% (903/1290)
+Receiving objects:  71% (916/1290)
+Receiving objects:  72% (929/1290)
+Receiving objects:  73% (942/1290)
+Receiving objects:  74% (955/1290)
+Receiving objects:  75% (968/1290)
+Receiving objects:  76% (981/1290)
+Receiving objects:  77% (994/1290)
+Receiving objects:  78% (1007/1290)
+Receiving objects:  79% (1020/1290)
+Receiving objects:  80% (1032/1290)
+Receiving objects:  81% (1045/1290)
+Receiving objects:  82% (1058/1290)
+remote: Total 1290 (delta 918), reused 1035 (delta 750), pack-reused 50
+Receiving objects:  83% (1071/1290)
+Receiving objects:  84% (1084/1290)
+Receiving objects:  85% (1097/1290)
+Receiving objects:  86% (1110/1290)
+Receiving objects:  87% (1123/1290)
+Receiving objects:  88% (1136/1290)
+Receiving objects:  89% (1149/1290)
+Receiving objects:  90% (1161/1290)
+Receiving objects:  91% (1174/1290)
+Receiving objects:  92% (1187/1290)
+Receiving objects:  93% (1200/1290)
+Receiving objects:  94% (1213/1290)
+Receiving objects:  95% (1226/1290)
+Receiving objects:  96% (1239/1290)
+Receiving objects:  97% (1252/1290)
+Receiving objects:  98% (1265/1290)
+Receiving objects:  99% (1278/1290)
+Receiving objects: 100% (1290/1290)
+Receiving objects: 100% (1290/1290), 1021.76 KiB | 2.00 MiB/s, done.
+Resolving deltas:   0% (0/937)
+Resolving deltas:   1% (10/937)
+Resolving deltas:   2% (19/937)
+Resolving deltas:   3% (29/937)
+Resolving deltas:   4% (38/937)
+Resolving deltas:   5% (47/937)
+Resolving deltas:   6% (57/937)
+Resolving deltas:   7% (66/937)
+Resolving deltas:   8% (75/937)
+Resolving deltas:   9% (85/937)
+Resolving deltas:  10% (94/937)
+Resolving deltas:  11% (104/937)
+Resolving deltas:  12% (113/937)
+Resolving deltas:  13% (122/937)
+Resolving deltas:  14% (132/937)
+Resolving deltas:  15% (141/937)
+Resolving deltas:  16% (150/937)
+Resolving deltas:  17% (160/937)
+Resolving deltas:  18% (169/937)
+Resolving deltas:  19% (179/937)
+Resolving deltas:  20% (188/937)
+Resolving deltas:  21% (197/937)
+Resolving deltas:  22% (207/937)
+Resolving deltas:  23% (216/937)
+Resolving deltas:  24% (225/937)
+Resolving deltas:  25% (235/937)
+Resolving deltas:  26% (244/937)
+Resolving deltas:  27% (253/937)
+Resolving deltas:  28% (263/937)
+Resolving deltas:  29% (272/937)
+Resolving deltas:  30% (282/937)
+Resolving deltas:  31% (291/937)
+Resolving deltas:  32% (300/937)
+Resolving deltas:  33% (310/937)
+Resolving deltas:  34% (319/937)
+Resolving deltas:  35% (328/937)
+Resolving deltas:  36% (338/937)
+Resolving deltas:  37% (347/937)
+Resolving deltas:  38% (357/937)
+Resolving deltas:  39% (366/937)
+Resolving deltas:  40% (375/937)
+Resolving deltas:  41% (385/937)
+Resolving deltas:  42% (394/937)
+Resolving deltas:  43% (403/937)
+Resolving deltas:  44% (413/937)
+Resolving deltas:  45% (422/937)
+Resolving deltas:  46% (432/937)
+Resolving deltas:  47% (441/937)
+Resolving deltas:  48% (450/937)
+Resolving deltas:  49% (460/937)
+Resolving deltas:  50% (469/937)
+Resolving deltas:  51% (478/937)
+Resolving deltas:  52% (488/937)
+Resolving deltas:  53% (497/937)
+Resolving deltas:  54% (506/937)
+Resolving deltas:  55% (516/937)
+Resolving deltas:  56% (525/937)
+Resolving deltas:  57% (535/937)
+Resolving deltas:  58% (545/937)
+Resolving deltas:  59% (553/937)
+Resolving deltas:  60% (564/937)
+Resolving deltas:  61% (572/937)
+Resolving deltas:  62% (581/937)
+Resolving deltas:  63% (591/937)
+Resolving deltas:  64% (600/937)
+Resolving deltas:  65% (610/937)
+Resolving deltas:  66% (619/937)
+Resolving deltas:  67% (628/937)
+Resolving deltas:  68% (638/937)
+Resolving deltas:  69% (647/937)
+Resolving deltas:  70% (656/937)
+Resolving deltas:  71% (666/937)
+Resolving deltas:  72% (675/937)
+Resolving deltas:  73% (685/937)
+Resolving deltas:  74% (694/937)
+Resolving deltas:  75% (703/937)
+Resolving deltas:  76% (713/937)
+Resolving deltas:  77% (722/937)
+Resolving deltas:  78% (731/937)
+Resolving deltas:  79% (741/937)
+Resolving deltas:  80% (750/937)
+Resolving deltas:  81% (759/937)
+Resolving deltas:  82% (769/937)
+Resolving deltas:  83% (778/937)
+Resolving deltas:  84% (788/937)
+Resolving deltas:  85% (797/937)
+Resolving deltas:  86% (806/937)
+Resolving deltas:  87% (816/937)
+Resolving deltas:  88% (825/937)
+Resolving deltas:  89% (834/937)
+Resolving deltas:  90% (844/937)
+Resolving deltas:  91% (853/937)
+Resolving deltas:  92% (863/937)
+Resolving deltas:  93% (872/937)
+Resolving deltas:  94% (881/937)
+Resolving deltas:  95% (891/937)
+Resolving deltas:  96% (900/937)
+Resolving deltas:  97% (909/937)
+Resolving deltas:  98% (919/937)
+Resolving deltas:  99% (928/937)
+Resolving deltas: 100% (937/937)
+Resolving deltas: 100% (937/937), done.
 
-
-# predeploy_from_execution.yml
-# =====================================================================================
-# PIPELINE 1 - PREDEPLOY (a partir do arquivo de execução)
-# =====================================================================================
-
-- name: "Predeploy a partir do arquivo de execução"
-  hosts: localhost
-  connection: local
-  gather_facts: true
-
-  vars:
-    # -------------------------------
-    # Entradas principais (RESOLVIDAS)
-    # -------------------------------
-    execution_file_name_resolved: "{{ execution_file_name | default('execution/machine_list_dev.yml') }}"
-    deployment_ref_resolved: "{{ deployment_ref | default('DEV000000001') }}"
-
-    # -------------------------------
-    # Paths do repositório
-    # -------------------------------
-    repo_root_resolved: "{{ playbook_dir }}/.."
-    status_dir_resolved: "{{ (playbook_dir ~ '/..') }}/status/{{ deployment_ref_resolved }}"
-
-    # -------------------------------
-    # Nexus (ideal vir de secrets do Harness)
-    # -------------------------------
-    nexus_base_url_resolved: "{{ nexus_base_url | default('https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev') }}"
-    nexus_user_resolved: "{{ nexus_user | default('') }}"
-    nexus_password_resolved: "{{ nexus_password | default('') }}"
-
-    # -------------------------------
-    # Harness (pode vir por -e ou env)
-    # -------------------------------
-    harness_endpoint_resolved: "{{ harness_endpoint | default('') }}"
-    harness_account_id_resolved: "{{ harness_account_id | default('') }}"
-    harness_org_id_resolved: "{{ harness_org_id | default('') }}"
-    harness_project_id_resolved: "{{ harness_project_id | default('') }}"
-    harness_api_key_resolved: "{{ harness_api_key | default('') }}"
-    harness_x_api_key_resolved: "{{ harness_x_api_key | default('') }}"
-
-    # Stage (usado pelo harness upload)
-    hf_stage_name: "predeploy"
-
-  tasks:
-    # ---------------------------------------
-    # Resolver File Store (SAFE, sem tocar em filestore_base_dir)
-    # ---------------------------------------
-    - name: "Resolver filestore_env_resolved (safe)"
-      ansible.builtin.set_fact:
-        filestore_env_resolved: >-
-          {{
-            (filestore_env | default('', true) | string | trim)
-              if ((filestore_env | default('', true) | string | trim) | length > 0)
-              else 'dev'
-          }}
-
-    - name: "Resolver filestore_base_dir_resolved (safe via override)"
-      ansible.builtin.set_fact:
-        filestore_base_dir_resolved: >-
-          {{
-            (filestore_base_dir_override | default('', true) | string | trim)
-              if ((filestore_base_dir_override | default('', true) | string | trim) | length > 0)
-              else (filestore_env_resolved ~ '/' ~ deployment_ref_resolved)
-          }}
-
-    # ---------------------------------------
-    # Mostrar variáveis resolvidas (debug)
-    # ---------------------------------------
-    - name: "Mostrar variáveis de entrada e resolvidas"
-      ansible.builtin.debug:
-        msg:
-          - "execution_file_name_resolved = {{ execution_file_name_resolved }}"
-          - "deployment_ref_resolved      = {{ deployment_ref_resolved }}"
-          - "repo_root_resolved           = {{ repo_root_resolved }}"
-          - "status_dir_resolved          = {{ status_dir_resolved }}"
-          - "filestore_env_resolved       = {{ filestore_env_resolved }}"
-          - "filestore_base_dir_resolved  = {{ filestore_base_dir_resolved }}"
-          - "nexus_base_url_resolved      = {{ nexus_base_url_resolved }}"
-      changed_when: false
-
-    # ---------------------------------------
-    # Criar diretório base de status local
-    # ---------------------------------------
-    - name: "Criar diretório de status da TAG"
-      ansible.builtin.file:
-        path: "{{ status_dir_resolved }}"
-        state: directory
-        mode: "0755"
-
-    # ---------------------------------------
-    # Carregar arquivo de execução
-    # ---------------------------------------
-    - name: "Carregar arquivo de execução"
-      ansible.builtin.include_vars:
-        file: "{{ repo_root_resolved }}/{{ execution_file_name_resolved }}"
-        name: execution_cfg
-
-    # ---------------------------------------
-    # Validar se há máquinas
-    # ---------------------------------------
-    - name: "Falhar se não tiver máquinas no arquivo de execução"
-      ansible.builtin.fail:
-        msg: "Nenhuma máquina encontrada em execution_cfg.machines"
-      when: execution_cfg.machines is not defined or execution_cfg.machines | length == 0
-
-    # ---------------------------------------
-    # Executar PREDEPLOY por máquina (SEQUENCIAL aqui; paralelo exige refactor por hosts)
-    # ---------------------------------------
-    - name: "Executar pré-deploy por máquina"
-      ansible.builtin.include_tasks: predeploy_per_machine.yml
-      loop: "{{ execution_cfg.machines }}"
-      loop_control:
-        loop_var: machine_name
-      vars:
-        deployment_ref: "{{ deployment_ref_resolved }}"
-        repo_root: "{{ repo_root_resolved }}"
-        status_dir: "{{ status_dir_resolved }}"
-
-        nexus_base_url: "{{ nexus_base_url_resolved }}"
-        nexus_user: "{{ nexus_user_resolved }}"
-        nexus_password: "{{ nexus_password_resolved }}"
-
-        filestore_env: "{{ filestore_env_resolved }}"
-        filestore_base_dir: "{{ filestore_base_dir_resolved }}"
-
-        # Harness vars (podem ser vazios; o include resolve com fallback/env)
-        harness_endpoint: "{{ harness_endpoint_resolved }}"
-        harness_account_id: "{{ harness_account_id_resolved }}"
-        harness_org_id: "{{ harness_org_id_resolved }}"
-        harness_project_id: "{{ harness_project_id_resolved }}"
-        harness_api_key: "{{ harness_api_key_resolved }}"
-        harness_x_api_key: "{{ harness_x_api_key_resolved }}"
-        hf_stage_name: "{{ hf_stage_name }}"
+== PIPELINE PREDEPLOY ==
+TAG   : DEV0000001
+EXEC  : execution/machine_list_dev.yml
+BRANCH: develop-testes
+PLAY [Predeploy a partir do arquivo de execução] *******************************
+TASK [Gathering Facts] *********************************************************
+ok: [localhost]
+TASK [Resolver filestore_env_resolved (safe)] **********************************
+ok: [localhost]
+TASK [Resolver filestore_base_dir_resolved (safe via override)] ****************
+ok: [localhost]
+TASK [Mostrar variáveis de entrada e resolvidas] *******************************
+ok: [localhost] => {
+    "msg": [
+        "execution_file_name_resolved = execution/machine_list_dev.yml",
+        "deployment_ref_resolved      = DEV0000001",
+        "repo_root_resolved           = /tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/..",
+        "status_dir_resolved          = /tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../status/DEV0000001",
+        "filestore_env_resolved       = dev",
+        "filestore_base_dir_resolved  = dev/DEV0000001",
+        "nexus_base_url_resolved      = https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev"
+    ]
+}
+TASK [Criar diretório de status da TAG] ****************************************
+changed: [localhost]
+TASK [Carregar arquivo de execução] ********************************************
+ok: [localhost]
+TASK [Falhar se não tiver máquinas no arquivo de execução] *********************
+skipping: [localhost]
+TASK [Executar pré-deploy por máquina] *****************************************
+included: /tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/predeploy_per_machine.yml for localhost => (item=sitef-02)
+included: /tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/predeploy_per_machine.yml for localhost => (item=sitef-03)
+TASK [Predeploy | Resolver nome da máquina atual] ******************************
+ok: [localhost]
+TASK [Predeploy | Validar vars mínimas] ****************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+TASK [Predeploy | Definir paths base do repositório] ***************************
+ok: [localhost]
+TASK [Predeploy | Definir candidatos de arquivo da máquina] ********************
+ok: [localhost]
+TASK [Predeploy | Verificar candidatos] ****************************************
+ok: [localhost] => (item=/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml)
+TASK [Predeploy | Selecionar machine_file existente] ***************************
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 228, 'inode': 2133866, 'dev': 64775, 'nlink': 1, 'atime': 1766773354.3027277, 'mtime': 1766773354.2887275, 'ctime': 1766773354.2887275, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': '5434a102feaa917dcdf00602d9cd66b4c81adeb8', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '474645489', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+TASK [Predeploy | Falhar se arquivo da máquina não existir] ********************
+skipping: [localhost]
+TASK [Predeploy | Carregar config da máquina sitef-02] *************************
+ok: [localhost]
+TASK [Predeploy | Validar package definido] ************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+TASK [Predeploy | Carregar config do pacote sitef-teste-0.0.2-0] ***************
+fatal: [localhost]: FAILED! => {"ansible_facts": {"package_cfg": {}}, "ansible_included_var_files": [], "changed": false, "message": "Could not find or access '/tmp/tmp.ELZwlAH0Fl/elastic-compute-cloud-sitef/ansible/../packages/sitef-teste-0.0.2-0.yml' on the Ansible Controller.\nIf you are using a module and expect the file to exist on the remote, see the remote_src option"}
+PLAY RECAP *********************************************************************
+localhost                  : ok=16   changed=1    unreachable=0    failed=1    skipped=2    rescued=0    ignored=0   
+Command finished with status FAILURE
