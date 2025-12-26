@@ -1,556 +1,595 @@
----
-# =====================================================================================
-# HARNESS FILE STORE - UPLOAD (por máquina) - COM ESTRUTURA:
-#   dev/$GIT_TAG/$MACHINE-(PRE-DEPLOY|DEPLOY|ROLLBACK)
-#
-# Requer:
-#   current_machine, deployment_ref, filestore_env, machine_status_file, log_content, status_tag_value
-# Opcional:
-#   stage_name (predeploy|deploy|rollback)  (default: predeploy)
-#   extra_tags []
-# Token:
-#   HARNESS_API_KEY / HARNESS_PAT / HARNESS_TOKEN (env) ou harness_api_key_override
-# =====================================================================================
-
-- name: "Harness | Validar vars mínimas"
-  ansible.builtin.assert:
-    that:
-      - current_machine is defined
-      - deployment_ref is defined
-      - filestore_env is defined
-      - machine_status_file is defined
-      - log_content is defined
-      - status_tag_value is defined
-    fail_msg: "Faltam vars obrigatórias para harness_filestore_upload.yml"
-
-- name: "Harness | Definir defaults + normalizações (parte 1)"
-  ansible.builtin.set_fact:
-    harness_account_id_resolved: >-
-      {{
-        (harness_account_id_override | default('', true) | string | trim)
-          | default((lookup('ansible.builtin.env','HARNESS_ACCOUNT_ID') | default('', true) | string | trim), true)
-          | default('fgDto6qoTT6ctfZS9eWbEw', true)
-      }}
-    harness_org_id_resolved: >-
-      {{
-        (harness_org_id_override | default('', true) | string | trim)
-          | default((lookup('ansible.builtin.env','HARNESS_ORG_ID') | default('', true) | string | trim), true)
-          | default('Fiserv', true)
-      }}
-    harness_project_id_resolved: >-
-      {{
-        (harness_project_id_override | default('', true) | string | trim)
-          | default((lookup('ansible.builtin.env','HARNESS_PROJECT_ID') | default('', true) | string | trim), true)
-          | default('sitef', true)
-      }}
-    harness_filestore_root_identifier_resolved: >-
-      {{
-        (harness_filestore_root_identifier_override | default('', true) | string | trim)
-          | default((lookup('ansible.builtin.env','HARNESS_FILESTORE_ROOT_IDENTIFIER') | default('', true) | string | trim), true)
-          | default('Root', true)
-      }}
-
-    harness_api_base: "https://harness.onefiserv.net/ng/api/file-store"
-
-    env_lower: "{{ (filestore_env | string | trim | lower) }}"
-    deployment_ref_folder: "{{ (deployment_ref_folder | default(deployment_ref)) | string | trim }}"
-    deployment_ref_lower: "{{ (deployment_ref | string | trim | lower) }}"
-    stage_raw: "{{ (stage_name | default('predeploy')) | string | trim | lower }}"
-
-    hfs_dup_pattern: "\"code\"\\s*:\\s*\"DUPLICATE_FIELD\""
-
-- name: "Harness | Definir stage_label (parte 2)"
-  ansible.builtin.set_fact:
-    stage_label: "{{ {'predeploy':'PRE-DEPLOY','deploy':'DEPLOY','rollback':'ROLLBACK'}.get(stage_raw, stage_raw | upper) }}"
-
-- name: "Harness | Identifiers SAFE (HARNESS RULE: [A-Za-z][A-Za-z0-9_]{0,127})"
-  ansible.builtin.set_fact:
-    # troca qualquer coisa fora [A-Za-z0-9_] por "_"
-    env_identifier: "{{ ('d_' ~ env_lower) | regex_replace('[^A-Za-z0-9_]', '_') }}"
-    deployment_ref_identifier: "{{ ('d_' ~ (deployment_ref_folder | lower)) | regex_replace('[^A-Za-z0-9_]', '_') }}"
-    machine_identifier: "{{ ('m_' ~ (current_machine | lower)) | regex_replace('[^A-Za-z0-9_]', '_') }}"
-    stage_identifier: "{{ ('s_' ~ (stage_label | lower)) | regex_replace('[^A-Za-z0-9_]', '_') }}"
-    # pasta leaf: MACHINE-STAGE
-    machine_stage_name: "{{ (current_machine | trim) ~ '-' ~ stage_label }}"
-    machine_stage_identifier_raw: "{{ ('p_' ~ (current_machine | lower) ~ '_' ~ (stage_label | lower)) | regex_replace('[^A-Za-z0-9_]', '_') }}"
-
-- name: "Harness | Limitar machine_stage_identifier a 128 (se precisar)"
-  ansible.builtin.set_fact:
-    machine_stage_identifier: >-
-      {{
-        (machine_stage_identifier_raw[0:110] ~ '_' ~ (machine_stage_identifier_raw | hash('sha1'))[0:16])
-        if (machine_stage_identifier_raw | length) > 128 else machine_stage_identifier_raw
-      }}
-
-- name: "Harness | Resolver token (vars > env)"
-  no_log: true
-  ansible.builtin.set_fact:
-    harness_api_key_resolved: >-
-      {{
-        (harness_api_key_override | default('', true) | string | trim)
-          | default((lookup('ansible.builtin.env','HARNESS_API_KEY') | default('', true) | string | trim), true)
-          | default((lookup('ansible.builtin.env','HARNESS_PAT')     | default('', true) | string | trim), true)
-          | default((lookup('ansible.builtin.env','HARNESS_TOKEN')   | default('', true) | string | trim), true)
-      }}
-
-- name: "Harness | Debug seguro do token (não mostra valor)"
-  ansible.builtin.debug:
-    msg: >-
-      Harness token presente? {{
-        (harness_api_key_resolved | default('') | length) > 10
-      }} (len={{ harness_api_key_resolved | default('') | length }})
-
-- name: "Harness | Falhar se token vazio"
-  ansible.builtin.assert:
-    that:
-      - (harness_api_key_resolved | default('') | length) > 10
-    fail_msg: >-
-      Harness token não encontrado. Defina harness_api_key_override OU exporte
-      HARNESS_API_KEY (ou HARNESS_PAT / HARNESS_TOKEN) no step ANTES do ansible.
-
-- name: "Harness | Map token para header x-api-key"
-  no_log: true
-  ansible.builtin.set_fact:
-    harness_x_api_key: "{{ harness_api_key_resolved }}"
-
-- name: "Harness | Montar tags base"
-  ansible.builtin.set_fact:
-    harness_tags:
-      - { key: "env",        value: "{{ env_lower }}" }
-      - { key: "deployment", value: "{{ deployment_ref_lower }}" }
-      - { key: "machine",    value: "{{ current_machine | lower }}" }
-      - { key: "stage",      value: "{{ stage_label }}" }
-      - { key: "tag",        value: "{{ status_tag_value }}" }
-
-- name: "Harness | Adicionar extra_tags como tag=..."
-  ansible.builtin.set_fact:
-    harness_tags: "{{ harness_tags + [ {'key':'tag','value': (item | string | trim)} ] }}"
-  loop: "{{ extra_tags | default([]) }}"
-  when: (item | string | trim | length) > 0
-
-- name: "Harness | Definir http_codes aceitos"
-  ansible.builtin.set_fact:
-    hfs_ok_create_codes: ["200","201","202","409"]
-    hfs_ok_update_codes: ["200","201","202"]
-
-- name: "Harness | Render tags JSON"
-  ansible.builtin.set_fact:
-    harness_tags_json: "{{ harness_tags | to_json }}"
-
-# -----------------------------------------------------------------------------
-# 1) Garantir folder ENV (dev) embaixo da raiz
-#    REGRA: se já existe por nome, Harness retorna 400 + DUPLICATE_FIELD.
-#    Nesse caso, só "aceita" e continua usando o identifier determinístico (env_identifier).
-# -----------------------------------------------------------------------------
-- name: "Harness | Garantir folder ENV (POST)"
-  no_log: true
-  ansible.builtin.shell: |
-    set -euo pipefail
-    http="$(curl --http1.1 -sS -o /tmp/hfs_env_create.out -w "%{http_code}" \
-      --request POST \
-      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
-      -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
-      -F "name={{ env_lower }}" \
-      -F "type=FOLDER" \
-      -F "parentIdentifier={{ harness_filestore_root_identifier_resolved }}" \
-      -F "identifier={{ env_identifier }}" \
-      -F 'tags={{ harness_tags_json }}' \
-    )"
-    echo "${http}"
-  args:
-    executable: /bin/bash
-  register: hfs_env_create_http
-  changed_when: hfs_env_create_http.stdout in ['200','201']
-  failed_when: false
-
-- name: "Harness | Ler body ENV (sempre)"
-  ansible.builtin.shell: "cat /tmp/hfs_env_create.out 2>/dev/null || true"
-  register: hfs_env_create_body
-  changed_when: false
-  failed_when: false
-
-- name: "Harness | Normalizar http_code ENV + detectar DUPLICATE_FIELD"
-  ansible.builtin.set_fact:
-    hfs_env_http_code: "{{ (hfs_env_create_http.stdout | default('') | string | trim) }}"
-    hfs_env_is_duplicate: >-
-      {{
-        ( (hfs_env_create_http.stdout | default('') | string | trim) == '400' )
-        and (
-          (
-            (hfs_env_create_body.stdout | default('', true))
-            | regex_search(hfs_dup_pattern)
-            | default('', true)
-          ) | length > 0
-        )
-      }}
-
-- name: "Harness | ENV identifier final (determinístico)"
-  ansible.builtin.set_fact:
-    env_identifier_final: "{{ env_identifier }}"
-
-- name: "Harness | Falhar ENV (se não for OK e não for DUPLICATE_FIELD)"
-  ansible.builtin.fail:
-    msg: |
-      Falha ao criar/garantir folder ENV no Harness.
-      http_code={{ hfs_env_http_code }}
-      body={{ hfs_env_create_body.stdout | default('') }}
-  when:
-    - (hfs_env_http_code | default('') | trim) not in hfs_ok_create_codes
-    - not (hfs_env_is_duplicate | bool)
-
-# -----------------------------------------------------------------------------
-# 2) Garantir folder GIT_TAG (deployment_ref) embaixo do ENV
-# -----------------------------------------------------------------------------
-- name: "Harness | Garantir folder GIT_TAG (POST)"
-  no_log: true
-  ansible.builtin.shell: |
-    set -euo pipefail
-    http="$(curl --http1.1 -sS -o /tmp/hfs_ref_create.out -w "%{http_code}" \
-      --request POST \
-      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
-      -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
-      -F "name={{ deployment_ref_folder }}" \
-      -F "type=FOLDER" \
-      -F "parentIdentifier={{ env_identifier_final }}" \
-      -F "identifier={{ deployment_ref_identifier }}" \
-      -F 'tags={{ harness_tags_json }}' \
-    )"
-    echo "${http}"
-  args:
-    executable: /bin/bash
-  register: hfs_ref_create_http
-  changed_when: hfs_ref_create_http.stdout in ['200','201']
-  failed_when: false
-
-- name: "Harness | Ler body REF (sempre)"
-  ansible.builtin.shell: "cat /tmp/hfs_ref_create.out 2>/dev/null || true"
-  register: hfs_ref_create_body
-  changed_when: false
-  failed_when: false
-
-- name: "Harness | Normalizar http_code REF + detectar DUPLICATE_FIELD"
-  ansible.builtin.set_fact:
-    hfs_ref_http_code: "{{ (hfs_ref_create_http.stdout | default('') | string | trim) }}"
-    hfs_ref_is_duplicate: >-
-      {{
-        ( (hfs_ref_create_http.stdout | default('') | string | trim) == '400' )
-        and (
-          (
-            (hfs_ref_create_body.stdout | default('', true))
-            | regex_search(hfs_dup_pattern)
-            | default('', true)
-          ) | length > 0
-        )
-      }}
-
-- name: "Harness | GIT_TAG identifier final (determinístico)"
-  ansible.builtin.set_fact:
-    deployment_ref_identifier_final: "{{ deployment_ref_identifier }}"
-
-- name: "Harness | Falhar REF (se não for OK e não for DUPLICATE_FIELD)"
-  ansible.builtin.fail:
-    msg: |
-      Falha ao criar/garantir folder GIT_TAG no Harness.
-      http_code={{ hfs_ref_http_code }}
-      body={{ hfs_ref_create_body.stdout | default('') }}
-  when:
-    - (hfs_ref_http_code | default('') | trim) not in hfs_ok_create_codes
-    - not (hfs_ref_is_duplicate | bool)
-
-# -----------------------------------------------------------------------------
-# 3) Garantir folder LEAF (MACHINE-STAGE) embaixo do GIT_TAG
-# -----------------------------------------------------------------------------
-- name: "Harness | Garantir folder LEAF (MACHINE-STAGE) (POST)"
-  no_log: true
-  ansible.builtin.shell: |
-    set -euo pipefail
-    http="$(curl --http1.1 -sS -o /tmp/hfs_leaf_create.out -w "%{http_code}" \
-      --request POST \
-      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
-      -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
-      -F "name={{ machine_stage_name }}" \
-      -F "type=FOLDER" \
-      -F "parentIdentifier={{ deployment_ref_identifier_final }}" \
-      -F "identifier={{ machine_stage_identifier }}" \
-      -F 'tags={{ harness_tags_json }}' \
-    )"
-    echo "${http}"
-  args:
-    executable: /bin/bash
-  register: hfs_leaf_create_http
-  changed_when: hfs_leaf_create_http.stdout in ['200','201']
-  failed_when: false
-
-- name: "Harness | Ler body LEAF (sempre)"
-  ansible.builtin.shell: "cat /tmp/hfs_leaf_create.out 2>/dev/null || true"
-  register: hfs_leaf_create_body
-  changed_when: false
-  failed_when: false
-
-- name: "Harness | Normalizar http_code LEAF + detectar DUPLICATE_FIELD"
-  ansible.builtin.set_fact:
-    hfs_leaf_http_code: "{{ (hfs_leaf_create_http.stdout | default('') | string | trim) }}"
-    hfs_leaf_is_duplicate: >-
-      {{
-        ( (hfs_leaf_create_http.stdout | default('') | string | trim) == '400' )
-        and (
-          (
-            (hfs_leaf_create_body.stdout | default('', true))
-            | regex_search(hfs_dup_pattern)
-            | default('', true)
-          ) | length > 0
-        )
-      }}
-
-- name: "Harness | LEAF identifier final (determinístico)"
-  ansible.builtin.set_fact:
-    leaf_identifier_final: "{{ machine_stage_identifier }}"
-
-- name: "Harness | Falhar LEAF (se não for OK e não for DUPLICATE_FIELD)"
-  ansible.builtin.fail:
-    msg: |
-      Falha ao criar/garantir folder LEAF (MACHINE-STAGE) no Harness.
-      http_code={{ hfs_leaf_http_code }}
-      body={{ hfs_leaf_create_body.stdout | default('') }}
-  when:
-    - (hfs_leaf_http_code | default('') | trim) not in hfs_ok_create_codes
-    - not (hfs_leaf_is_duplicate | bool)
-
-# -----------------------------------------------------------------------------
-# 4) Upload/Upsert STATUS JSON (POST -> se 409 OU DUPLICATE_FIELD faz PUT)
-# -----------------------------------------------------------------------------
-- name: "Harness | Definir nome/identifier do STATUS JSON (dentro do LEAF)"
-  ansible.builtin.set_fact:
-    hfs_status_name: "status.json"
-    hfs_status_identifier_raw: "{{ ('f_status_' ~ deployment_ref_identifier ~ '_' ~ machine_stage_identifier) | regex_replace('[^A-Za-z0-9_]', '_') }}"
-    hfs_status_parent_identifier: "{{ leaf_identifier_final }}"
-
-- name: "Harness | Limitar identifier STATUS a 128 (se precisar)"
-  ansible.builtin.set_fact:
-    hfs_status_identifier: >-
-      {{
-        (hfs_status_identifier_raw[0:110] ~ '_' ~ (hfs_status_identifier_raw | hash('sha1'))[0:16])
-        if (hfs_status_identifier_raw | length) > 128 else hfs_status_identifier_raw
-      }}
-
-- name: "Harness | CREATE status"
-  no_log: true
-  ansible.builtin.shell: |
-    set -euo pipefail
-    http="$(curl --http1.1 -sS -o /tmp/hfs_status_create.out -w "%{http_code}" \
-      --request POST \
-      "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
-      -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
-      -F "name={{ hfs_status_name }}" \
-      -F "type=FILE" \
-      -F "parentIdentifier={{ hfs_status_parent_identifier }}" \
-      -F "identifier={{ hfs_status_identifier }}" \
-      -F 'tags={{ harness_tags_json }}' \
-      -F "content=@{{ machine_status_file }}" \
-    )"
-    echo "${http}"
-  args:
-    executable: /bin/bash
-  register: hfs_status_create_http
-  changed_when: (hfs_status_create_http.stdout | default('')) is match('^2..$')
-  failed_when: false
-
-- name: "Harness | Ler body STATUS (sempre)"
-  ansible.builtin.shell: "cat /tmp/hfs_status_create.out 2>/dev/null || true"
-  register: hfs_status_create_body
-  changed_when: false
-  failed_when: false
-
-- name: "Harness | Normalizar http_code STATUS + decidir se precisa UPDATE"
-  ansible.builtin.set_fact:
-    hfs_status_http_code: "{{ (hfs_status_create_http.stdout | default('') | string | trim) }}"
-    hfs_status_is_duplicate_400: >-
-      {{
-        ( (hfs_status_create_http.stdout | default('') | string | trim) == '400' )
-        and (
-          (
-            (hfs_status_create_body.stdout | default('', true))
-            | regex_search(hfs_dup_pattern)
-            | default('', true)
-          ) | length > 0
-        )
-      }}
-    hfs_status_needs_update: >-
-      {{
-        ( (hfs_status_create_http.stdout | default('') | string | trim) == '409' )
-        or (
-          ( (hfs_status_create_http.stdout | default('') | string | trim) == '400' )
-          and (
-            (
-              (hfs_status_create_body.stdout | default('', true))
-              | regex_search(hfs_dup_pattern)
-              | default('', true)
-            ) | length > 0
-          )
-        )
-      }}
-
-- name: "Harness | Falhar STATUS (se não for 2xx e não for caso de UPDATE)"
-  ansible.builtin.fail:
-    msg: |
-      Falha ao criar status.json no Harness.
-      http_code={{ hfs_status_http_code }}
-      body={{ hfs_status_create_body.stdout | default('') }}
-  when:
-    - not (hfs_status_http_code is match('^2..$'))
-    - not (hfs_status_needs_update | bool)
-
-- name: "Harness | UPDATE status (se create retornou 409 ou DUPLICATE_FIELD)"
-  no_log: true
-  ansible.builtin.shell: |
-    set -euo pipefail
-    http="$(curl --http1.1 -sS -o /tmp/hfs_status_update.out -w "%{http_code}" \
-      --request PUT \
-      "{{ harness_api_base }}/{{ hfs_status_identifier }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
-      -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
-      -F "name={{ hfs_status_name }}" \
-      -F "type=FILE" \
-      -F "parentIdentifier={{ hfs_status_parent_identifier }}" \
-      -F "identifier={{ hfs_status_identifier }}" \
-      -F 'tags={{ harness_tags_json }}' \
-      -F "content=@{{ machine_status_file }}" \
-    )"
-    echo "${http}"
-  args:
-    executable: /bin/bash
-  register: hfs_status_update_http
-  when: hfs_status_needs_update | bool
-  changed_when: (hfs_status_update_http.stdout | default('')) is match('^2..$')
-  failed_when: false
-
-- name: "Harness | Falhar UPDATE STATUS (se não for 2xx)"
-  ansible.builtin.fail:
-    msg: |
-      Falha ao atualizar status.json no Harness.
-      http_code={{ (hfs_status_update_http.stdout | default('') | string | trim) }}
-      body={{ lookup('ansible.builtin.file', '/tmp/hfs_status_update.out', errors='ignore') | default('') }}
-  when:
-    - hfs_status_needs_update | bool
-    - not ((hfs_status_update_http.stdout | default('') | string | trim) is match('^2..$'))
-
-# -----------------------------------------------------------------------------
-# 5) Upload/Upsert LOG (POST -> se 409 OU DUPLICATE_FIELD faz PUT) + cleanup
-# -----------------------------------------------------------------------------
-- name: "Harness | Definir nome/identifier do LOG (dentro do LEAF)"
-  ansible.builtin.set_fact:
-    hfs_log_name: "pipeline.log"
-    hfs_log_identifier_raw: "{{ ('f_log_' ~ deployment_ref_identifier ~ '_' ~ machine_stage_identifier) | regex_replace('[^A-Za-z0-9_]', '_') }}"
-    hfs_log_parent_identifier: "{{ leaf_identifier_final }}"
-
-- name: "Harness | Limitar identifier LOG a 128 (se precisar)"
-  ansible.builtin.set_fact:
-    hfs_log_identifier: >-
-      {{
-        (hfs_log_identifier_raw[0:110] ~ '_' ~ (hfs_log_identifier_raw | hash('sha1'))[0:16])
-        if (hfs_log_identifier_raw | length) > 128 else hfs_log_identifier_raw
-      }}
-
-- name: "Harness | Upload do LOG (create/update) com cleanup garantido"
-  block:
-    - name: "Harness | Criar arquivo temporário do log no controller"
-      ansible.builtin.copy:
-        dest: "/tmp/{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-{{ stage_raw }}.log"
-        mode: "0600"
-        content: "{{ log_content }}"
-
-    - name: "Harness | CREATE log"
-      no_log: true
-      ansible.builtin.shell: |
-        set -euo pipefail
-        http="$(curl --http1.1 -sS -o /tmp/hfs_log_create.out -w "%{http_code}" \
-          --request POST \
-          "{{ harness_api_base }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
-          -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
-          -F "name={{ hfs_log_name }}" \
-          -F "type=FILE" \
-          -F "parentIdentifier={{ hfs_log_parent_identifier }}" \
-          -F "identifier={{ hfs_log_identifier }}" \
-          -F 'tags={{ harness_tags_json }}' \
-          -F "content=@/tmp/{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-{{ stage_raw }}.log" \
-        )"
-        echo "${http}"
-      args:
-        executable: /bin/bash
-      register: hfs_log_create_http
-      changed_when: (hfs_log_create_http.stdout | default('')) is match('^2..$')
-      failed_when: false
-
-    - name: "Harness | Ler body LOG (sempre)"
-      ansible.builtin.shell: "cat /tmp/hfs_log_create.out 2>/dev/null || true"
-      register: hfs_log_create_body
-      changed_when: false
-      failed_when: false
-
-    - name: "Harness | Normalizar http_code LOG + decidir se precisa UPDATE"
-      ansible.builtin.set_fact:
-        hfs_log_http_code: "{{ (hfs_log_create_http.stdout | default('') | string | trim) }}"
-        hfs_log_needs_update: >-
-          {{
-            ( (hfs_log_create_http.stdout | default('') | string | trim) == '409' )
-            or (
-              ( (hfs_log_create_http.stdout | default('') | string | trim) == '400' )
-              and (
-                (
-                  (hfs_log_create_body.stdout | default('', true))
-                  | regex_search(hfs_dup_pattern)
-                  | default('', true)
-                ) | length > 0
-              )
-            )
-          }}
-
-    - name: "Harness | Falhar LOG (se não for 2xx e não for caso de UPDATE)"
-      ansible.builtin.fail:
-        msg: |
-          Falha ao criar pipeline.log no Harness.
-          http_code={{ hfs_log_http_code }}
-          body={{ hfs_log_create_body.stdout | default('') }}
-      when:
-        - not (hfs_log_http_code is match('^2..$'))
-        - not (hfs_log_needs_update | bool)
-
-    - name: "Harness | UPDATE log (se create retornou 409 ou DUPLICATE_FIELD)"
-      no_log: true
-      ansible.builtin.shell: |
-        set -euo pipefail
-        http="$(curl --http1.1 -sS -o /tmp/hfs_log_update.out -w "%{http_code}" \
-          --request PUT \
-          "{{ harness_api_base }}/{{ hfs_log_identifier }}?accountIdentifier={{ harness_account_id_resolved }}&orgIdentifier={{ harness_org_id_resolved }}&projectIdentifier={{ harness_project_id_resolved }}" \
-          -H "x-api-key: {{ harness_x_api_key }}" -H "Expect:" \
-          -F "name={{ hfs_log_name }}" \
-          -F "type=FILE" \
-          -F "parentIdentifier={{ hfs_log_parent_identifier }}" \
-          -F "identifier={{ hfs_log_identifier }}" \
-          -F 'tags={{ harness_tags_json }}' \
-          -F "content=@/tmp/{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-{{ stage_raw }}.log" \
-        )"
-        echo "${http}"
-      args:
-        executable: /bin/bash
-      register: hfs_log_update_http
-      when: hfs_log_needs_update | bool
-      changed_when: (hfs_log_update_http.stdout | default('')) is match('^2..$')
-      failed_when: false
-
-    - name: "Harness | Falhar UPDATE LOG (se não for 2xx)"
-      ansible.builtin.fail:
-        msg: |
-          Falha ao atualizar pipeline.log no Harness.
-          http_code={{ (hfs_log_update_http.stdout | default('') | string | trim) }}
-          body={{ lookup('ansible.builtin.file', '/tmp/hfs_log_update.out', errors='ignore') | default('') }}
-      when:
-        - hfs_log_needs_update | bool
-        - not ((hfs_log_update_http.stdout | default('') | string | trim) is match('^2..$'))
-
-  always:
-    - name: "Harness | Limpar arquivo temporário do log"
-      ansible.builtin.file:
-        path: "/tmp/{{ deployment_ref_lower }}-{{ current_machine | lower }}-{{ env_lower }}-{{ stage_raw }}.log"
-        state: absent
-      changed_when: false
-      failed_when: false
+Exec using JSCH
+Connecting to 10.218.238.144 ....
+Connection to 10.218.238.144 established
+Executing command ...
+export GIT_TAG=DEV00001
+Clonando repo em /tmp/tmp.w4slbSXXNq...
+Cloning into '/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef'...
+remote: Enumerating objects: 1118, done.
+remote: Counting objects:   0% (1/1068)
+remote: Counting objects:   1% (11/1068)
+remote: Counting objects:   2% (22/1068)
+remote: Counting objects:   3% (33/1068)
+remote: Counting objects:   4% (43/1068)
+remote: Counting objects:   5% (54/1068)
+remote: Counting objects:   6% (65/1068)
+remote: Counting objects:   7% (75/1068)
+remote: Counting objects:   8% (86/1068)
+remote: Counting objects:   9% (97/1068)
+remote: Counting objects:  10% (107/1068)
+remote: Counting objects:  11% (118/1068)
+remote: Counting objects:  12% (129/1068)
+remote: Counting objects:  13% (139/1068)
+remote: Counting objects:  14% (150/1068)
+remote: Counting objects:  15% (161/1068)
+remote: Counting objects:  16% (171/1068)
+remote: Counting objects:  17% (182/1068)
+remote: Counting objects:  18% (193/1068)
+remote: Counting objects:  19% (203/1068)
+remote: Counting objects:  20% (214/1068)
+remote: Counting objects:  21% (225/1068)
+remote: Counting objects:  22% (235/1068)
+remote: Counting objects:  23% (246/1068)
+remote: Counting objects:  24% (257/1068)
+remote: Counting objects:  25% (267/1068)
+remote: Counting objects:  26% (278/1068)
+remote: Counting objects:  27% (289/1068)
+remote: Counting objects:  28% (300/1068)
+remote: Counting objects:  29% (310/1068)
+remote: Counting objects:  30% (321/1068)
+remote: Counting objects:  31% (332/1068)
+remote: Counting objects:  32% (342/1068)
+remote: Counting objects:  33% (353/1068)
+remote: Counting objects:  34% (364/1068)
+remote: Counting objects:  35% (374/1068)
+remote: Counting objects:  36% (385/1068)
+remote: Counting objects:  37% (396/1068)
+remote: Counting objects:  38% (406/1068)
+remote: Counting objects:  39% (417/1068)
+remote: Counting objects:  40% (428/1068)
+remote: Counting objects:  41% (438/1068)
+remote: Counting objects:  42% (449/1068)
+remote: Counting objects:  43% (460/1068)
+remote: Counting objects:  44% (470/1068)
+remote: Counting objects:  45% (481/1068)
+remote: Counting objects:  46% (492/1068)
+remote: Counting objects:  47% (502/1068)
+remote: Counting objects:  48% (513/1068)
+remote: Counting objects:  49% (524/1068)
+remote: Counting objects:  50% (534/1068)
+remote: Counting objects:  51% (545/1068)
+remote: Counting objects:  52% (556/1068)
+remote: Counting objects:  53% (567/1068)
+remote: Counting objects:  54% (577/1068)
+remote: Counting objects:  55% (588/1068)
+remote: Counting objects:  56% (599/1068)
+remote: Counting objects:  57% (609/1068)
+remote: Counting objects:  58% (620/1068)
+remote: Counting objects:  59% (631/1068)
+remote: Counting objects:  60% (641/1068)
+remote: Counting objects:  61% (652/1068)
+remote: Counting objects:  62% (663/1068)
+remote: Counting objects:  63% (673/1068)
+remote: Counting objects:  64% (684/1068)
+remote: Counting objects:  65% (695/1068)
+remote: Counting objects:  66% (705/1068)
+remote: Counting objects:  67% (716/1068)
+remote: Counting objects:  68% (727/1068)
+remote: Counting objects:  69% (737/1068)
+remote: Counting objects:  70% (748/1068)
+remote: Counting objects:  71% (759/1068)
+remote: Counting objects:  72% (769/1068)
+remote: Counting objects:  73% (780/1068)
+remote: Counting objects:  74% (791/1068)
+remote: Counting objects:  75% (801/1068)
+remote: Counting objects:  76% (812/1068)
+remote: Counting objects:  77% (823/1068)
+remote: Counting objects:  78% (834/1068)
+remote: Counting objects:  79% (844/1068)
+remote: Counting objects:  80% (855/1068)
+remote: Counting objects:  81% (866/1068)
+remote: Counting objects:  82% (876/1068)
+remote: Counting objects:  83% (887/1068)
+remote: Counting objects:  84% (898/1068)
+remote: Counting objects:  85% (908/1068)
+remote: Counting objects:  86% (919/1068)
+remote: Counting objects:  87% (930/1068)
+remote: Counting objects:  88% (940/1068)
+remote: Counting objects:  89% (951/1068)
+remote: Counting objects:  90% (962/1068)
+remote: Counting objects:  91% (972/1068)
+remote: Counting objects:  92% (983/1068)
+remote: Counting objects:  93% (994/1068)
+remote: Counting objects:  94% (1004/1068)
+remote: Counting objects:  95% (1015/1068)
+remote: Counting objects:  96% (1026/1068)
+remote: Counting objects:  97% (1036/1068)
+remote: Counting objects:  98% (1047/1068)
+remote: Counting objects:  99% (1058/1068)
+remote: Counting objects: 100% (1068/1068)
+remote: Counting objects: 100% (1068/1068), done.
+remote: Compressing objects:   0% (1/306)
+remote: Compressing objects:   1% (4/306)
+remote: Compressing objects:   2% (7/306)
+remote: Compressing objects:   3% (10/306)
+remote: Compressing objects:   4% (13/306)
+remote: Compressing objects:   5% (16/306)
+remote: Compressing objects:   6% (19/306)
+remote: Compressing objects:   7% (22/306)
+remote: Compressing objects:   8% (25/306)
+remote: Compressing objects:   9% (28/306)
+remote: Compressing objects:  10% (31/306)
+remote: Compressing objects:  11% (34/306)
+remote: Compressing objects:  12% (37/306)
+remote: Compressing objects:  13% (40/306)
+remote: Compressing objects:  14% (43/306)
+remote: Compressing objects:  15% (46/306)
+remote: Compressing objects:  16% (49/306)
+remote: Compressing objects:  17% (53/306)
+remote: Compressing objects:  18% (56/306)
+remote: Compressing objects:  19% (59/306)
+remote: Compressing objects:  20% (62/306)
+remote: Compressing objects:  21% (65/306)
+remote: Compressing objects:  22% (68/306)
+remote: Compressing objects:  23% (71/306)
+remote: Compressing objects:  24% (74/306)
+remote: Compressing objects:  25% (77/306)
+remote: Compressing objects:  26% (80/306)
+remote: Compressing objects:  27% (83/306)
+remote: Compressing objects:  28% (86/306)
+remote: Compressing objects:  29% (89/306)
+remote: Compressing objects:  30% (92/306)
+remote: Compressing objects:  31% (95/306)
+remote: Compressing objects:  32% (98/306)
+remote: Compressing objects:  33% (101/306)
+remote: Compressing objects:  34% (105/306)
+remote: Compressing objects:  35% (108/306)
+remote: Compressing objects:  36% (111/306)
+remote: Compressing objects:  37% (114/306)
+remote: Compressing objects:  38% (117/306)
+remote: Compressing objects:  39% (120/306)
+remote: Compressing objects:  40% (123/306)
+remote: Compressing objects:  41% (126/306)
+remote: Compressing objects:  42% (129/306)
+remote: Compressing objects:  43% (132/306)
+remote: Compressing objects:  44% (135/306)
+remote: Compressing objects:  45% (138/306)
+remote: Compressing objects:  46% (141/306)
+remote: Compressing objects:  47% (144/306)
+remote: Compressing objects:  48% (147/306)
+remote: Compressing objects:  49% (150/306)
+remote: Compressing objects:  50% (153/306)
+remote: Compressing objects:  51% (157/306)
+remote: Compressing objects:  52% (160/306)
+remote: Compressing objects:  53% (163/306)
+remote: Compressing objects:  54% (166/306)
+remote: Compressing objects:  55% (169/306)
+remote: Compressing objects:  56% (172/306)
+remote: Compressing objects:  57% (175/306)
+remote: Compressing objects:  58% (178/306)
+remote: Compressing objects:  59% (181/306)
+remote: Compressing objects:  60% (184/306)
+remote: Compressing objects:  61% (187/306)
+remote: Compressing objects:  62% (190/306)
+remote: Compressing objects:  63% (193/306)
+remote: Compressing objects:  64% (196/306)
+remote: Compressing objects:  65% (199/306)
+remote: Compressing objects:  66% (202/306)
+remote: Compressing objects:  67% (206/306)
+remote: Compressing objects:  68% (209/306)
+remote: Compressing objects:  69% (212/306)
+remote: Compressing objects:  70% (215/306)
+remote: Compressing objects:  71% (218/306)
+remote: Compressing objects:  72% (221/306)
+remote: Compressing objects:  73% (224/306)
+remote: Compressing objects:  74% (227/306)
+remote: Compressing objects:  75% (230/306)
+remote: Compressing objects:  76% (233/306)
+remote: Compressing objects:  77% (236/306)
+remote: Compressing objects:  78% (239/306)
+remote: Compressing objects:  79% (242/306)
+remote: Compressing objects:  80% (245/306)
+remote: Compressing objects:  81% (248/306)
+remote: Compressing objects:  82% (251/306)
+remote: Compressing objects:  83% (254/306)
+remote: Compressing objects:  84% (258/306)
+remote: Compressing objects:  85% (261/306)
+remote: Compressing objects:  86% (264/306)
+remote: Compressing objects:  87% (267/306)
+remote: Compressing objects:  88% (270/306)
+remote: Compressing objects:  89% (273/306)
+remote: Compressing objects:  90% (276/306)
+remote: Compressing objects:  91% (279/306)
+remote: Compressing objects:  92% (282/306)
+remote: Compressing objects:  93% (285/306)
+remote: Compressing objects:  94% (288/306)
+remote: Compressing objects:  95% (291/306)
+remote: Compressing objects:  96% (294/306)
+remote: Compressing objects:  97% (297/306)
+remote: Compressing objects:  98% (300/306)
+remote: Compressing objects:  99% (303/306)
+remote: Compressing objects: 100% (306/306)
+remote: Compressing objects: 100% (306/306), done.
+Receiving objects:   0% (1/1118)
+Receiving objects:   1% (12/1118)
+Receiving objects:   2% (23/1118)
+Receiving objects:   3% (34/1118)
+Receiving objects:   4% (45/1118)
+Receiving objects:   5% (56/1118)
+Receiving objects:   6% (68/1118)
+Receiving objects:   7% (79/1118)
+Receiving objects:   8% (90/1118)
+Receiving objects:   9% (101/1118)
+Receiving objects:  10% (112/1118)
+Receiving objects:  11% (123/1118)
+Receiving objects:  12% (135/1118)
+Receiving objects:  13% (146/1118)
+Receiving objects:  14% (157/1118)
+Receiving objects:  15% (168/1118)
+Receiving objects:  16% (179/1118)
+Receiving objects:  17% (191/1118)
+Receiving objects:  18% (202/1118)
+Receiving objects:  19% (213/1118)
+Receiving objects:  20% (224/1118)
+Receiving objects:  21% (235/1118)
+Receiving objects:  22% (246/1118)
+Receiving objects:  23% (258/1118)
+Receiving objects:  24% (269/1118)
+Receiving objects:  25% (280/1118)
+Receiving objects:  26% (291/1118)
+Receiving objects:  27% (302/1118)
+Receiving objects:  28% (314/1118)
+Receiving objects:  29% (325/1118)
+Receiving objects:  30% (336/1118)
+Receiving objects:  31% (347/1118)
+Receiving objects:  32% (358/1118)
+Receiving objects:  33% (369/1118)
+Receiving objects:  34% (381/1118)
+Receiving objects:  35% (392/1118)
+Receiving objects:  36% (403/1118)
+Receiving objects:  37% (414/1118)
+Receiving objects:  38% (425/1118)
+Receiving objects:  39% (437/1118)
+Receiving objects:  40% (448/1118)
+Receiving objects:  41% (459/1118)
+Receiving objects:  42% (470/1118)
+Receiving objects:  43% (481/1118)
+Receiving objects:  44% (492/1118)
+Receiving objects:  45% (504/1118)
+Receiving objects:  46% (515/1118)
+Receiving objects:  47% (526/1118)
+Receiving objects:  48% (537/1118)
+Receiving objects:  49% (548/1118)
+Receiving objects:  50% (559/1118)
+Receiving objects:  51% (571/1118)
+Receiving objects:  52% (582/1118)
+Receiving objects:  53% (593/1118)
+Receiving objects:  54% (604/1118)
+Receiving objects:  55% (615/1118)
+Receiving objects:  56% (627/1118)
+Receiving objects:  57% (638/1118)
+Receiving objects:  58% (649/1118)
+Receiving objects:  59% (660/1118)
+Receiving objects:  60% (671/1118)
+Receiving objects:  61% (682/1118)
+Receiving objects:  62% (694/1118)
+Receiving objects:  63% (705/1118)
+Receiving objects:  64% (716/1118)
+Receiving objects:  65% (727/1118)
+Receiving objects:  66% (738/1118)
+Receiving objects:  67% (750/1118)
+Receiving objects:  68% (761/1118)
+Receiving objects:  69% (772/1118)
+Receiving objects:  70% (783/1118)
+Receiving objects:  71% (794/1118)
+Receiving objects:  72% (805/1118)
+Receiving objects:  73% (817/1118)
+Receiving objects:  74% (828/1118)
+Receiving objects:  75% (839/1118)
+Receiving objects:  76% (850/1118)
+Receiving objects:  77% (861/1118)
+Receiving objects:  78% (873/1118)
+Receiving objects:  79% (884/1118)
+Receiving objects:  80% (895/1118)
+Receiving objects:  81% (906/1118)
+Receiving objects:  82% (917/1118)
+Receiving objects:  83% (928/1118)
+Receiving objects:  84% (940/1118)
+Receiving objects:  85% (951/1118)
+remote: Total 1118 (delta 776), reused 1035 (delta 747), pack-reused 50
+Receiving objects:  86% (962/1118)
+Receiving objects:  87% (973/1118)
+Receiving objects:  88% (984/1118)
+Receiving objects:  89% (996/1118)
+Receiving objects:  90% (1007/1118)
+Receiving objects:  91% (1018/1118)
+Receiving objects:  92% (1029/1118)
+Receiving objects:  93% (1040/1118), 971.71 KiB | 1.89 MiB/s
+Receiving objects:  94% (1051/1118), 971.71 KiB | 1.89 MiB/s
+Receiving objects:  95% (1063/1118), 971.71 KiB | 1.89 MiB/s
+Receiving objects:  96% (1074/1118), 971.71 KiB | 1.89 MiB/s
+Receiving objects:  97% (1085/1118), 971.71 KiB | 1.89 MiB/s
+Receiving objects:  98% (1096/1118), 971.71 KiB | 1.89 MiB/s
+Receiving objects:  99% (1107/1118), 971.71 KiB | 1.89 MiB/s
+Receiving objects: 100% (1118/1118), 971.71 KiB | 1.89 MiB/s
+Receiving objects: 100% (1118/1118), 988.71 KiB | 1.93 MiB/s, done.
+Resolving deltas:   0% (0/795)
+Resolving deltas:   1% (8/795)
+Resolving deltas:   2% (16/795)
+Resolving deltas:   3% (24/795)
+Resolving deltas:   4% (32/795)
+Resolving deltas:   5% (40/795)
+Resolving deltas:   6% (48/795)
+Resolving deltas:   7% (56/795)
+Resolving deltas:   8% (64/795)
+Resolving deltas:   9% (72/795)
+Resolving deltas:  10% (80/795)
+Resolving deltas:  11% (88/795)
+Resolving deltas:  12% (96/795)
+Resolving deltas:  13% (104/795)
+Resolving deltas:  14% (112/795)
+Resolving deltas:  15% (120/795)
+Resolving deltas:  16% (128/795)
+Resolving deltas:  17% (136/795)
+Resolving deltas:  18% (144/795)
+Resolving deltas:  19% (152/795)
+Resolving deltas:  20% (159/795)
+Resolving deltas:  21% (167/795)
+Resolving deltas:  22% (175/795)
+Resolving deltas:  23% (183/795)
+Resolving deltas:  24% (191/795)
+Resolving deltas:  25% (199/795)
+Resolving deltas:  26% (207/795)
+Resolving deltas:  27% (215/795)
+Resolving deltas:  28% (223/795)
+Resolving deltas:  29% (231/795)
+Resolving deltas:  30% (239/795)
+Resolving deltas:  31% (247/795)
+Resolving deltas:  32% (255/795)
+Resolving deltas:  33% (263/795)
+Resolving deltas:  34% (271/795)
+Resolving deltas:  35% (279/795)
+Resolving deltas:  36% (287/795)
+Resolving deltas:  37% (295/795)
+Resolving deltas:  38% (303/795)
+Resolving deltas:  39% (311/795)
+Resolving deltas:  40% (318/795)
+Resolving deltas:  41% (326/795)
+Resolving deltas:  42% (334/795)
+Resolving deltas:  43% (342/795)
+Resolving deltas:  44% (350/795)
+Resolving deltas:  45% (358/795)
+Resolving deltas:  46% (367/795)
+Resolving deltas:  47% (374/795)
+Resolving deltas:  48% (382/795)
+Resolving deltas:  49% (390/795)
+Resolving deltas:  50% (398/795)
+Resolving deltas:  51% (406/795)
+Resolving deltas:  52% (414/795)
+Resolving deltas:  53% (422/795)
+Resolving deltas:  54% (430/795)
+Resolving deltas:  55% (438/795)
+Resolving deltas:  56% (446/795)
+Resolving deltas:  57% (454/795)
+Resolving deltas:  58% (462/795)
+Resolving deltas:  59% (470/795)
+Resolving deltas:  60% (477/795)
+Resolving deltas:  61% (485/795)
+Resolving deltas:  62% (493/795)
+Resolving deltas:  63% (501/795)
+Resolving deltas:  64% (509/795)
+Resolving deltas:  65% (517/795)
+Resolving deltas:  66% (525/795)
+Resolving deltas:  67% (533/795)
+Resolving deltas:  68% (541/795)
+Resolving deltas:  69% (549/795)
+Resolving deltas:  70% (557/795)
+Resolving deltas:  71% (565/795)
+Resolving deltas:  72% (573/795)
+Resolving deltas:  73% (581/795)
+Resolving deltas:  74% (589/795)
+Resolving deltas:  75% (597/795)
+Resolving deltas:  76% (605/795)
+Resolving deltas:  77% (613/795)
+Resolving deltas:  78% (621/795)
+Resolving deltas:  79% (629/795)
+Resolving deltas:  80% (636/795)
+Resolving deltas:  81% (644/795)
+Resolving deltas:  82% (652/795)
+Resolving deltas:  83% (660/795)
+Resolving deltas:  84% (668/795)
+Resolving deltas:  85% (676/795)
+Resolving deltas:  86% (684/795)
+Resolving deltas:  87% (692/795)
+Resolving deltas:  88% (700/795)
+Resolving deltas:  89% (708/795)
+Resolving deltas:  90% (716/795)
+Resolving deltas:  91% (724/795)
+Resolving deltas:  92% (732/795)
+Resolving deltas:  93% (740/795)
+Resolving deltas:  94% (748/795)
+Resolving deltas:  95% (756/795)
+Resolving deltas:  96% (764/795)
+Resolving deltas:  97% (772/795)
+Resolving deltas:  98% (780/795)
+Resolving deltas:  99% (788/795)
+Resolving deltas: 100% (795/795)
+Resolving deltas: 100% (795/795), done.
+== PIPELINE PREDEPLOY ==
+TAG   : DEV00001
+EXEC  : execution/machine_list_dev.yml
+BRANCH: develop-testes
+PLAY [Predeploy a partir do arquivo de execução] *******************************
+TASK [Gathering Facts] *********************************************************
+ok: [localhost]
+TASK [Resolver filestore_env e filestore_base_dir sem recursão] ****************
+ok: [localhost]
+TASK [Mostrar variáveis de entrada e resolvidas] *******************************
+ok: [localhost] => {
+    "msg": [
+        "execution_file_name_resolved = execution/machine_list_dev.yml",
+        "deployment_ref_resolved      = DEV00001",
+        "repo_root_resolved           = /tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/..",
+        "status_dir_resolved          = /tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../status/DEV00001",
+        "filestore_env_resolved       = dev",
+        "filestore_base_dir_resolved  = dev/DEV00001",
+        "nexus_base_url_resolved      = https://nexus-ci.onefiserv.net/repository/raw-apm0004548-dev"
+    ]
+}
+TASK [Criar diretório de status da TAG] ****************************************
+changed: [localhost]
+TASK [Carregar arquivo de execução] ********************************************
+ok: [localhost]
+TASK [Falhar se não tiver máquinas no arquivo de execução] *********************
+skipping: [localhost]
+TASK [Executar pré-deploy por máquina] *****************************************
+included: /tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/predeploy_per_machine.yml for localhost => (item=sitef-02)
+TASK [Predeploy | Resolver nome da máquina atual] ******************************
+ok: [localhost]
+TASK [Predeploy | Validar vars mínimas] ****************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+TASK [Predeploy | Definir paths base do repositório] ***************************
+ok: [localhost]
+TASK [Predeploy | Definir candidatos de arquivo da máquina] ********************
+ok: [localhost]
+TASK [Predeploy | Verificar candidatos] ****************************************
+ok: [localhost] => (item=/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml)
+ok: [localhost] => (item=/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml)
+TASK [Predeploy | Selecionar machine_file existente] ***************************
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../execution/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../execution/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 248, 'inode': 6307357, 'dev': 64775, 'nlink': 1, 'atime': 1766709321.4687014, 'mtime': 1766709321.4587014, 'ctime': 1766709321.4587014, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': '005e3367129d5aefc77f49fd9fe62b4e58c51cd5', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '984718738', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../machines/sitef-02.yml', 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/../inventory/machines/sitef-02.yml', 'ansible_loop_var': 'item'}) 
+TASK [Predeploy | Falhar se arquivo da máquina não existir] ********************
+skipping: [localhost]
+TASK [Predeploy | Carregar config da máquina sitef-02] *************************
+ok: [localhost]
+TASK [Predeploy | Validar package definido] ************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+TASK [Predeploy | Carregar config do pacote sitef-core-0.0.1-0] ****************
+ok: [localhost]
+TASK [Predeploy | Validar components do pacote] ********************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+TASK [Predeploy | Validar script do pacote] ************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+TASK [Predeploy | Definir usuário alvo padrão] *********************************
+ok: [localhost]
+TASK [Predeploy | Definir ssh_common_args padrão] ******************************
+ok: [localhost]
+TASK [Predeploy | Aplicar ProxyJump via bastion (quando necessário)] ***********
+skipping: [localhost]
+TASK [Predeploy | Registrar host dinâmico para sitef-02] ***********************
+changed: [localhost]
+TASK [Predeploy | Montar env final (package base + machine override)] **********
+ok: [localhost]
+TASK [Predeploy | Normalizações] ***********************************************
+ok: [localhost]
+TASK [Predeploy | Gerar run_id] ************************************************
+ok: [localhost]
+TASK [Predeploy | Definir arquivos/diretórios locais] **************************
+ok: [localhost]
+TASK [Predeploy | Definir paths lógicos (File Store) SEPARADOS POR STAGE] ******
+ok: [localhost]
+TASK [Predeploy | Garantir diretório de status local] **************************
+changed: [localhost]
+TASK [Predeploy | Garantir arquivo pipeline.log (cumulativo local)] ************
+changed: [localhost]
+TASK [Predeploy | Verificar se status.json já existe] **************************
+ok: [localhost]
+TASK [Predeploy | Ler status.json existente (se existir)] **********************
+skipping: [localhost]
+TASK [Predeploy | Parse do status existente (ou base vazio)] *******************
+ok: [localhost]
+TASK [Predeploy | Escrever status inicial (predeploy:queued) com history append] ***
+changed: [localhost]
+TASK [Predeploy | Definir diretórios remotos do pipeline] **********************
+ok: [localhost]
+TASK [Predeploy | Garantir base do pipeline no host] ***************************
+ok: [localhost -> sitef-02(100.99.57.128)] => (item=/opt/SoftwareExpress/sitef-pipeline/deploy/components)
+ok: [localhost -> sitef-02(100.99.57.128)] => (item=/opt/SoftwareExpress/sitef-pipeline/deploy/scripts)
+ok: [localhost -> sitef-02(100.99.57.128)] => (item=/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package)
+TASK [Predeploy | Limpar pasta de scripts do pacote] ***************************
+changed: [localhost -> sitef-02(100.99.57.128)]
+TASK [Predeploy | Recriar pasta de scripts do pacote] **************************
+changed: [localhost -> sitef-02(100.99.57.128)]
+TASK [Predeploy | Copiar package.yml para o host] ******************************
+changed: [localhost -> sitef-02(100.99.57.128)]
+TASK [Predeploy | Garantir diretórios dos componentes no host] *****************
+ok: [localhost -> sitef-02(100.99.57.128)] => (item=packages/linux/sitef-core-0.0.1-0.x86_64.rpm)
+TASK [Predeploy | Baixar componentes do Nexus] *********************************
+ok: [localhost -> sitef-02(100.99.57.128)] => (item=packages/linux/sitef-core-0.0.1-0.x86_64.rpm)
+TASK [Predeploy | Copiar scripts do pacote para o host] ************************
+ok: [localhost -> sitef-02(100.99.57.128)]
+TASK [Predeploy | Executar init_parallel.sh no host (com log + stdout)] ********
+changed: [localhost -> sitef-02(100.99.57.128)]
+TASK [Predeploy | Tail do init_parallel.log (sempre)] **************************
+ok: [localhost -> sitef-02(100.99.57.128)]
+TASK [Predeploy | Montar conteúdo do log (bloco predeploy)] ********************
+ok: [localhost]
+TASK [Predeploy | Append do bloco no pipeline.log (controller)] ****************
+changed: [localhost]
+TASK [Predeploy | Carregar conteúdo completo do pipeline.log (controller)] *****
+ok: [localhost]
+TASK [Predeploy | Ler status.json atual] ***************************************
+ok: [localhost]
+TASK [Predeploy | Parse do status atual] ***************************************
+ok: [localhost]
+TASK [Predeploy | Atualizar status final (append em history)] ******************
+changed: [localhost]
+TASK [Predeploy | Definir status_tag_value (tag usada no File Store)] **********
+ok: [localhost]
+TASK [Predeploy | Upload JSON + LOG para Harness File Store (sempre)] **********
+included: /tmp/tmp.w4slbSXXNq/elastic-compute-cloud-sitef/ansible/harness_filestore_upload.yml for localhost
+TASK [Harness | Validar vars mínimas] ******************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+TASK [Harness | Definir defaults + normalizações (parte 1)] ********************
+ok: [localhost]
+TASK [Harness | Definir stage_label (parte 2)] *********************************
+ok: [localhost]
+TASK [Harness | Identifiers SAFE (HARNESS RULE: [A-Za-z][A-Za-z0-9_]{0,127})] ***
+ok: [localhost]
+TASK [Harness | Limitar machine_stage_identifier a 128 (se precisar)] **********
+ok: [localhost]
+TASK [Harness | Resolver token (vars > env)] ***********************************
+ok: [localhost]
+TASK [Harness | Debug seguro do token (não mostra valor)] **********************
+ok: [localhost] => {
+    "msg": "Harness token presente? True (len=72)"
+}
+TASK [Harness | Falhar se token vazio] *****************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+TASK [Harness | Map token para header x-api-key] *******************************
+ok: [localhost]
+TASK [Harness | Montar tags base] **********************************************
+ok: [localhost]
+TASK [Harness | Adicionar extra_tags como tag=...] *****************************
+skipping: [localhost]
+TASK [Harness | Definir http_codes aceitos] ************************************
+ok: [localhost]
+TASK [Harness | Render tags JSON] **********************************************
+ok: [localhost]
+TASK [Harness | Garantir folder ENV (POST)] ************************************
+fatal: [localhost]: FAILED! => {"censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result"}
+PLAY RECAP *********************************************************************
+localhost                  : ok=60   changed=11   unreachable=0    failed=1    skipped=5    rescued=0    ignored=0   
+Command finished with status FAILURE
