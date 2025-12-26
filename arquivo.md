@@ -1,12 +1,12 @@
-- name: "Upload JSON + LOG do ROLLBACK para Harness File Store (via Ansible) - SEMPRE"
-  ansible.builtin.include_tasks: harness_filestore_upload.yml
-  vars:
-    current_machine_in: "{{ current_machine }}"
-    deployment_ref_in: "{{ deployment_ref }}"
-    filestore_env_in: "{{ filestore_env }}"
-    stage_name_in: "rollback"
-
-    machine_status_file_in: "{{ machine_status_file }}"
-    log_content_in: "{{ rollback_log_content }}"
-    status_tag_value_in: "{{ (deployment_ref | lower) ~ ':rollback:' ~ ('ok' if init_rollback_result.rc == 0 else 'error') }}"
-    extra_tags_in: []
+TASK [Upload JSON + LOG do ROLLBACK para Harness File Store (via Ansible) - SEMPRE] ***
+included: /tmp/tmp.2tC2xxxcos/elastic-compute-cloud-sitef/ansible/harness_filestore_upload.yml for localhost
+TASK [Harness | Validar vars mínimas] ******************************************
+fatal: [localhost]: FAILED! => {
+    "assertion": "log_content is defined",
+    "changed": false,
+    "evaluated_to": false,
+    "msg": "Faltam vars obrigatórias para harness_filestore_upload.yml"
+}
+PLAY RECAP *********************************************************************
+localhost                  : ok=44   changed=9    unreachable=0    failed=1    skipped=3    rescued=0    ignored=0   
+Command finished with status FAILURE
