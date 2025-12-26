@@ -1,12 +1,19 @@
-TASK [Upload JSON + LOG do ROLLBACK para Harness File Store (via Ansible) - SEMPRE] ***
-included: /tmp/tmp.2tC2xxxcos/elastic-compute-cloud-sitef/ansible/harness_filestore_upload.yml for localhost
-TASK [Harness | Validar vars mínimas] ******************************************
-fatal: [localhost]: FAILED! => {
-    "assertion": "log_content is defined",
-    "changed": false,
-    "evaluated_to": false,
-    "msg": "Faltam vars obrigatórias para harness_filestore_upload.yml"
-}
-PLAY RECAP *********************************************************************
-localhost                  : ok=44   changed=9    unreachable=0    failed=1    skipped=3    rescued=0    ignored=0   
-Command finished with status FAILURE
+segue como esta o deploy que funciona hoje 100%, nao vou mexer no ansible do harness 
+
+- name: "Deploy | Upload JSON + LOG para Harness File Store"
+  ansible.builtin.include_tasks: harness_filestore_upload.yml
+  vars:
+    # nunca passe current_machine: "{{ current_machine }}"
+    current_machine: "{{ machine_name | string | trim }}"
+
+    machine_status_file: "{{ status_file }}"
+    log_content: "{{ log_content_to_upload }}"
+
+    # nunca passe stage_name: "{{ stage_name }}"
+    stage_name: "deploy"
+
+    # não referencie stage_name aqui também
+    status_tag_value: >-
+      {{ (deployment_ref | lower) ~ ':deploy:' ~ ('ok' if (deploy_result.rc | default(1)) == 0 else 'error') }}
+
+    extra_tags: []
