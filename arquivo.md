@@ -1,8 +1,7 @@
 # predeploy_per_machine.yml
 ---
 # =====================================================================================
-# PREDEPLOY POR MÁQUINA (COMPLETO / CORRIGIDO)
-# Chamado por: predeploy_from_execution.yml
+# PREDEPLOY POR MÁQUINA (PARALELO SAFE + FILESTORE SEM CONCATENAR)
 # =====================================================================================
 
 # -----------------------------------------------------------------------------
@@ -35,10 +34,10 @@
 - name: "Predeploy | Definir paths base do repositório"
   ansible.builtin.set_fact:
     repo_root_safe: "{{ repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..')) }}"
-    execution_dir: "{{ (repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..'))) }}/execution"
-    machines_dir: "{{ (repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..'))) }}/machines"
-    packages_dir: "{{ (repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..'))) }}/packages"
-    scripts_root_dir: "{{ (repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..'))) }}/scripts"
+    execution_dir: "{{ repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..')) }}/execution"
+    machines_dir: "{{ repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..')) }}/machines"
+    packages_dir: "{{ repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..')) }}/packages"
+    scripts_root_dir: "{{ repo_root | default(repo_root_resolved | default(playbook_dir ~ '/..')) }}/scripts"
 
 # -----------------------------------------------------------------------------
 # 2) Resolver machine_file
@@ -132,8 +131,10 @@
 - name: "Predeploy | Registrar host dinâmico para {{ current_machine }}"
   ansible.builtin.add_host:
     name: "{{ current_machine }}"
-    ansible_host: "{{ machine_cfg.host | default(machine_cfg.ip | default('')) }}"
+    ansible_host: "{{ (machine_cfg.host | default(machine_cfg.ip | default(''))) | string | trim }}"
     ansible_user: "{{ target_user }}"
+    ansible_port: "{{ machine_cfg.port | default(22) }}"
+    ansible_ssh_private_key_file: "{{ machine_cfg.ssh_key | default(omit) }}"
     ansible_ssh_common_args: "{{ ssh_common_args }}"
     ansible_connection: ssh
   changed_when: true
@@ -157,7 +158,7 @@
       }}
 
 # -----------------------------------------------------------------------------
-# 6) Normalizações + run_id
+# 6) Normalizações + run_id (preferir execução do Harness)
 # -----------------------------------------------------------------------------
 - name: "Predeploy | Normalizações"
   ansible.builtin.set_fact:
@@ -165,23 +166,45 @@
     env_lower: "{{ (filestore_env | string | trim | lower) }}"
     machine_lower: "{{ (current_machine | string | trim | lower) }}"
 
-- name: "Predeploy | Gerar run_id"
+- name: "Predeploy | Resolver run_id (HARNESS_EXECUTION_ID > BUILD_ID > CI_PIPELINE_ID > epoch)"
   ansible.builtin.set_fact:
-    run_id: "{{ deployment_ref_lower ~ '-' ~ machine_lower ~ '-' ~ env_lower ~ '-' ~ stage_name ~ '-' ~ ansible_date_time.epoch }}"
+    run_id_raw: >-
+      {{
+        (lookup('ansible.builtin.env','HARNESS_EXECUTION_ID') | default('', true) | string | trim)
+        if (lookup('ansible.builtin.env','HARNESS_EXECUTION_ID') | default('', true) | string | trim) | length > 0
+        else
+          (
+            (lookup('ansible.builtin.env','BUILD_ID') | default('', true) | string | trim)
+            if (lookup('ansible.builtin.env','BUILD_ID') | default('', true) | string | trim) | length > 0
+            else
+              (
+                (lookup('ansible.builtin.env','CI_PIPELINE_ID') | default('', true) | string | trim)
+                if (lookup('ansible.builtin.env','CI_PIPELINE_ID') | default('', true) | string | trim) | length > 0
+                else ansible_date_time.epoch
+              )
+          )
+      }}
+    run_id_safe: "{{ (run_id_raw | string) | regex_replace('[^A-Za-z0-9_.-]', '_') }}"
 
 # -----------------------------------------------------------------------------
-# 7) Paths local (controller) + paths remotos do pipeline
+# 7) Paths local (controller) + paths do File Store (POR EXECUÇÃO)
 # -----------------------------------------------------------------------------
 - name: "Predeploy | Definir arquivos/diretórios locais"
   ansible.builtin.set_fact:
     machine_status_dir: "{{ status_dir }}/{{ current_machine }}"
     machine_status_file: "{{ status_dir }}/{{ current_machine }}/status.json"
+
+    # local: cumulativo (não sobe pro filestore)
     pipeline_log_file: "{{ status_dir }}/{{ current_machine }}/pipeline.log"
 
-- name: "Predeploy | Definir paths lógicos (File Store) SEPARADOS POR STAGE"
+    # local: somente execução atual (sobe pro filestore)
+    pipeline_run_log_file: "{{ status_dir }}/{{ current_machine }}/pipeline_run.log"
+
+- name: "Predeploy | Definir paths no File Store (subpasta por execução)"
   ansible.builtin.set_fact:
-    filestore_log_path: "{{ filestore_base_dir }}/{{ deployment_ref_lower }}-{{ machine_lower }}-{{ env_lower }}-{{ stage_name }}.log"
-    filestore_status_path: "{{ filestore_base_dir }}/{{ deployment_ref_lower }}-{{ machine_lower }}-{{ env_lower }}-{{ stage_name }}.json"
+    filestore_run_dir: "{{ filestore_base_dir }}/runs/{{ run_id_safe }}"
+    filestore_log_path: "{{ filestore_run_dir }}/{{ deployment_ref_lower }}-{{ machine_lower }}-{{ env_lower }}-{{ stage_name }}.log"
+    filestore_status_path: "{{ filestore_run_dir }}/{{ deployment_ref_lower }}-{{ machine_lower }}-{{ env_lower }}-{{ stage_name }}.json"
 
 - name: "Predeploy | Garantir diretório de status local"
   ansible.builtin.file:
@@ -222,7 +245,7 @@
         (
           status_obj
           | combine({
-              "run_id": run_id,
+              "run_id": run_id_safe,
               "stage": stage_name,
               "machine": current_machine,
               "host": (machine_cfg.host | default(machine_cfg.ip | default(''))),
@@ -230,12 +253,13 @@
               "rollback": (machine_cfg.rollback | default('')),
               "deployment_ref": (deployment_ref | default('')),
               "log_path": filestore_log_path,
+              "status_path": filestore_status_path,
               "status": "predeploy:queued",
               "timestamp": ansible_date_time.iso8601,
               "history": (
                 (status_obj.history | default([]))
                 + [ {
-                      "run_id": run_id,
+                      "run_id": run_id_safe,
                       "stage": stage_name,
                       "status": "predeploy:queued",
                       "timestamp": ansible_date_time.iso8601
@@ -254,6 +278,7 @@
     deploy_base_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/components"
     deploy_scripts_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts"
     deploy_scripts_package_dir: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/package"
+    init_parallel_log: "/opt/SoftwareExpress/sitef-pipeline/deploy/scripts/init_parallel.log"
 
 - name: "Predeploy | Garantir base do pipeline no host"
   become: true
@@ -331,14 +356,23 @@
   delegate_to: "{{ current_machine }}"
 
 # -----------------------------------------------------------------------------
-# 14) Executar init_parallel.sh na máquina alvo (com tee -a)
+# 14) Zerar init_parallel.log e executar init_parallel.sh (sem -a)
 # -----------------------------------------------------------------------------
-- name: "Predeploy | Executar init_parallel.sh no host (com log + stdout)"
+- name: "Predeploy | Zerar init_parallel.log antes de executar (evitar acumulo)"
+  become: true
+  ansible.builtin.shell: |
+    : > "{{ init_parallel_log }}"
+  args:
+    executable: /bin/bash
+  delegate_to: "{{ current_machine }}"
+  changed_when: true
+
+- name: "Predeploy | Executar init_parallel.sh no host (com tee)"
   become: true
   ansible.builtin.shell: |
     set -o pipefail
     cd "{{ deploy_scripts_dir }}"
-    /usr/bin/stdbuf -oL -eL /bin/bash -x ./init_parallel.sh 2>&1 | tee -a "{{ deploy_scripts_dir }}/init_parallel.log"
+    /usr/bin/stdbuf -oL -eL /bin/bash -x ./init_parallel.sh 2>&1 | tee "{{ init_parallel_log }}"
     exit ${PIPESTATUS[0]}
   args:
     executable: /bin/bash
@@ -351,8 +385,8 @@
 - name: "Predeploy | Tail do init_parallel.log (sempre)"
   become: true
   ansible.builtin.shell: |
-    echo "===== tail -n 800 {{ deploy_scripts_dir }}/init_parallel.log ====="
-    tail -n 800 "{{ deploy_scripts_dir }}/init_parallel.log" 2>/dev/null || echo "log não encontrado"
+    echo "===== tail -n 800 {{ init_parallel_log }} ====="
+    tail -n 800 "{{ init_parallel_log }}" 2>/dev/null || echo "log não encontrado"
   args:
     executable: /bin/bash
   delegate_to: "{{ current_machine }}"
@@ -361,13 +395,13 @@
   failed_when: false
 
 # -----------------------------------------------------------------------------
-# 15) Montar bloco de log + append no pipeline.log (controller)
+# 15) Montar bloco de log (somente execução atual) + salvar pipeline_run.log
 # -----------------------------------------------------------------------------
-- name: "Predeploy | Montar conteúdo do log (bloco predeploy)"
+- name: "Predeploy | Montar conteúdo do log (execução atual)"
   ansible.builtin.set_fact:
     predeploy_log_block: |
       ---- pipeline predeploy ----
-      run_id={{ run_id }}
+      run_id={{ run_id_safe }}
       deployment_ref={{ deployment_ref | default('') }}
       machine={{ current_machine }}
       host={{ machine_cfg.host | default(machine_cfg.ip | default('')) }}
@@ -385,7 +419,15 @@
       {{ predeploy_tail.stdout | default('') }}
       ---- pipeline predeploy ----
 
-- name: "Predeploy | Append do bloco no pipeline.log (controller)"
+- name: "Predeploy | Salvar pipeline_run.log (sobrescreve sempre)"
+  ansible.builtin.copy:
+    dest: "{{ pipeline_run_log_file }}"
+    mode: "0644"
+    content: "{{ predeploy_log_block }}"
+  changed_when: true
+
+# opcional: manter histórico local cumulativo (NÃO sobe pro File Store)
+- name: "Predeploy | Append do bloco no pipeline.log (cumulativo local)"
   ansible.builtin.blockinfile:
     path: "{{ pipeline_log_file }}"
     marker: ""
@@ -394,9 +436,9 @@
       {{ predeploy_log_block }}
   changed_when: true
 
-- name: "Predeploy | Carregar conteúdo completo do pipeline.log (controller)"
+- name: "Predeploy | Carregar conteúdo do log (somente execução atual) para upload"
   ansible.builtin.set_fact:
-    pipeline_log_content_full: "{{ lookup('ansible.builtin.file', pipeline_log_file) }}"
+    log_content_to_upload: "{{ lookup('ansible.builtin.file', pipeline_run_log_file) }}"
 
 # -----------------------------------------------------------------------------
 # 16) Atualizar status final (predeploy:ok / predeploy:error) com history append
@@ -419,7 +461,7 @@
         (
           status_now
           | combine({
-              "run_id": run_id,
+              "run_id": run_id_safe,
               "stage": stage_name,
               "status": ("predeploy:ok" if (init_parallel_result.rc | default(1)) == 0 else "predeploy:error"),
               "timestamp": ansible_date_time.iso8601,
@@ -427,7 +469,7 @@
               "history": (
                 (status_now.history | default([]))
                 + [ {
-                      "run_id": run_id,
+                      "run_id": run_id_safe,
                       "stage": stage_name,
                       "status": ("predeploy:ok" if (init_parallel_result.rc | default(1)) == 0 else "predeploy:error"),
                       "rc": (init_parallel_result.rc | default(1)),
@@ -443,15 +485,15 @@
   ansible.builtin.set_fact:
     status_tag_value: "{{ 'predeploy:ok' if (init_parallel_result.rc | default(1)) == 0 else 'predeploy:error' }}"
 
-
 # -----------------------------------------------------------------------------
-# 17) Upload para Harness File Store (SEMPRE) - não pode quebrar a pipeline
+# 17) Upload para Harness File Store (SEMPRE)
 # -----------------------------------------------------------------------------
-- name: "Predeploy | Upload JSON + LOG para Harness File Store (sempre)"
+- name: "Predeploy | Upload JSON + LOG para Harness File Store (somente execução atual)"
   ansible.builtin.include_tasks: harness_filestore_upload.yml
   vars:
     stage_name: "predeploy"
-    log_content: "{{ pipeline_log_content_full }}"
+    log_content: "{{ log_content_to_upload }}"
+
 # -----------------------------------------------------------------------------
 # 18) Falhar pipeline se predeploy deu erro (DEPOIS do upload)
 # -----------------------------------------------------------------------------
