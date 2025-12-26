@@ -1,19 +1,22 @@
-segue como esta o deploy que funciona hoje 100%, nao vou mexer no ansible do harness 
-
-- name: "Deploy | Upload JSON + LOG para Harness File Store"
+- name: "Rollback | Upload JSON + LOG para Harness File Store"
   ansible.builtin.include_tasks: harness_filestore_upload.yml
   vars:
-    # nunca passe current_machine: "{{ current_machine }}"
+    # mesma regra do deploy: não referencie a própria var
     current_machine: "{{ machine_name | string | trim }}"
 
-    machine_status_file: "{{ status_file }}"
-    log_content: "{{ log_content_to_upload }}"
+    # mesma regra do deploy: não passe machine_status_file referenciando ele mesmo
+    machine_status_file: >-
+      {{ (status_dir | default(status_dir_resolved)) ~ '/'
+         ~ (machine_name | string | trim) ~ '/status.json' }}
 
-    # nunca passe stage_name: "{{ stage_name }}"
-    stage_name: "deploy"
+    # o harness_filestore_upload.yml valida isso com esse nome
+    log_content: "{{ rollback_log_content }}"
 
-    # não referencie stage_name aqui também
+    # constante (igual deploy)
+    stage_name: "rollback"
+
+    # sem referenciar stage_name aqui (igual deploy)
     status_tag_value: >-
-      {{ (deployment_ref | lower) ~ ':deploy:' ~ ('ok' if (deploy_result.rc | default(1)) == 0 else 'error') }}
+      {{ (deployment_ref | lower) ~ ':rollback:' ~ ('ok' if (init_rollback_result.rc | default(1)) == 0 else 'error') }}
 
     extra_tags: []
