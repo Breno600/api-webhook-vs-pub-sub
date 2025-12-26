@@ -1,11 +1,2 @@
-- name: "Harness | Normalizar http_code ENV"
-  ansible.builtin.set_fact:
-    hfs_env_http_code: "{{ hfs_env_create_http.stdout | default('', true) | string | trim }}"
-
-- name: "Harness | Detectar DUPLICATE_FIELD ENV"
-  ansible.builtin.set_fact:
-    hfs_env_is_duplicate: >-
-      {{
-        (hfs_env_http_code == '400')
-        and ('"code":"DUPLICATE_FIELD"' in (hfs_env_create_body.stdout | default('', true)))
-      }}
+TASK [Harness | Falhar se ENV já existe mas não consegui resolver identifier] ***
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "Folder ENV \"dev\" já existe, mas não consegui resolver o identifier pelo endpoint /folder.\nroot_children_count=0\n"}
