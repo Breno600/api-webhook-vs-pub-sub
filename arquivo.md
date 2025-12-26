@@ -1,7 +1,15 @@
-TASK [Harness | Normalizar http_code ENV] **************************************
-ok: [localhost]
-TASK [Harness | Detectar DUPLICATE_FIELD ENV (robusto)] ************************
-fatal: [localhost]: FAILED! => {"msg": "Unexpected templating type error occurred on ({{\n  (hfs_env_http_code == '400')\n  and (\n    (\n      (hfs_env_create_body.stdout | default(''))\n      | regex_search('\\\\\"code\\\\\"\\\\\\\\s*:\\\\\\\\s*\\\\\"DUPLICATE_FIELD\\\\\"')\n      | default('')\n    ) | length > 0\n  )\n}}): object of type 'NoneType' has no len(). object of type 'NoneType' has no len()"}
-PLAY RECAP *********************************************************************
-localhost                  : ok=65   changed=11   unreachable=0    failed=1    skipped=5    rescued=0    ignored=0   
-Command finished with status FAILURE
+segue log
+
+TASK [Harness | Falhar ENV se não for OK e não for DUPLICATE_FIELD] ************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "Falha ao criar/garantir folder ENV no Harness.\nhttp_code=400\nbody={\"status\":\"ERROR\",\"code\":\"DUPLICATE_FIELD\",\"message\":\"Try another name, folder with name [dev] already exists in the parent folder [Root].\",\"correlationId\":\"659e75a4-79ac-49cb-9694-39c3148d38b6\",\"detailedMessage\":null,\"responseMessages\":[{\"code\":\"DUPLICATE_FIELD\",\"level\":\"ERROR\",\"message\":\"Try another name, folder with name [dev] already exists in the parent folder [Root].\",\"exception\":null,\"failureTypes\":[],\"additionalInfo\":{}}],\"metadata\":null}\n"}
+
+segue ansible
+- name: "Harness | Falhar ENV se não for OK e não for DUPLICATE_FIELD"
+  ansible.builtin.fail:
+    msg: |
+      Falha ao criar/garantir folder ENV no Harness.
+      http_code={{ hfs_env_http_code | default('') }}
+      body={{ hfs_env_create_body.stdout | default('') }}
+  when:
+    - (hfs_env_http_code | default('') | trim) not in hfs_ok_create_codes
+    - not (hfs_env_is_duplicate | bool)
