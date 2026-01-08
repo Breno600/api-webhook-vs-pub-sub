@@ -2,129 +2,147 @@ Exec using JSCH
 Connecting to 10.218.238.144 ....
 Connection to 10.218.238.144 established
 Executing command ...
-Clonando repo em /tmp/tmp.4DZ1fovBBx/repo...
-Cloning into '/tmp/tmp.4DZ1fovBBx/repo'...
-remote: Enumerating objects: 33, done.
-remote: Counting objects:   3% (1/33)
-remote: Counting objects:   6% (2/33)
-remote: Counting objects:   9% (3/33)
-remote: Counting objects:  12% (4/33)
-remote: Counting objects:  15% (5/33)
-remote: Counting objects:  18% (6/33)
-remote: Counting objects:  21% (7/33)
-remote: Counting objects:  24% (8/33)
-remote: Counting objects:  27% (9/33)
-remote: Counting objects:  30% (10/33)
-remote: Counting objects:  33% (11/33)
-remote: Counting objects:  36% (12/33)
-remote: Counting objects:  39% (13/33)
-remote: Counting objects:  42% (14/33)
-remote: Counting objects:  45% (15/33)
-remote: Counting objects:  48% (16/33)
-remote: Counting objects:  51% (17/33)
-remote: Counting objects:  54% (18/33)
-remote: Counting objects:  57% (19/33)
-remote: Counting objects:  60% (20/33)
-remote: Counting objects:  63% (21/33)
-remote: Counting objects:  66% (22/33)
-remote: Counting objects:  69% (23/33)
-remote: Counting objects:  72% (24/33)
-remote: Counting objects:  75% (25/33)
-remote: Counting objects:  78% (26/33)
-remote: Counting objects:  81% (27/33)
-remote: Counting objects:  84% (28/33)
-remote: Counting objects:  87% (29/33)
-remote: Counting objects:  90% (30/33)
-remote: Counting objects:  93% (31/33)
-remote: Counting objects:  96% (32/33)
-remote: Counting objects: 100% (33/33)
-remote: Counting objects: 100% (33/33), done.
-remote: Compressing objects:   3% (1/26)
-remote: Compressing objects:   7% (2/26)
-remote: Compressing objects:  11% (3/26)
-remote: Compressing objects:  15% (4/26)
-remote: Compressing objects:  19% (5/26)
-remote: Compressing objects:  23% (6/26)
-remote: Compressing objects:  26% (7/26)
-remote: Compressing objects:  30% (8/26)
-remote: Compressing objects:  34% (9/26)
-remote: Compressing objects:  38% (10/26)
-remote: Compressing objects:  42% (11/26)
-remote: Compressing objects:  46% (12/26)
-remote: Compressing objects:  50% (13/26)
-remote: Compressing objects:  53% (14/26)
-remote: Compressing objects:  57% (15/26)
-remote: Compressing objects:  61% (16/26)
-remote: Compressing objects:  65% (17/26)
-remote: Compressing objects:  69% (18/26)
-remote: Compressing objects:  73% (19/26)
-remote: Compressing objects:  76% (20/26)
-remote: Compressing objects:  80% (21/26)
-remote: Compressing objects:  84% (22/26)
-remote: Compressing objects:  88% (23/26)
-remote: Compressing objects:  92% (24/26)
-remote: Compressing objects:  96% (25/26)
-remote: Compressing objects: 100% (26/26)
-remote: Compressing objects: 100% (26/26), done.
-remote: Total 33 (delta 10), reused 0 (delta 0), pack-reused 0
-Receiving objects:   3% (1/33)
-Receiving objects:   6% (2/33)
-Receiving objects:   9% (3/33)
-Receiving objects:  12% (4/33)
-Receiving objects:  15% (5/33)
-Receiving objects:  18% (6/33)
-Receiving objects:  21% (7/33)
-Receiving objects:  24% (8/33)
-Receiving objects:  27% (9/33)
-Receiving objects:  30% (10/33)
-Receiving objects:  33% (11/33)
-Receiving objects:  36% (12/33)
-Receiving objects:  39% (13/33)
-Receiving objects:  42% (14/33)
-Receiving objects:  45% (15/33)
-Receiving objects:  48% (16/33)
-Receiving objects:  51% (17/33)
-Receiving objects:  54% (18/33)
-Receiving objects:  57% (19/33)
-Receiving objects:  60% (20/33)
-Receiving objects:  63% (21/33)
-Receiving objects:  66% (22/33)
-Receiving objects:  69% (23/33)
-Receiving objects:  72% (24/33)
-Receiving objects:  75% (25/33)
-Receiving objects:  78% (26/33)
-Receiving objects:  81% (27/33)
-Receiving objects:  84% (28/33)
-Receiving objects:  87% (29/33)
-Receiving objects:  90% (30/33)
-Receiving objects:  93% (31/33)
-Receiving objects:  96% (32/33)
-Receiving objects: 100% (33/33)
-Receiving objects: 100% (33/33), 6.88 KiB | 6.88 MiB/s, done.
-Resolving deltas:   0% (0/10)
-Resolving deltas:  10% (1/10)
-Resolving deltas:  20% (2/10)
-Resolving deltas:  30% (3/10)
-Resolving deltas:  40% (4/10)
-Resolving deltas:  50% (5/10)
-Resolving deltas:  60% (6/10)
-Resolving deltas:  70% (7/10)
-Resolving deltas:  80% (8/10)
-Resolving deltas:  90% (9/10)
-Resolving deltas: 100% (10/10)
-Resolving deltas: 100% (10/10), done.
+Clonando repo em /tmp/tmp.kGmAs1HF3k/repo...
+Cloning into '/tmp/tmp.kGmAs1HF3k/repo'...
+remote: Enumerating objects: 38, done.
+remote: Counting objects:   2% (1/38)
+remote: Counting objects:   5% (2/38)
+remote: Counting objects:   7% (3/38)
+remote: Counting objects:  10% (4/38)
+remote: Counting objects:  13% (5/38)
+remote: Counting objects:  15% (6/38)
+remote: Counting objects:  18% (7/38)
+remote: Counting objects:  21% (8/38)
+remote: Counting objects:  23% (9/38)
+remote: Counting objects:  26% (10/38)
+remote: Counting objects:  28% (11/38)
+remote: Counting objects:  31% (12/38)
+remote: Counting objects:  34% (13/38)
+remote: Counting objects:  36% (14/38)
+remote: Counting objects:  39% (15/38)
+remote: Counting objects:  42% (16/38)
+remote: Counting objects:  44% (17/38)
+remote: Counting objects:  47% (18/38)
+remote: Counting objects:  50% (19/38)
+remote: Counting objects:  52% (20/38)
+remote: Counting objects:  55% (21/38)
+remote: Counting objects:  57% (22/38)
+remote: Counting objects:  60% (23/38)
+remote: Counting objects:  63% (24/38)
+remote: Counting objects:  65% (25/38)
+remote: Counting objects:  68% (26/38)
+remote: Counting objects:  71% (27/38)
+remote: Counting objects:  73% (28/38)
+remote: Counting objects:  76% (29/38)
+remote: Counting objects:  78% (30/38)
+remote: Counting objects:  81% (31/38)
+remote: Counting objects:  84% (32/38)
+remote: Counting objects:  86% (33/38)
+remote: Counting objects:  89% (34/38)
+remote: Counting objects:  92% (35/38)
+remote: Counting objects:  94% (36/38)
+remote: Counting objects:  97% (37/38)
+remote: Counting objects: 100% (38/38)
+remote: Counting objects: 100% (38/38), done.
+remote: Compressing objects:   3% (1/31)
+remote: Compressing objects:   6% (2/31)
+remote: Compressing objects:   9% (3/31)
+remote: Compressing objects:  12% (4/31)
+remote: Compressing objects:  16% (5/31)
+remote: Compressing objects:  19% (6/31)
+remote: Compressing objects:  22% (7/31)
+remote: Compressing objects:  25% (8/31)
+remote: Compressing objects:  29% (9/31)
+remote: Compressing objects:  32% (10/31)
+remote: Compressing objects:  35% (11/31)
+remote: Compressing objects:  38% (12/31)
+remote: Compressing objects:  41% (13/31)
+remote: Compressing objects:  45% (14/31)
+remote: Compressing objects:  48% (15/31)
+remote: Compressing objects:  51% (16/31)
+remote: Compressing objects:  54% (17/31)
+remote: Compressing objects:  58% (18/31)
+remote: Compressing objects:  61% (19/31)
+remote: Compressing objects:  64% (20/31)
+remote: Compressing objects:  67% (21/31)
+remote: Compressing objects:  70% (22/31)
+remote: Compressing objects:  74% (23/31)
+remote: Compressing objects:  77% (24/31)
+remote: Compressing objects:  80% (25/31)
+remote: Compressing objects:  83% (26/31)
+remote: Compressing objects:  87% (27/31)
+remote: Compressing objects:  90% (28/31)
+remote: Compressing objects:  93% (29/31)
+remote: Compressing objects:  96% (30/31)
+remote: Compressing objects: 100% (31/31)
+remote: Compressing objects: 100% (31/31), done.
+remote: Total 38 (delta 13), reused 0 (delta 0), pack-reused 0
+Receiving objects:   2% (1/38)
+Receiving objects:   5% (2/38)
+Receiving objects:   7% (3/38)
+Receiving objects:  10% (4/38)
+Receiving objects:  13% (5/38)
+Receiving objects:  15% (6/38)
+Receiving objects:  18% (7/38)
+Receiving objects:  21% (8/38)
+Receiving objects:  23% (9/38)
+Receiving objects:  26% (10/38)
+Receiving objects:  28% (11/38)
+Receiving objects:  31% (12/38)
+Receiving objects:  34% (13/38)
+Receiving objects:  36% (14/38)
+Receiving objects:  39% (15/38)
+Receiving objects:  42% (16/38)
+Receiving objects:  44% (17/38)
+Receiving objects:  47% (18/38)
+Receiving objects:  50% (19/38)
+Receiving objects:  52% (20/38)
+Receiving objects:  55% (21/38)
+Receiving objects:  57% (22/38)
+Receiving objects:  60% (23/38)
+Receiving objects:  63% (24/38)
+Receiving objects:  65% (25/38)
+Receiving objects:  68% (26/38)
+Receiving objects:  71% (27/38)
+Receiving objects:  73% (28/38)
+Receiving objects:  76% (29/38)
+Receiving objects:  78% (30/38)
+Receiving objects:  81% (31/38)
+Receiving objects:  84% (32/38)
+Receiving objects:  86% (33/38)
+Receiving objects:  89% (34/38)
+Receiving objects:  92% (35/38)
+Receiving objects:  94% (36/38)
+Receiving objects:  97% (37/38)
+Receiving objects: 100% (38/38)
+Receiving objects: 100% (38/38), 7.20 KiB | 7.20 MiB/s, done.
+Resolving deltas:   0% (0/13)
+Resolving deltas:   7% (1/13)
+Resolving deltas:  15% (2/13)
+Resolving deltas:  23% (3/13)
+Resolving deltas:  30% (4/13)
+Resolving deltas:  38% (5/13)
+Resolving deltas:  46% (6/13)
+Resolving deltas:  53% (7/13)
+Resolving deltas:  61% (8/13)
+Resolving deltas:  69% (9/13)
+Resolving deltas:  76% (10/13)
+Resolving deltas:  84% (11/13)
+Resolving deltas:  92% (12/13)
+Resolving deltas: 100% (13/13)
+Resolving deltas: 100% (13/13), done.
 Conteúdo do repo:
 total 8
-drwxr-x---. 7 ec2-user ec2-user   98 Jan  8 18:04 .
-drwx------. 3 ec2-user ec2-user   18 Jan  8 18:04 ..
-drwxr-x---. 3 ec2-user ec2-user   42 Jan  8 18:04 ansible
-drwxr-x---. 2 ec2-user ec2-user   27 Jan  8 18:04 execution
-drwxr-x---. 8 ec2-user ec2-user  163 Jan  8 18:04 .git
-drwxr-x---. 2 ec2-user ec2-user   26 Jan  8 18:04 machines
--rw-r-----. 1 ec2-user ec2-user 6376 Jan  8 18:04 README.md
-drwxr-x---. 2 ec2-user ec2-user   21 Jan  8 18:04 scripts
+drwxr-x---. 7 ec2-user ec2-user   98 Jan  8 18:06 .
+drwx------. 3 ec2-user ec2-user   18 Jan  8 18:06 ..
+drwxr-x---. 3 ec2-user ec2-user   42 Jan  8 18:06 ansible
+drwxr-x---. 2 ec2-user ec2-user   27 Jan  8 18:06 execution
+drwxr-x---. 8 ec2-user ec2-user  163 Jan  8 18:06 .git
+drwxr-x---. 2 ec2-user ec2-user   26 Jan  8 18:06 machines
+-rw-r-----. 1 ec2-user ec2-user 6376 Jan  8 18:06 README.md
+drwxr-x---. 2 ec2-user ec2-user   21 Jan  8 18:06 scripts
 PWD do repo:
-/tmp/tmp.4DZ1fovBBx/repo
+/tmp/tmp.kGmAs1HF3k/repo
 PLAY [Build dynamic target list from execution + machines folder] **************
 TASK [Resolve paths] ***********************************************************
 ok: [localhost]
@@ -138,7 +156,7 @@ ok: [localhost] => {
 TASK [Check machine files exist] ***********************************************
 ok: [localhost] => (item=sitef-02)
 TASK [Fail if any machine file is missing] *************************************
-ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '../../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 253, 'inode': 4325529, 'dev': 64775, 'nlink': 1, 'atime': 1767895464.5054407, 'mtime': 1767895464.5034406, 'ctime': 1767895464.5034406, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': 'b607fdf55dac2409db597a628248835d3329d5b4', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '853209536', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '../../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'ansible_facts': {'discovered_interpreter_python': '/usr/bin/python3'}, 'failed': False, 'item': 'sitef-02', 'ansible_loop_var': 'item'}) => {
+ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '../../machines/sitef-02.yml', 'mode': '0640', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 253, 'inode': 146, 'dev': 64775, 'nlink': 1, 'atime': 1767895604.982922, 'mtime': 1767895604.9729218, 'ctime': 1767895604.9729218, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': True, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': False, 'pw_name': 'ec2-user', 'gr_name': 'ec2-user', 'checksum': 'b607fdf55dac2409db597a628248835d3329d5b4', 'mimetype': 'text/plain', 'charset': 'us-ascii', 'version': '3432658088', 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '../../machines/sitef-02.yml', 'follow': False, 'get_md5': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'ansible_facts': {'discovered_interpreter_python': '/usr/bin/python3'}, 'failed': False, 'item': 'sitef-02', 'ansible_loop_var': 'item'}) => {
     "ansible_loop_var": "item",
     "changed": false,
     "item": {
@@ -161,21 +179,21 @@ ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '..
         },
         "item": "sitef-02",
         "stat": {
-            "atime": 1767895464.5054407,
+            "atime": 1767895604.982922,
             "attr_flags": "",
             "attributes": [],
             "block_size": 4096,
             "blocks": 8,
             "charset": "us-ascii",
             "checksum": "b607fdf55dac2409db597a628248835d3329d5b4",
-            "ctime": 1767895464.5034406,
+            "ctime": 1767895604.9729218,
             "dev": 64775,
             "device_type": 0,
             "executable": false,
             "exists": true,
             "gid": 1000,
             "gr_name": "ec2-user",
-            "inode": 4325529,
+            "inode": 146,
             "isblk": false,
             "ischr": false,
             "isdir": false,
@@ -187,7 +205,7 @@ ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '..
             "isuid": false,
             "mimetype": "text/plain",
             "mode": "0640",
-            "mtime": 1767895464.5034406,
+            "mtime": 1767895604.9729218,
             "nlink": 1,
             "path": "../../machines/sitef-02.yml",
             "pw_name": "ec2-user",
@@ -197,7 +215,7 @@ ok: [localhost] => (item={'changed': False, 'stat': {'exists': True, 'path': '..
             "rusr": true,
             "size": 253,
             "uid": 1000,
-            "version": "853209536",
+            "version": "3432658088",
             "wgrp": false,
             "woth": false,
             "writeable": true,
@@ -228,9 +246,10 @@ TASK [Ensure directories exist] ************************************************
 ok: [sitef-02] => (item=/opt/SoftwareExpress/sitef)
 ok: [sitef-02] => (item=/opt/SoftwareExpress/sitef)
 TASK [Copy scripts to target] **************************************************
-An exception occurred during task execution. To see the full traceback, use -vvv. The error was: If you are using a module and expect the file to exist on the remote, see the remote_src option
-fatal: [sitef-02]: FAILED! => {"changed": false, "msg": "Could not find or access '../../../scripts/'\nSearched in:\n\t/tmp/tmp.4DZ1fovBBx/repo/ansible/playbooks/files/../../../scripts/\n\t/tmp/tmp.4DZ1fovBBx/repo/ansible/playbooks/../../../scripts/\n\t/tmp/tmp.4DZ1fovBBx/repo/ansible/playbooks/files/../../../scripts/\n\t/tmp/tmp.4DZ1fovBBx/repo/ansible/playbooks/../../../scripts/ on the Ansible Controller.\nIf you are using a module and expect the file to exist on the remote, see the remote_src option"}
+changed: [sitef-02]
+TASK [Check AWS CLI exists on target] ******************************************
+fatal: [sitef-02]: FAILED! => {"changed": false, "cmd": "aws --version", "msg": "[Errno 2] No such file or directory: b'aws'", "rc": 2, "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
 PLAY RECAP *********************************************************************
 localhost                  : ok=8    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-sitef-02                   : ok=2    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+sitef-02                   : ok=3    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
 Command finished with status FAILURE
