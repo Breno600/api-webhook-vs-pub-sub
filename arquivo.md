@@ -1,165 +1,96 @@
-## ansible/ansible.cfg
+#!/usr/bin/env bash
+set -euo pipefail
 
-[defaults]
-host_key_checking = False
-retry_files_enabled = False
-stdout_callback = yaml
-timeout = 30
-interpreter_python = auto_silent
-forks = 20
+# ----------------------------
+# Helpers
+# ----------------------------
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
+die() { echo "ERROR: $*" >&2; exit 1; }
 
-[ssh_connection]
-pipelining = True
-ssh_args = -o ControlMaster=auto -o ControlPersist=60s -o ServerAliveInterval=30 -o ServerAliveCountMax=4
+# ----------------------------
+# Inputs (passed by Ansible)
+# Example: --machine sitef-01 --env dev
+# ----------------------------
+MACHINE=""
+ENVIRONMENT=""
 
-## execution/execution.yml
-targets:
-  - sitef-01
-  - sitef-02
-  - sitef-03
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --machine) MACHINE="${2:-}"; shift 2 ;;
+    --env) ENVIRONMENT="${2:-}"; shift 2 ;;
+    *) log "Unknown arg: $1"; shift ;;
+  esac
+done
 
-## machines/sitef-01.yml
-ssh:
-  host: 10.0.0.1
-  user: ec2-user
+# ----------------------------
+# Paths (must match Ansible)
+# ----------------------------
+SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASE_DIR="$(cd "${SCRIPTS_DIR}/.." && pwd)"
+DOWNLOAD_DIR="${BASE_DIR}/downloads"
+CURRENT_DIR="${BASE_DIR}/current"
+RELEASES_DIR="${BASE_DIR}/releases"
+LOG_DIR="${BASE_DIR}/logs"
 
-s3:
-  region: sa-east-1
-  bucket: my-bucket
-  prefix: sitef/sitef-01/artifacts/
+log "Starting init.sh"
+log "Machine=${MACHINE:-<not_set>} Env=${ENVIRONMENT:-<not_set>}"
+log "Base=${BASE_DIR}"
+log "Download=${DOWNLOAD_DIR}"
 
-deploy:
-  download_dir: /opt/sitef/downloads
-  scripts_dir: /opt/sitef/scripts
-  init_script: init.sh
-  init_args: "--machine sitef-01"
+# ----------------------------
+# Prechecks
+# ----------------------------
+[[ -d "${DOWNLOAD_DIR}" ]] || die "download dir not found: ${DOWNLOAD_DIR}"
 
+mkdir -p "${CURRENT_DIR}" "${RELEASES_DIR}" "${LOG_DIR}"
 
-## ansible/playbooks/deploy_from_execution.yml
----
-- name: Build dynamic target list from execution + machines folder
-  hosts: localhost
-  connection: local
-  gather_facts: false
+# ----------------------------
+# Decide what you downloaded
+# Example: you download app.tar.gz from S3
+# ----------------------------
+ARTIFACT_TGZ="${DOWNLOAD_DIR}/app.tar.gz"
+SERVICE_NAME="sitef-app"
+RELEASE_ID="$(date '+%Y%m%d%H%M%S')"
+RELEASE_PATH="${RELEASES_DIR}/${RELEASE_ID}"
 
-  vars:
-    # default paths (playbook runs from ansible/)
-    execution_file: "{{ execution_file | default('../execution/execution.yml') }}"
-    machines_dir: "{{ machines_dir | default('../machines') }}"
+if [[ ! -f "${ARTIFACT_TGZ}" ]]; then
+  log "Files found in download dir:"
+  ls -lah "${DOWNLOAD_DIR}" || true
+  die "Expected artifact not found: ${ARTIFACT_TGZ}"
+fi
 
-  tasks:
-    - name: Load execution file
-      include_vars:
-        file: "{{ execution_file }}"
-        name: exec
+# ----------------------------
+# Install / Deploy
+# ----------------------------
+log "Creating release path: ${RELEASE_PATH}"
+mkdir -p "${RELEASE_PATH}"
 
-    - name: Validate execution targets
-      assert:
-        that:
-          - exec.targets is defined
-          - exec.targets | length > 0
-        fail_msg: "No targets found in {{ execution_file }} (targets is empty)."
+log "Extracting artifact: ${ARTIFACT_TGZ}"
+tar -xzf "${ARTIFACT_TGZ}" -C "${RELEASE_PATH}"
 
-    - name: Check machine files exist
-      stat:
-        path: "{{ machines_dir }}/{{ item }}.yml"
-      register: machine_files
-      loop: "{{ exec.targets }}"
+# If your tar already has a folder, you can adjust:
+# tar -xzf "${ARTIFACT_TGZ}" -C "${RELEASE_PATH}" --strip-components=1
 
-    - name: Fail if any machine file is missing
-      assert:
-        that: item.stat.exists
-        fail_msg: "Missing machine definition: {{ machines_dir }}/{{ item.item }}.yml"
-      loop: "{{ machine_files.results }}"
+log "Updating current symlink"
+ln -sfn "${RELEASE_PATH}" "${CURRENT_DIR}"
 
-    - name: Load machine definitions
-      include_vars:
-        file: "{{ machines_dir }}/{{ item }}.yml"
-        name: "m_{{ item | replace('-', '_') }}"
-      loop: "{{ exec.targets }}"
+# Example: permissions
+chmod -R 0755 "${CURRENT_DIR}"
 
-    - name: Add targets dynamically (per machine vars)
-      add_host:
-        name: "{{ item }}"
-        groups: deliver_targets
+# ----------------------------
+# Service handling (systemd example)
+# ----------------------------
+if command -v systemctl >/dev/null 2>&1; then
+  log "Reloading systemd"
+  systemctl daemon-reload || true
 
-        ansible_host: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).ssh.host }}"
-        ansible_user: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).ssh.user | default('ec2-user') }}"
+  log "Restarting service: ${SERVICE_NAME}"
+  systemctl restart "${SERVICE_NAME}" || die "Failed to restart ${SERVICE_NAME}"
 
-        # If you want to force a specific key on bastion, uncomment and set it here:
-        # ansible_ssh_private_key_file: "/home/ansible/.ssh/sitef_key"
+  log "Checking status: ${SERVICE_NAME}"
+  systemctl --no-pager status "${SERVICE_NAME}" || true
+else
+  log "systemctl not found. Skipping service restart."
+fi
 
-        s3_region: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).s3.region }}"
-        s3_bucket: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).s3.bucket }}"
-        s3_prefix: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).s3.prefix }}"
-
-        download_dir: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).deploy.download_dir | default('/opt/sitef/downloads') }}"
-        scripts_dir: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).deploy.scripts_dir | default('/opt/sitef/scripts') }}"
-        init_script: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).deploy.init_script | default('init.sh') }}"
-        init_args: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).deploy.init_args | default('') }}"
-      loop: "{{ exec.targets }}"
-
-    - name: Show selected targets
-      debug:
-        msg:
-          - "Selected targets: {{ exec.targets }}"
-          - "Machines dir: {{ machines_dir }}"
-          - "Execution file: {{ execution_file }}"
-
-- name: Deliver to selected machines (download from S3 + run script)
-  hosts: deliver_targets
-  gather_facts: true
-  become: true
-
-  vars:
-    # you can set to false if you don't want sudo on targets
-    # become: true is declared in play, so override by: -e ansible_become=false
-    aws_cli_cmd: aws
-
-  tasks:
-    - name: Ensure directories exist
-      file:
-        path: "{{ item }}"
-        state: directory
-        mode: "0755"
-      loop:
-        - "{{ scripts_dir }}"
-        - "{{ download_dir }}"
-
-    - name: Copy scripts to target
-      copy:
-        src: "../../../scripts/"
-        dest: "{{ scripts_dir }}/"
-        mode: "0755"
-
-    - name: Check AWS CLI exists on target
-      command: "{{ aws_cli_cmd }} --version"
-      register: awscli_check
-      changed_when: false
-
-    - name: Download artifacts from S3 to target folder
-      command: >
-        {{ aws_cli_cmd }} s3 sync
-        s3://{{ s3_bucket }}/{{ s3_prefix }}
-        {{ download_dir }}/
-        --region {{ s3_region }}
-      register: s3sync
-      changed_when: >
-        ('download:' in s3sync.stdout) or
-        ('copy:' in s3sync.stdout) or
-        ('update:' in s3sync.stdout)
-
-    - name: Execute init script
-      command: "{{ scripts_dir }}/{{ init_script }} {{ init_args }}"
-      args:
-        chdir: "{{ scripts_dir }}"
-      register: init_out
-
-    - name: Show init output
-      debug:
-        var: init_out.stdout_lines
-
-## Harness script
-ansible-playbook playbooks/deploy_from_execution.yml \
-  -e execution_file=../execution/execution.yml \
-  -e machines_dir=../machines
+log "Deployment finished successfully."
