@@ -1,124 +1,118 @@
----
-- name: Build dynamic target list from execution + machines folder
-  hosts: localhost
-  connection: local
-  gather_facts: false
+Exec using JSCH
+Connecting to 10.218.238.144 ....
+Connection to 10.218.238.144 established
+Executing command ...
+Clonando repo em /tmp/tmp.IjSUthF0xI/repo...
+Cloning into '/tmp/tmp.IjSUthF0xI/repo'...
+remote: Enumerating objects: 28, done.
+remote: Counting objects:   3% (1/28)
+remote: Counting objects:   7% (2/28)
+remote: Counting objects:  10% (3/28)
+remote: Counting objects:  14% (4/28)
+remote: Counting objects:  17% (5/28)
+remote: Counting objects:  21% (6/28)
+remote: Counting objects:  25% (7/28)
+remote: Counting objects:  28% (8/28)
+remote: Counting objects:  32% (9/28)
+remote: Counting objects:  35% (10/28)
+remote: Counting objects:  39% (11/28)
+remote: Counting objects:  42% (12/28)
+remote: Counting objects:  46% (13/28)
+remote: Counting objects:  50% (14/28)
+remote: Counting objects:  53% (15/28)
+remote: Counting objects:  57% (16/28)
+remote: Counting objects:  60% (17/28)
+remote: Counting objects:  64% (18/28)
+remote: Counting objects:  67% (19/28)
+remote: Counting objects:  71% (20/28)
+remote: Counting objects:  75% (21/28)
+remote: Counting objects:  78% (22/28)
+remote: Counting objects:  82% (23/28)
+remote: Counting objects:  85% (24/28)
+remote: Counting objects:  89% (25/28)
+remote: Counting objects:  92% (26/28)
+remote: Counting objects:  96% (27/28)
+remote: Counting objects: 100% (28/28)
+remote: Counting objects: 100% (28/28), done.
+remote: Compressing objects:   4% (1/21)
+remote: Compressing objects:   9% (2/21)
+remote: Compressing objects:  14% (3/21)
+remote: Compressing objects:  19% (4/21)
+remote: Compressing objects:  23% (5/21)
+remote: Compressing objects:  28% (6/21)
+remote: Compressing objects:  33% (7/21)
+remote: Compressing objects:  38% (8/21)
+remote: Compressing objects:  42% (9/21)
+remote: Compressing objects:  47% (10/21)
+remote: Compressing objects:  52% (11/21)
+remote: Compressing objects:  57% (12/21)
+remote: Compressing objects:  61% (13/21)
+remote: Compressing objects:  66% (14/21)
+remote: Compressing objects:  71% (15/21)
+remote: Compressing objects:  76% (16/21)
+remote: Compressing objects:  80% (17/21)
+remote: Compressing objects:  85% (18/21)
+remote: Compressing objects:  90% (19/21)
+remote: Compressing objects:  95% (20/21)
+remote: Compressing objects: 100% (21/21)
+remote: Compressing objects: 100% (21/21), done.
+remote: Total 28 (delta 7), reused 0 (delta 0), pack-reused 0
+Receiving objects:   3% (1/28)
+Receiving objects:   7% (2/28)
+Receiving objects:  10% (3/28)
+Receiving objects:  14% (4/28)
+Receiving objects:  17% (5/28)
+Receiving objects:  21% (6/28)
+Receiving objects:  25% (7/28)
+Receiving objects:  28% (8/28)
+Receiving objects:  32% (9/28)
+Receiving objects:  35% (10/28)
+Receiving objects:  39% (11/28)
+Receiving objects:  42% (12/28)
+Receiving objects:  46% (13/28)
+Receiving objects:  50% (14/28)
+Receiving objects:  53% (15/28)
+Receiving objects:  57% (16/28)
+Receiving objects:  60% (17/28)
+Receiving objects:  64% (18/28)
+Receiving objects:  67% (19/28)
+Receiving objects:  71% (20/28)
+Receiving objects:  75% (21/28)
+Receiving objects:  78% (22/28)
+Receiving objects:  82% (23/28)
+Receiving objects:  85% (24/28)
+Receiving objects:  89% (25/28)
+Receiving objects:  92% (26/28)
+Receiving objects:  96% (27/28)
+Receiving objects: 100% (28/28)
+Receiving objects: 100% (28/28), 6.55 KiB | 3.27 MiB/s, done.
+Resolving deltas:   0% (0/7)
+Resolving deltas:  14% (1/7)
+Resolving deltas:  28% (2/7)
+Resolving deltas:  42% (3/7)
+Resolving deltas:  57% (4/7)
+Resolving deltas:  71% (5/7)
+Resolving deltas:  85% (6/7)
+Resolving deltas: 100% (7/7)
+Resolving deltas: 100% (7/7), done.
+Conteúdo do repo:
+total 8
+drwxr-x---. 7 ec2-user ec2-user   98 Jan  8 18:03 .
+drwx------. 3 ec2-user ec2-user   18 Jan  8 18:02 ..
+drwxr-x---. 3 ec2-user ec2-user   42 Jan  8 18:03 ansible
+drwxr-x---. 2 ec2-user ec2-user   27 Jan  8 18:03 execution
+drwxr-x---. 8 ec2-user ec2-user  163 Jan  8 18:03 .git
+drwxr-x---. 2 ec2-user ec2-user   26 Jan  8 18:03 machines
+-rw-r-----. 1 ec2-user ec2-user 6376 Jan  8 18:03 README.md
+drwxr-x---. 2 ec2-user ec2-user   21 Jan  8 18:03 scripts
+PWD do repo:
+/tmp/tmp.IjSUthF0xI/repo
 
-  vars:
-    execution_file_default: "../execution/execution.yml"
-    machines_dir_default: "../machines"
-
-  tasks:
-    - name: Resolve paths
-      set_fact:
-        execution_file_path: "{{ execution_file | default(execution_file_default) }}"
-        machines_dir_path: "{{ machines_dir | default(machines_dir_default) }}"
-
-    - name: Load execution file
-      include_vars:
-        file: "{{ execution_file_path }}"
-        name: exec
-
-    - name: Validate execution targets
-      assert:
-        that:
-          - exec.targets is defined
-          - exec.targets | length > 0
-        fail_msg: "No targets found in {{ execution_file_path }} (targets is empty)."
-
-    - name: Check machine files exist
-      stat:
-        path: "{{ machines_dir_path }}/{{ item }}.yml"
-      register: machine_files
-      loop: "{{ exec.targets }}"
-
-    - name: Fail if any machine file is missing
-      assert:
-        that: item.stat.exists
-        fail_msg: "Missing machine definition: {{ machines_dir_path }}/{{ item.item }}.yml"
-      loop: "{{ machine_files.results }}"
-
-    - name: Load machine definitions
-      include_vars:
-        file: "{{ machines_dir_path }}/{{ item }}.yml"
-        name: "m_{{ item | replace('-', '_') }}"
-      loop: "{{ exec.targets }}"
-
-    - name: Add targets dynamically (per machine vars)
-      add_host:
-        name: "{{ item }}"
-        groups: deliver_targets
-
-        ansible_host: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).ssh.host }}"
-        ansible_user: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).ssh.user | default('ec2-user') }}"
-
-        # If you need a specific key on bastion, uncomment:
-        # ansible_ssh_private_key_file: "/home/ec2-user/.ssh/sitef_key"
-
-        s3_region: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).s3.region }}"
-        s3_bucket: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).s3.bucket }}"
-        s3_prefix: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).s3.prefix }}"
-
-        download_dir: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).deploy.download_dir | default('/opt/sitef/downloads') }}"
-        scripts_dir: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).deploy.scripts_dir | default('/opt/sitef/scripts') }}"
-        init_script: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).deploy.init_script | default('init.sh') }}"
-        init_args: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).deploy.init_args | default('') }}"
-      loop: "{{ exec.targets }}"
-
-    - name: Show selected targets
-      debug:
-        msg:
-          - "Execution file: {{ execution_file_path }}"
-          - "Machines dir: {{ machines_dir_path }}"
-          - "Selected targets: {{ exec.targets }}"
-
-- name: Deliver to selected machines (download from S3 + run script)
-  hosts: deliver_targets
-  gather_facts: true
-  become: true
-
-  vars:
-    aws_cli_cmd: aws
-
-  tasks:
-    - name: Ensure directories exist
-      file:
-        path: "{{ item }}"
-        state: directory
-        mode: "0755"
-      loop:
-        - "{{ scripts_dir }}"
-        - "{{ download_dir }}"
-
-    - name: Copy scripts to target
-      copy:
-        src: "../../../scripts/"
-        dest: "{{ scripts_dir }}/"
-        mode: "0755"
-
-    - name: Check AWS CLI exists on target
-      command: "{{ aws_cli_cmd }} --version"
-      register: awscli_check
-      changed_when: false
-
-    - name: Download artifacts from S3 to target folder
-      command: >
-        {{ aws_cli_cmd }} s3 sync
-        s3://{{ s3_bucket }}/{{ s3_prefix }}
-        {{ download_dir }}/
-        --region {{ s3_region }}
-      register: s3sync
-      changed_when: >
-        ('download:' in s3sync.stdout) or
-        ('copy:' in s3sync.stdout) or
-        ('update:' in s3sync.stdout)
-
-    - name: Execute init script
-      command: "{{ scripts_dir }}/{{ init_script }} {{ init_args }}"
-      args:
-        chdir: "{{ scripts_dir }}"
-      register: init_out
-
-    - name: Show init output
-      debug:
-        var: init_out.stdout_lines
+PLAY [Build dynamic target list from execution + machines folder] **************
+TASK [Resolve paths] ***********************************************************
+ok: [localhost]
+TASK [Load execution file] *****************************************************
+fatal: [localhost]: FAILED! => {"ansible_facts": {"exec": {}}, "ansible_included_var_files": [], "changed": false, "message": "Could not find or access '../execution/execution.yml'\nSearched in:\n\t/tmp/tmp.IjSUthF0xI/repo/ansible/playbooks/vars/../execution/execution.yml\n\t/tmp/tmp.IjSUthF0xI/repo/ansible/playbooks/../execution/execution.yml\n\t/tmp/tmp.IjSUthF0xI/repo/ansible/playbooks/vars/../execution/execution.yml\n\t/tmp/tmp.IjSUthF0xI/repo/ansible/playbooks/../execution/execution.yml on the Ansible Controller.\nIf you are using a module and expect the file to exist on the remote, see the remote_src option"}
+PLAY RECAP *********************************************************************
+localhost                  : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+Command finished with status FAILURE
