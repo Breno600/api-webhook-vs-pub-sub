@@ -1,99 +1,124 @@
-Exec using JSCH
-Connecting to 10.218.238.144 ....
-Connection to 10.218.238.144 established
-Executing command ...
-Clonando repo em /tmp/tmp.EHYZ60qjvQ/repo...
-Cloning into '/tmp/tmp.EHYZ60qjvQ/repo'...
-remote: Enumerating objects: 23, done.
-remote: Counting objects:   4% (1/23)
-remote: Counting objects:   8% (2/23)
-remote: Counting objects:  13% (3/23)
-remote: Counting objects:  17% (4/23)
-remote: Counting objects:  21% (5/23)
-remote: Counting objects:  26% (6/23)
-remote: Counting objects:  30% (7/23)
-remote: Counting objects:  34% (8/23)
-remote: Counting objects:  39% (9/23)
-remote: Counting objects:  43% (10/23)
-remote: Counting objects:  47% (11/23)
-remote: Counting objects:  52% (12/23)
-remote: Counting objects:  56% (13/23)
-remote: Counting objects:  60% (14/23)
-remote: Counting objects:  65% (15/23)
-remote: Counting objects:  69% (16/23)
-remote: Counting objects:  73% (17/23)
-remote: Counting objects:  78% (18/23)
-remote: Counting objects:  82% (19/23)
-remote: Counting objects:  86% (20/23)
-remote: Counting objects:  91% (21/23)
-remote: Counting objects:  95% (22/23)
-remote: Counting objects: 100% (23/23)
-remote: Counting objects: 100% (23/23), done.
-remote: Compressing objects:   6% (1/16)
-remote: Compressing objects:  12% (2/16)
-remote: Compressing objects:  18% (3/16)
-remote: Compressing objects:  25% (4/16)
-remote: Compressing objects:  31% (5/16)
-remote: Compressing objects:  37% (6/16)
-remote: Compressing objects:  43% (7/16)
-remote: Compressing objects:  50% (8/16)
-remote: Compressing objects:  56% (9/16)
-remote: Compressing objects:  62% (10/16)
-remote: Compressing objects:  68% (11/16)
-remote: Compressing objects:  75% (12/16)
-remote: Compressing objects:  81% (13/16)
-remote: Compressing objects:  87% (14/16)
-remote: Compressing objects:  93% (15/16)
-remote: Compressing objects: 100% (16/16)
-remote: Compressing objects: 100% (16/16), done.
-remote: Total 23 (delta 5), reused 0 (delta 0), pack-reused 0
-Receiving objects:   4% (1/23)
-Receiving objects:   8% (2/23)
-Receiving objects:  13% (3/23)
-Receiving objects:  17% (4/23)
-Receiving objects:  21% (5/23)
-Receiving objects:  26% (6/23)
-Receiving objects:  30% (7/23)
-Receiving objects:  34% (8/23)
-Receiving objects:  39% (9/23)
-Receiving objects:  43% (10/23)
-Receiving objects:  47% (11/23)
-Receiving objects:  52% (12/23)
-Receiving objects:  56% (13/23)
-Receiving objects:  60% (14/23)
-Receiving objects:  65% (15/23)
-Receiving objects:  69% (16/23)
-Receiving objects:  73% (17/23)
-Receiving objects:  78% (18/23)
-Receiving objects:  82% (19/23)
-Receiving objects:  86% (20/23)
-Receiving objects:  91% (21/23)
-Receiving objects:  95% (22/23)
-Receiving objects: 100% (23/23)
-Receiving objects: 100% (23/23), 5.92 KiB | 5.92 MiB/s, done.
-Resolving deltas:   0% (0/5)
-Resolving deltas:  20% (1/5)
-Resolving deltas:  40% (2/5)
-Resolving deltas:  60% (3/5)
-Resolving deltas:  80% (4/5)
-Resolving deltas: 100% (5/5)
-Resolving deltas: 100% (5/5), done.
-Conteúdo do repo:
-total 8
-drwxr-x---. 7 ec2-user ec2-user   98 Jan  8 18:01 .
-drwx------. 3 ec2-user ec2-user   18 Jan  8 18:01 ..
-drwxr-x---. 3 ec2-user ec2-user   42 Jan  8 18:01 ansible
-drwxr-x---. 2 ec2-user ec2-user   27 Jan  8 18:01 execution
-drwxr-x---. 8 ec2-user ec2-user  163 Jan  8 18:01 .git
-drwxr-x---. 2 ec2-user ec2-user   26 Jan  8 18:01 machines
--rw-r-----. 1 ec2-user ec2-user 6376 Jan  8 18:01 README.md
-drwxr-x---. 2 ec2-user ec2-user   21 Jan  8 18:01 scripts
-PWD do repo:
-/tmp/tmp.EHYZ60qjvQ/repo
+---
+- name: Build dynamic target list from execution + machines folder
+  hosts: localhost
+  connection: local
+  gather_facts: false
 
-PLAY [Build dynamic target list from execution + machines folder] **************
-TASK [Load execution file] *****************************************************
-fatal: [localhost]: FAILED! => {"msg": "An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: An unhandled exception occurred while templating '{{ execution_file | default('../execution/execution.yml') }}'. Error was a &lt;class 'ansible.errors.AnsibleError'>, original message: recursive loop detected in template string: {{ execution_file | default('../execution/execution.yml') }}. maximum recursion depth exceeded while calling a Python object"}
-PLAY RECAP *********************************************************************
-localhost                  : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
-Command finished with status FAILURE
+  vars:
+    execution_file_default: "../execution/execution.yml"
+    machines_dir_default: "../machines"
+
+  tasks:
+    - name: Resolve paths
+      set_fact:
+        execution_file_path: "{{ execution_file | default(execution_file_default) }}"
+        machines_dir_path: "{{ machines_dir | default(machines_dir_default) }}"
+
+    - name: Load execution file
+      include_vars:
+        file: "{{ execution_file_path }}"
+        name: exec
+
+    - name: Validate execution targets
+      assert:
+        that:
+          - exec.targets is defined
+          - exec.targets | length > 0
+        fail_msg: "No targets found in {{ execution_file_path }} (targets is empty)."
+
+    - name: Check machine files exist
+      stat:
+        path: "{{ machines_dir_path }}/{{ item }}.yml"
+      register: machine_files
+      loop: "{{ exec.targets }}"
+
+    - name: Fail if any machine file is missing
+      assert:
+        that: item.stat.exists
+        fail_msg: "Missing machine definition: {{ machines_dir_path }}/{{ item.item }}.yml"
+      loop: "{{ machine_files.results }}"
+
+    - name: Load machine definitions
+      include_vars:
+        file: "{{ machines_dir_path }}/{{ item }}.yml"
+        name: "m_{{ item | replace('-', '_') }}"
+      loop: "{{ exec.targets }}"
+
+    - name: Add targets dynamically (per machine vars)
+      add_host:
+        name: "{{ item }}"
+        groups: deliver_targets
+
+        ansible_host: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).ssh.host }}"
+        ansible_user: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).ssh.user | default('ec2-user') }}"
+
+        # If you need a specific key on bastion, uncomment:
+        # ansible_ssh_private_key_file: "/home/ec2-user/.ssh/sitef_key"
+
+        s3_region: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).s3.region }}"
+        s3_bucket: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).s3.bucket }}"
+        s3_prefix: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).s3.prefix }}"
+
+        download_dir: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).deploy.download_dir | default('/opt/sitef/downloads') }}"
+        scripts_dir: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).deploy.scripts_dir | default('/opt/sitef/scripts') }}"
+        init_script: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).deploy.init_script | default('init.sh') }}"
+        init_args: "{{ lookup('vars', 'm_' ~ (item | replace('-', '_'))).deploy.init_args | default('') }}"
+      loop: "{{ exec.targets }}"
+
+    - name: Show selected targets
+      debug:
+        msg:
+          - "Execution file: {{ execution_file_path }}"
+          - "Machines dir: {{ machines_dir_path }}"
+          - "Selected targets: {{ exec.targets }}"
+
+- name: Deliver to selected machines (download from S3 + run script)
+  hosts: deliver_targets
+  gather_facts: true
+  become: true
+
+  vars:
+    aws_cli_cmd: aws
+
+  tasks:
+    - name: Ensure directories exist
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ scripts_dir }}"
+        - "{{ download_dir }}"
+
+    - name: Copy scripts to target
+      copy:
+        src: "../../../scripts/"
+        dest: "{{ scripts_dir }}/"
+        mode: "0755"
+
+    - name: Check AWS CLI exists on target
+      command: "{{ aws_cli_cmd }} --version"
+      register: awscli_check
+      changed_when: false
+
+    - name: Download artifacts from S3 to target folder
+      command: >
+        {{ aws_cli_cmd }} s3 sync
+        s3://{{ s3_bucket }}/{{ s3_prefix }}
+        {{ download_dir }}/
+        --region {{ s3_region }}
+      register: s3sync
+      changed_when: >
+        ('download:' in s3sync.stdout) or
+        ('copy:' in s3sync.stdout) or
+        ('update:' in s3sync.stdout)
+
+    - name: Execute init script
+      command: "{{ scripts_dir }}/{{ init_script }} {{ init_args }}"
+      args:
+        chdir: "{{ scripts_dir }}"
+      register: init_out
+
+    - name: Show init output
+      debug:
+        var: init_out.stdout_lines
